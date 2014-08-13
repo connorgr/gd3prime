@@ -84,6 +84,21 @@ function mutmtxData(data) {
     }
 
 
+    result.getVisibleColumns = function() {
+      var cNames = result.columnNames,
+          data = [];
+      for (var i = 0; i < cNames.length; i++) {
+        var name = cNames[i],
+            entry = {key:name, value:result.byColumn[name]};
+        // Only add the entry if it is not hidden
+        if (result.hiddenColumns.indexOf(name) == -1) {
+          data.push(entry);
+        }
+      }
+      return data;
+    }
+
+
     result.getVizData = function() {
       var cNames = result.columnNames,
           data = [];
