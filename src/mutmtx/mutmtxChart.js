@@ -188,7 +188,7 @@ function mutmtxChart(style) {
         summaryArea.append('input')
             .attr('type', 'checkbox')
             .on('click', function() {
-              data.summarize(this.checked, 60);
+              data.summarize(this.checked, 40);
               var updatedData = data.getVizData(),
                   firstGroupData = updatedData[0],
                   summaryGroupsData = updatedData.slice(1,updatedData.length);
