@@ -227,13 +227,18 @@
           return style.rowHeight * data.rowNames.indexOf(d) + style.rowHeight;
         }).style("stroke-width", ".5px").style("stroke", "#ddd");
         data.reorderColumns();
+        var xLocs = [], numVisibleCols = data.getVisibleColumns().length, columnWidth = (width - style.labelWidth) / numVisibleCols;
+        for (i in data.getVizData()) {
+          var tmpX = d3.scale.linear().domain([ 0, data.getVizData()[i].length ]).range([ 0, data.getVizData()[i].length * columnWidth ]);
+          xLocs.push(tmpX);
+        }
         var columnX = d3.scale.linear().domain([ 0, data.getVizData()[0].length ]).range([ style.labelWidth, width ]);
         var firstGroup = matrix.append("g").attr("class", ".mutmtxFirstGroup");
         var firstGroupColumns = firstGroup.selectAll("g").data(data.getVizData()[0]).enter().append("g").attr("class", "mutmtxColumn").attr("id", function(d) {
           return d.key;
         }).attr("transform", function(d) {
           var colIndex = data.columnNames.indexOf(d.key);
-          return "translate(" + columnX(colIndex) + ",0)";
+          return "translate(" + xLocs[0](colIndex) + ",0)";
         });
         var summaryGroups = matrix.selectAll(".mutmtxSummaryGroup").data(data.getVizData().slice(1, data.getVizData().length)).enter().append("g").attr("class", "mutmtxSummaryGroup");
         var summaryGroupsColumns = summaryGroups.selectAll("g").data(function(d) {
@@ -255,7 +260,7 @@
           return Math.ceil(rowLabelsG.node().getBBox().height + 10);
         });
         function renderMutationMatrix() {
-          var colWidth = style.matrixWidth / data.getVizData()[0].length;
+          var colWidth = xLocs[0](1) - xLocs[0](0);
           firstGroupColumns.selectAll("rect").data(function(d) {
             return d.value.activeRows.map(function(row) {
               return {
@@ -287,6 +292,11 @@
           summaryArea.append("input").attr("type", "checkbox").on("click", function() {
             data.summarize(this.checked, 60);
             var updatedData = data.getVizData(), firstGroupData = updatedData[0], summaryGroupsData = updatedData.slice(1, updatedData.length);
+            numVisibleCols = data.getVisibleColumns().length, columnWidth = (width - style.labelWidth) / numVisibleCols;
+            for (i in data.getVizData()) {
+              var tmpX = d3.scale.linear().domain([ 0, data.getVizData()[i].length ]).range([ 0, data.getVizData()[i].length * columnWidth ]);
+              xLocs.push(tmpX);
+            }
             columnX = d3.scale.linear().domain([ 0, data.getColumnNames().length ]).range([ style.labelWidth, width ]);
             firstGroupColumns = firstGroup.selectAll(".mutmtxColumn").data(firstGroupData);
             firstGroupColumns.enter().append("g");
@@ -300,11 +310,17 @@
             summaryGroups = matrix.selectAll(".mutmtxSummaryGroup").data(summaryGroupsData);
             summaryGroups.enter().append("g");
             summaryGroups.exit().remove();
-            summaryGroups.attr("class", "mutmtxSummaryGroup");
+            summaryGroups.attr("class", "mutmtxSummaryGroup").attr("transform", function(d, i) {
+              console.log(i);
+              return "translate(" + (i * 30 + 30) + ",0)";
+            });
             summaryGroupsColumns = summaryGroups.selectAll("g").data(function(d) {
               return d;
             }).enter().append("g").attr("class", "mutmtxColumn").attr("id", function(d) {
               return d.key;
+            }).attr("transform", function(d) {
+              var colIndex = data.getColumnNames().indexOf(d.key);
+              return "translate(" + columnX(colIndex) + ",0)";
             });
             renderMutationMatrix();
           });
