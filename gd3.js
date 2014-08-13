@@ -95,7 +95,7 @@
           return result.hiddenColumns.indexOf(name) == -1;
         });
       };
-      result.getVizData = function() {
+      result.getVisibleColumns = function() {
         var cNames = result.columnNames, data = [];
         for (var i = 0; i < cNames.length; i++) {
           var name = cNames[i], entry = {
@@ -106,6 +106,23 @@
             data.push(entry);
           }
         }
+        return data;
+      };
+      result.getVizData = function() {
+        var cNames = result.columnNames, data = [], currentGroup = [];
+        for (var i = 0; i < cNames.length; i++) {
+          var name = cNames[i], entry = {
+            key: name,
+            value: result.byColumn[name]
+          };
+          if (result.hiddenColumns.indexOf(name) == -1) {
+            currentGroup.push(entry);
+          } else if (currentGroup.length > 0) {
+            data.push(currentGroup);
+            currentGroup = [];
+          }
+        }
+        data.push(currentGroup);
         return data;
       };
       result.reorderColumns = function() {
@@ -210,14 +227,21 @@
           return style.rowHeight * data.rowNames.indexOf(d) + style.rowHeight;
         }).style("stroke-width", ".5px").style("stroke", "#ddd");
         data.reorderColumns();
-        var columnX = d3.scale.linear().domain([ 0, data.getVizData().length ]).range([ style.labelWidth, width ]);
-        var columns = matrix.selectAll("g").data(data.getVizData()).enter().append("g").attr("class", "mutmtxColumn").attr("id", function(d) {
+        var columnX = d3.scale.linear().domain([ 0, data.getVizData()[0].length ]).range([ style.labelWidth, width ]);
+        var firstGroup = matrix.append("g").attr("class", ".mutmtxFirstGroup");
+        var firstGroupColumns = firstGroup.selectAll("g").data(data.getVizData()[0]).enter().append("g").attr("class", "mutmtxColumn").attr("id", function(d) {
           return d.key;
         }).attr("transform", function(d) {
           var colIndex = data.columnNames.indexOf(d.key);
           return "translate(" + columnX(colIndex) + ",0)";
         });
-        var zoom = d3.behavior.zoom().x(columnX).scaleExtent([ 1, Math.round(style.minBoxWidth * data.getVizData().length / style.width) ]).on("zoom", function() {
+        var summaryGroups = matrix.selectAll(".mutmtxSummaryGroup").data(data.getVizData().slice(1, data.getVizData().length)).enter().append("g").attr("class", "mutmtxSummaryGroup");
+        var summaryGroupsColumns = summaryGroups.selectAll("g").data(function(d) {
+          return d;
+        }).enter().append("g").attr("class", "mutmtxColumn").attr("id", function(d) {
+          return d.key;
+        });
+        var zoom = d3.behavior.zoom().x(columnX).scaleExtent([ 1, Math.round(style.minBoxWidth * data.getVizData()[0].length / style.width) ]).on("zoom", function() {
           var translateCheck = d3.event.translate;
           translateCheck[1] = 0;
           console.log(translateCheck, d3.event.scale);
@@ -231,8 +255,20 @@
           return Math.ceil(rowLabelsG.node().getBBox().height + 10);
         });
         function renderMutationMatrix() {
-          var columns = matrix.selectAll(".mutmtxColumn"), colWidth = style.matrixWidth / data.getVizData().length;
-          columns.selectAll("rect").data(function(d) {
+          var colWidth = style.matrixWidth / data.getVizData()[0].length;
+          firstGroupColumns.selectAll("rect").data(function(d) {
+            return d.value.activeRows.map(function(row) {
+              return {
+                row: row,
+                type: data.columnsToTypes[d.key]
+              };
+            });
+          }).enter().append("rect").attr("x", 0).attr("y", function(d) {
+            return style.rowHeight * data.rowNames.indexOf(d.row) + style.rowHeight;
+          }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
+            return colTypeToColor[d.type];
+          });
+          summaryGroupsColumns.selectAll("rect").data(function(d) {
             return d.value.activeRows.map(function(row) {
               return {
                 row: row,
@@ -250,15 +286,25 @@
           summaryArea.append("span").text("Summary:");
           summaryArea.append("input").attr("type", "checkbox").on("click", function() {
             data.summarize(this.checked, 60);
+            var updatedData = data.getVizData(), firstGroupData = updatedData[0], summaryGroupsData = updatedData.slice(1, updatedData.length);
             columnX = d3.scale.linear().domain([ 0, data.getColumnNames().length ]).range([ style.labelWidth, width ]);
-            var columns = matrix.selectAll(".mutmtxColumn").data(data.getVizData());
-            columns.enter().append("g");
-            columns.exit().remove();
-            columns.attr("class", "mutmtxColumn").attr("id", function(d) {
+            firstGroupColumns = firstGroup.selectAll(".mutmtxColumn").data(firstGroupData);
+            firstGroupColumns.enter().append("g");
+            firstGroupColumns.exit().remove();
+            firstGroupColumns.attr("class", "mutmtxColumn").attr("id", function(d) {
               return d.key;
             }).attr("transform", function(d) {
               var colIndex = data.getColumnNames().indexOf(d.key);
               return "translate(" + columnX(colIndex) + ",0)";
+            });
+            summaryGroups = matrix.selectAll(".mutmtxSummaryGroup").data(summaryGroupsData);
+            summaryGroups.enter().append("g");
+            summaryGroups.exit().remove();
+            summaryGroups.attr("class", "mutmtxSummaryGroup");
+            summaryGroupsColumns = summaryGroups.selectAll("g").data(function(d) {
+              return d;
+            }).enter().append("g").attr("class", "mutmtxColumn").attr("id", function(d) {
+              return d.key;
             });
             renderMutationMatrix();
           });

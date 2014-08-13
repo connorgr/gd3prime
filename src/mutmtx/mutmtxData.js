@@ -101,15 +101,20 @@ function mutmtxData(data) {
 
     result.getVizData = function() {
       var cNames = result.columnNames,
-          data = [];
+          data = [],
+          currentGroup = [];
       for (var i = 0; i < cNames.length; i++) {
         var name = cNames[i],
             entry = {key:name, value:result.byColumn[name]};
         // Only add the entry if it is not hidden
         if (result.hiddenColumns.indexOf(name) == -1) {
-          data.push(entry);
+          currentGroup.push(entry);
+        } else if(currentGroup.length > 0) {
+          data.push(currentGroup);
+          currentGroup = [];
         }
       }
+      data.push(currentGroup);
       return data;
     }
 

@@ -83,12 +83,13 @@ function mutmtxChart(style) {
 
       // Scales for the height/width of rows/columns
       var columnX = d3.scale.linear()
-          .domain([0, data.getVizData().length])
+          .domain([0, data.getVizData()[0].length])
           .range([style.labelWidth, width]);
 
-      // Define the matrix and columns to be included
-      var columns = matrix.selectAll('g')
-              .data(data.getVizData())
+      var firstGroup = matrix.append('g')
+                .attr('class', '.mutmtxFirstGroup');
+      var firstGroupColumns = firstGroup.selectAll('g')
+              .data(data.getVizData()[0])
               .enter()
               .append('g')
                 .attr('class', 'mutmtxColumn')
@@ -98,11 +99,36 @@ function mutmtxChart(style) {
                   return 'translate('+columnX(colIndex)+',0)';
                 });
 
+      var summaryGroups = matrix.selectAll('.mutmtxSummaryGroup')
+              .data(data.getVizData().slice(1,data.getVizData().length))
+              .enter()
+              .append('g')
+                .attr('class', 'mutmtxSummaryGroup');
+      var summaryGroupsColumns = summaryGroups.selectAll('g')
+              .data(function(d){ return d; })
+              .enter()
+              .append('g')
+                .attr('class', 'mutmtxColumn')
+                .attr('id', function(d) { return d.key; });
+
+
+      // Define the matrix and columns to be included
+      // var columns = matrix.selectAll('g')
+      //         .data(data.getVizData()[0])
+      //         .enter()
+      //         .append('g')
+      //           .attr('class', 'mutmtxColumn')
+      //           .attr('id', function(d) { return d.key; })
+      //           .attr('transform', function(d) {
+      //             var colIndex = data.columnNames.indexOf(d.key);
+      //             return 'translate('+columnX(colIndex)+',0)';
+      //           });
+
 
       // Zoom behavior
       var zoom = d3.behavior.zoom()
           .x(columnX)
-          .scaleExtent([1, Math.round( style.minBoxWidth * data.getVizData().length / style.width)])
+          .scaleExtent([1, Math.round( style.minBoxWidth * data.getVizData()[0].length / style.width)])
           .on('zoom', function() {
               var translateCheck = d3.event.translate;
               translateCheck[1] = 0;
@@ -121,10 +147,21 @@ function mutmtxChart(style) {
 
 
       function renderMutationMatrix() {
-        var columns = matrix.selectAll('.mutmtxColumn'),
-            colWidth = style.matrixWidth/data.getVizData().length;
+        var colWidth = style.matrixWidth/data.getVizData()[0].length;
 
-        columns.selectAll('rect')
+        firstGroupColumns.selectAll('rect')
+          .data(function(d){ return d.value.activeRows.map(function(row){return {row:row, type:data.columnsToTypes[d.key]}});})
+          .enter()
+          .append('rect')
+            .attr('x', 0)
+            .attr('y', function(d) {
+              return style.rowHeight*data.rowNames.indexOf(d.row) + style.rowHeight;
+            })
+            .attr('height', style.rowHeight)
+            .attr('width', colWidth)
+            .style('fill', function(d) { return colTypeToColor[d.type]; });
+
+        summaryGroupsColumns.selectAll('rect')
           .data(function(d){ return d.value.activeRows.map(function(row){return {row:row, type:data.columnsToTypes[d.key]}});})
           .enter()
           .append('rect')
@@ -144,23 +181,42 @@ function mutmtxChart(style) {
             .attr('type', 'checkbox')
             .on('click', function() {
               data.summarize(this.checked, 60);
-
+              var updatedData = data.getVizData(),
+                  firstGroupData = updatedData[0],
+                  summaryGroupsData = updatedData.slice(1,updatedData.length);
               // Reconfigure x function so positioning is correct
               columnX = d3.scale.linear()
                 .domain([0, data.getColumnNames().length])
                 .range([style.labelWidth, width]);
 
-              var columns = matrix.selectAll('.mutmtxColumn').data(data.getVizData());
+              // Readjust the first column, which displays either:
+              //   1. all the data if summary is not active
+              //   2. the first group of summarized data
+              firstGroupColumns = firstGroup.selectAll('.mutmtxColumn').data(firstGroupData);
 
-              columns.enter().append('g');
-              columns.exit().remove();
+              firstGroupColumns.enter().append('g');
+              firstGroupColumns.exit().remove();
 
-              columns.attr('class', 'mutmtxColumn')
+              firstGroupColumns.attr('class', 'mutmtxColumn')
                   .attr('id', function(d) { return d.key; })
                   .attr('transform', function(d) {
                     var colIndex = data.getColumnNames().indexOf(d.key);
                     return 'translate('+columnX(colIndex)+',0)';
                   });
+
+              // Readjust summary groups, if active
+              summaryGroups = matrix.selectAll('.mutmtxSummaryGroup').data(summaryGroupsData);
+              summaryGroups.enter().append('g');
+              summaryGroups.exit().remove();
+
+              summaryGroups.attr('class', 'mutmtxSummaryGroup');
+              summaryGroupsColumns = summaryGroups.selectAll('g')
+                  .data(function(d){ return d; })
+                  .enter()
+                  .append('g')
+                    .attr('class', 'mutmtxColumn')
+                    .attr('id', function(d) { return d.key; });
+
 
               renderMutationMatrix();
             });
