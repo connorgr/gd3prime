@@ -140,7 +140,6 @@ function mutmtxChart(style) {
           .on('zoom', function() {
               var translateCheck = d3.event.translate;
               translateCheck[1] = 0;
-              console.log(translateCheck, d3.event.scale);
               matrix.attr('transform', "translate(" + translateCheck + ")scale(" + d3.event.scale + ")");
               renderMutationMatrix();
           });
@@ -149,7 +148,6 @@ function mutmtxChart(style) {
       renderMutationMatrix();
 
       svg.attr('height', function(d) {
-        console.log(rowLabelsG.node().getBBox().height);
         return Math.ceil(rowLabelsG.node().getBBox().height + 10);
       })
 
@@ -188,6 +186,10 @@ function mutmtxChart(style) {
         summaryArea.append('input')
             .attr('type', 'checkbox')
             .on('click', function() {
+              // Reset camera
+              matrix.attr('transform', 'translate(0,0)');
+
+              // Summarize
               data.summarize(this.checked, 40);
               var updatedData = data.getVizData(),
                   firstGroupData = updatedData[0],
@@ -196,6 +198,7 @@ function mutmtxChart(style) {
               // Reconfigure xs so positioning is correct
               numVisibleCols = data.getVisibleColumns().length,
               columnWidth = (width-style.labelWidth)/numVisibleCols;
+              xLocs = [];
               for (i in data.getVizData()) {
                 var tmpX = d3.scale.linear()
                     .domain([0, data.getVizData()[i].length])
@@ -229,7 +232,6 @@ function mutmtxChart(style) {
 
               summaryGroups.attr('class', 'mutmtxSummaryGroup')
                   .attr('transform', function(d,i) {
-                    console.log(i);
                     return 'translate('+(i*30 + 30)+',0)';
                   });
               summaryGroupsColumns = summaryGroups.selectAll('g')

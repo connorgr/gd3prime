@@ -290,9 +290,11 @@
           var summaryArea = selection.append("div");
           summaryArea.append("span").text("Summary:");
           summaryArea.append("input").attr("type", "checkbox").on("click", function() {
-            data.summarize(this.checked, 60);
+            matrix.attr("transform", "translate(0,0)");
+            data.summarize(this.checked, 40);
             var updatedData = data.getVizData(), firstGroupData = updatedData[0], summaryGroupsData = updatedData.slice(1, updatedData.length);
             numVisibleCols = data.getVisibleColumns().length, columnWidth = (width - style.labelWidth) / numVisibleCols;
+            xLocs = [];
             for (i in data.getVizData()) {
               var tmpX = d3.scale.linear().domain([ 0, data.getVizData()[i].length ]).range([ 0, data.getVizData()[i].length * columnWidth ]);
               xLocs.push(tmpX);
