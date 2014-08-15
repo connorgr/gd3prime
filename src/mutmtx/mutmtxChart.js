@@ -80,18 +80,8 @@ function mutmtxChart(style) {
 
       data.reorderColumns();
 
-      var xLocs = [],
-          numVisibleCols = data.getVisibleColumns().length,
-          columnWidth = (width-style.labelWidth)/numVisibleCols;
-      for (i in data.getVizData()) {
-        var tmpX = d3.scale.linear()
-            .domain([0, data.getVizData()[i].length])
-            .range([0, data.getVizData()[i].length*columnWidth]);
-        xLocs.push(tmpX);
-      }
-      // Scales for the height/width of rows/columns
-      var columnX = d3.scale.linear()
-          .domain([0, data.getVizData()[0].length])
+      var wholeVisX = d3.scale.linear()
+          .domain([0, data.getVisibleColumns().length])
           .range([style.labelWidth, width]);
 
       var firstGroup = matrix.append('g')
@@ -104,7 +94,7 @@ function mutmtxChart(style) {
                 .attr('id', function(d) { return d.key; })
                 .attr('transform', function(d) {
                   var colIndex = data.columnNames.indexOf(d.key);
-                  return 'translate('+xLocs[0](colIndex)+',0)';
+                  return 'translate('+wholeVisX(colIndex)+',0)';
                 });
 
       var summaryGroups = matrix.selectAll('.mutmtxSummaryGroup')
@@ -119,29 +109,13 @@ function mutmtxChart(style) {
                 .attr('class', 'mutmtxColumn')
                 .attr('id', function(d) { return d.key; });
 
-
-      // Define the matrix and columns to be included
-      // var columns = matrix.selectAll('g')
-      //         .data(data.getVizData()[0])
-      //         .enter()
-      //         .append('g')
-      //           .attr('class', 'mutmtxColumn')
-      //           .attr('id', function(d) { return d.key; })
-      //           .attr('transform', function(d) {
-      //             var colIndex = data.columnNames.indexOf(d.key);
-      //             return 'translate('+columnX(colIndex)+',0)';
-      //           });
-
-
       // Zoom behavior
+
       var zoom = d3.behavior.zoom()
-          .x(columnX)
-          .scaleExtent([1, Math.round( style.minBoxWidth * data.getVizData()[0].length / style.width)])
+          .x(wholeVisX)
+          .scaleExtent([1, 14])
           .on('zoom', function() {
-              var translateCheck = d3.event.translate;
-              translateCheck[1] = 0;
-              matrix.attr('transform', "translate(" + translateCheck + ")scale(" + d3.event.scale + ")");
-              renderMutationMatrix();
+              rerenderMutationMatrix();
           });
       svg.call(zoom);
 
@@ -152,8 +126,23 @@ function mutmtxChart(style) {
       })
 
 
+      function rerenderMutationMatrix() {
+        var colWidth = wholeVisX(1)-wholeVisX(0);
+        firstGroupColumns.attr('transform', function(d) {
+              var colIndex = data.getColumnNames().indexOf(d.key);
+              return 'translate('+wholeVisX(colIndex)+',0)';
+            });
+        summaryGroupsColumns.attr('transform', function(d) {
+              var colIndex = data.getColumnNames().indexOf(d.key);
+              return 'translate('+wholeVisX(colIndex)+',0)';
+            });
+        firstGroupColumns.selectAll('rect').attr('width', colWidth);
+        summaryGroupsColumns.selectAll('rect').attr('width', colWidth);
+      }
+
+
       function renderMutationMatrix() {
-        var colWidth = xLocs[0](1)-xLocs[0](0);//columnX(1)-columnX(0);
+        var colWidth = wholeVisX(1)-wholeVisX(0);
 
         firstGroupColumns.selectAll('rect')
             .data(function(d){ return d.value.activeRows.map(function(row){return {row:row, type:data.columnsToTypes[d.key]}});})
@@ -198,17 +187,6 @@ function mutmtxChart(style) {
               // Reconfigure xs so positioning is correct
               numVisibleCols = data.getVisibleColumns().length,
               columnWidth = (width-style.labelWidth)/numVisibleCols;
-              xLocs = [];
-              for (i in data.getVizData()) {
-                var tmpX = d3.scale.linear()
-                    .domain([0, data.getVizData()[i].length])
-                    .range([0, data.getVizData()[i].length*columnWidth]);
-                xLocs.push(tmpX);
-              }
-              // Reconfigure x function so positioning is correct
-              columnX = d3.scale.linear()
-                .domain([0, data.getColumnNames().length])
-                .range([style.labelWidth, width]);
 
               // Readjust the first column, which displays either:
               //   1. all the data if summary is not active
@@ -222,7 +200,7 @@ function mutmtxChart(style) {
                   .attr('id', function(d) { return d.key; })
                   .attr('transform', function(d) {
                     var colIndex = data.getColumnNames().indexOf(d.key);
-                    return 'translate('+columnX(colIndex)+',0)';
+                    return 'translate('+wholeVisX(colIndex)+',0)';
                   });
 
               // Readjust summary groups, if active
@@ -242,7 +220,7 @@ function mutmtxChart(style) {
                     .attr('id', function(d) { return d.key; })
                     .attr('transform', function(d) {
                       var colIndex = data.getColumnNames().indexOf(d.key);
-                      return 'translate('+columnX(colIndex)+',0)';
+                      return 'translate('+wholeVisX(colIndex)+',0)';
                     });
 
               renderMutationMatrix();
