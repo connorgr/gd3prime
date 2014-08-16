@@ -361,6 +361,15 @@
   };
   function transcriptData(data) {
     function parseCancer(cdata) {
+      var defaultInactivatingMutations = {
+        Nonsense_Mutation: true,
+        Frame_Shift_Del: true,
+        Frame_Shift_Ins: true,
+        Missense_Mutation: false,
+        Splice_Site: true,
+        In_Frame_Del: false,
+        In_Frame_Ins: false
+      };
       var defaultMutationTypesToSymbols = {
         Nonsense_Mutation: 0,
         Frame_Shift_Del: 1,
@@ -372,13 +381,18 @@
       };
       var d = {
         geneName: cdata.gene,
+        inactivatingMutations: cdata.inactivatingMutations || defaultInactivatingMutations,
         length: cdata.length,
+        mutationCategories: cdata.mutationCategories || [],
         mutations: cdata.mutations,
         mutationTypesToSymbols: cdata.mutationTypesToSymbols || defaultMutationTypesToSymbols,
         proteinDomains: cdata.domains
       };
       d.get = function(str) {
-        if (str == "length") return d.length; else return null;
+        if (str == "length") return d.length; else if (str == "mutationCategories") return d.mutationCategories; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else return null;
+      };
+      d.isMutationInactivating = function(mut) {
+        return d.inactivatingMutations[mut];
       };
       return d;
     }
@@ -389,12 +403,55 @@
     function chart(selection) {
       selection.each(function(data) {
         data = transcriptData(data);
+        var d3color = d3.scale.category20(), sampleTypeToColor = {};
+        for (var i = 0; i < data.get("mutationCategories").length; i++) {
+          sampleTypeToColor[data.get("mutationCategories")[i]] = d3color(i);
+        }
         var height = style.height, width = style.width;
+        var mutationResolution = Math.floor(width / style.symbolWidth);
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg");
         var start = 0, stop = data.get("length");
         var x = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
-        console.log(start, stop, x(start), x(stop));
+        var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(style.numXTicks).tickSize(0).tickPadding(style.xTickPadding);
+        var transcriptAxis = svg.append("g").attr("class", "xaxis").attr("transform", "translate(5," + (style.height / 2 + style.transcriptBarHeight + 2) + ")").style("font-size", "12px").style("fill", "#000").call(xAxis);
         var transcriptBar = svg.append("rect").attr("height", style.transcriptBarHeight).attr("width", x(stop) - x(start)).attr("x", x(start)).attr("y", height / 2).style("fill", "#ccc");
+        var mutationsG = svg.append("g").attr("class", "transcriptMutations");
+        var mutations = mutationsG.selectAll(".symbols").data(data.get("mutations")).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
+          return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
+        }).size(5)).style("fill", function(d, i) {
+          return sampleTypeToColor[d.dataset];
+        }).style("stroke", function(d, i) {
+          return sampleTypeToColor[d.dataset];
+        }).style("stroke-width", 2);
+        updateTranscript();
+        function updateTranscript() {
+          var curMin = d3.min(x.domain()), curMax = d3.max(x.domain()), curRes = Math.round((curMax - curMin) / mutationResolution);
+          curRes = curRes ? curRes : 1;
+          var bottomIndex = {}, topIndex = {}, pX = {}, pY = {};
+          var endIter = Math.ceil(curMax / curRes) + 5;
+          startIter = Math.floor(curMin / curRes) - 5;
+          for (var i = startIter; i < endIter; i++) {
+            bottomIndex[i] = 0;
+            topIndex[i] = 0;
+          }
+          mutations.attr("transform", function(d, i) {
+            var curRes = 1;
+            var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex, curIndex = Math.round(d.locus / curRes), px = x(curIndex * curRes), py;
+            if (indexDict[curIndex] == undefined) indexDict[curIndex] = 0;
+            if (data.isMutationInactivating(d.ty)) {
+              py = height / 2 + (style.transcriptBarHeight + indexDict[curIndex] * style.symbolWidth + 3 + 10);
+            } else {
+              py = height / 2 - (indexDict[curIndex] * style.symbolWidth + 3 + 5);
+            }
+            pX[i] = px;
+            pY[i] = py;
+            return "translate(" + px + ", " + py + ")";
+          }).style("fill", function(d) {
+            return sampleTypeToColor[d.dataset];
+          }).style("fill-opacity", 1).style("stroke", function(d) {
+            return sampleTypeToColor[d.dataset];
+          }).style("stroke-opacity", 1);
+        }
       });
     }
     return chart;
@@ -402,8 +459,11 @@
   function transcriptStyle(style) {
     return {
       height: style.height || 200,
+      numXTicks: style.numXTicks || 5,
+      symbolWidth: style.symbolWidth || 10,
       transcriptBarHeight: style.transcriptBarHeight || 20,
-      width: style.width || 500
+      width: style.width || 500,
+      xTickPadding: style.xTickPadding || 1.25
     };
   }
   gd3.transcript = function(params) {
