@@ -359,6 +359,57 @@
     var params = params || {}, style = mutmtxStyle(params.style || {});
     return mutmtxChart(style);
   };
+  function transcriptData(data) {
+    function parseCancer(cdata) {
+      var defaultMutationTypesToSymbols = {
+        Nonsense_Mutation: 0,
+        Frame_Shift_Del: 1,
+        Frame_Shift_Ins: 1,
+        Missense_Mutation: 2,
+        Splice_Site: 3,
+        In_Frame_Del: 4,
+        In_Frame_Ins: 4
+      };
+      var d = {
+        geneName: cdata.gene,
+        length: cdata.length,
+        mutations: cdata.mutations,
+        mutationTypesToSymbols: cdata.mutationTypesToSymbols || defaultMutationTypesToSymbols,
+        proteinDomains: cdata.domains
+      };
+      d.get = function(str) {
+        if (str == "length") return d.length; else return null;
+      };
+      return d;
+    }
+    var tData = parseCancer(data);
+    return tData;
+  }
+  function transcriptChart(style) {
+    function chart(selection) {
+      selection.each(function(data) {
+        data = transcriptData(data);
+        var height = style.height, width = style.width;
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg");
+        var start = 0, stop = data.get("length");
+        var x = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
+        console.log(start, stop, x(start), x(stop));
+        var transcriptBar = svg.append("rect").attr("height", style.transcriptBarHeight).attr("width", x(stop) - x(start)).attr("x", x(start)).attr("y", height / 2).style("fill", "#ccc");
+      });
+    }
+    return chart;
+  }
+  function transcriptStyle(style) {
+    return {
+      height: style.height || 200,
+      transcriptBarHeight: style.transcriptBarHeight || 20,
+      width: style.width || 500
+    };
+  }
+  gd3.transcript = function(params) {
+    var params = params || {}, style = transcriptStyle(params.style || {});
+    return transcriptChart(style);
+  };
   if (typeof define === "function" && define.amd) define(gd3); else if (typeof module === "object" && module.exports) module.exports = gd3;
   this.gd3 = gd3;
 }();
