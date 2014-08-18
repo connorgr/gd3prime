@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>GD3 Example Transcript Annotation</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div id="test"></div>
+    <script src="../bower_components/d3/d3.min.js"></script>
+    <script src="gd3.js"></script>
+    <script>
+    console.log(gd3);
+
+    d3.json('testData/example-transcript.json', function(data) {
+
+      var styling = {
+      };
+
+      var sampleTypes = {},
+          params = {},
+          vizData = [];
+
+      var categories = ['SCNAL', 'SCNAH'];
+
+      for (gKey in Object.keys(data)) {
+        var gene = Object.keys(data)[gKey],
+            transcriptList = Object.keys(data[gene]);
+
+        for (tKey in transcriptList) {
+          var transcript = transcriptList[tKey],
+              domains = data[gene][transcript].domains,
+              length = data[gene][transcript].length,
+              mutations = data[gene][transcript].mutations;
+
+          var mKeys = Object.keys(mutations);
+          for(mKey in mKeys) {
+            var m = mKeys[mKey],
+                cancer = mutations[m].cancer;
+            sampleTypes[cancer] = 0;
+          }
+
+          vizData.push({gene: gene, transcript: transcript, domains: domains, length: length, mutations: mutations, mutationCategories: categories, proteinDomainDB: 'PFAM'});
+        }
+      }
+      sampleTypes = Object.keys(sampleTypes);
+      params.sampleTypes = sampleTypes;
+
+      for(v in vizData) {
+        d3.select('#test')
+            .datum(vizData[v])
+            .call(gd3.transcript());
+      }
+
+    });
+    </script>
+  </body>
+</html>
