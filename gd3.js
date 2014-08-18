@@ -410,8 +410,9 @@
           sampleTypeToColor[data.get("mutationCategories")[i]] = d3color(i);
         }
         var height = style.height, width = style.width;
+        console.log(width);
         var mutationResolution = Math.floor(width / style.symbolWidth);
-        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg");
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width);
         var start = 0, stop = data.get("length");
         var x = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(style.numXTicks).tickSize(0).tickPadding(style.xTickPadding);
@@ -424,24 +425,20 @@
         var mutationsG = svg.append("g").attr("class", "transcriptMutations");
         var mutations = mutationsG.selectAll(".symbols").data(data.get("mutations")).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
-        }).size(5)).style("fill", function(d, i) {
+        }).size(style.symbolWidth)).style("fill", function(d, i) {
           return sampleTypeToColor[d.dataset];
         }).style("stroke", function(d, i) {
           return sampleTypeToColor[d.dataset];
         }).style("stroke-width", 2);
-        console.log(data.get("proteinDomains"));
-        var test = data.get("proteinDomains");
-        console.log(test.slice());
-        console.log("---");
         var domainGroups = svg.selectAll(".domains").data(data.get("proteinDomains").slice()).enter().append("g").attr("class", "domains");
         var domains = domainGroups.append("rect").attr("id", function(d, i) {
           return "domain-" + i;
         }).attr("width", function(d, i) {
           return x(d.end) - x(d.start);
-        }).attr("height", style.transcriptBarHeight + 5).style("fill", "#aaa").style("fill-opacity", .5);
+        }).attr("height", style.transcriptBarHeight + 10).style("fill", "#aaa").style("fill-opacity", .5);
         var domainLabels = domainGroups.append("text").attr("id", function(d, i) {
           return "domain-label-" + i;
-        }).attr("text-anchor", "middle").attr("y", style.transcriptBarHeight).style("fill", "#000").style("fill-opacity", 0).text(function(d, i) {
+        }).attr("text-anchor", "middle").attr("y", style.transcriptBarHeight).style("fill", "#000").style("fill-opacity", 0).style("font-size", 12).style("font-family", style.fontFamily).text(function(d, i) {
           return d.name;
         });
         domainGroups.on("mouseover", function(d, i) {
@@ -483,7 +480,7 @@
           transcriptAxis.call(xAxis);
           transcriptBar.attr("x", x(start)).attr("width", x(stop) - x(start));
           domainGroups.attr("transform", function(d, i) {
-            return "translate(" + x(d.start) + "," + height / 2 + ")";
+            return "translate(" + x(d.start) + "," + (height / 2 - 5) + ")";
           });
           domains.attr("width", function(d, i) {
             return x(d.end) - x(d.start);
@@ -499,6 +496,7 @@
   }
   function transcriptStyle(style) {
     return {
+      fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       height: style.height || 200,
       numXTicks: style.numXTicks || 5,
       symbolWidth: style.symbolWidth || 10,

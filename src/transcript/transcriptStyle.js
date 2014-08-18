@@ -1,5 +1,6 @@
 function transcriptStyle(style) {
   return {
+    fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
     height: style.height || 200,
     numXTicks: style.numXTicks || 5,
     symbolWidth: style.symbolWidth || 10,

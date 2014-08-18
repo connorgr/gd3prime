@@ -14,6 +14,7 @@ function transcriptChart(style) {
 
       var height = style.height,
           width = style.width;
+      console.log(width);
 
       // max number of mutations that can fit along the axis
       var mutationResolution = Math.floor(width / style.symbolWidth);
@@ -22,7 +23,9 @@ function transcriptChart(style) {
           .selectAll('svg')
           .data([data])
           .enter()
-            .append('svg');
+            .append('svg')
+                .attr('height', height)
+                .attr('width', width);
 
       // x scale for the entire visualization based on transcript length
       var start = 0,
@@ -73,17 +76,12 @@ function transcriptChart(style) {
               .type(function(d, i) {
                 return d3.svg.symbolTypes[data.get('mutationTypesToSymbols')[d.ty]];
               })
-              .size(5))
+              .size(style.symbolWidth))
             .style('fill', function(d, i) { return sampleTypeToColor[d.dataset]; })
             .style('stroke', function(d, i) { return sampleTypeToColor[d.dataset]; })
             .style('stroke-width', 2);
 
 
-      console.log(data.get('proteinDomains'));
-      //console.log(data.get('proteinDomains').slice());
-      var test = data.get('proteinDomains');
-      console.log(test.slice());
-      console.log('---')
       // Draw domain data with labels with mouse over
       var domainGroups = svg.selectAll('.domains')
           .data(data.get('proteinDomains').slice())
@@ -94,7 +92,7 @@ function transcriptChart(style) {
       var domains = domainGroups.append('rect')
           .attr('id', function(d, i) { return 'domain-' + i; })
           .attr('width', function(d, i) { return x(d.end) - x(d.start); })
-          .attr('height', style.transcriptBarHeight + 5)
+          .attr('height', style.transcriptBarHeight + 10)
           .style('fill', '#aaa')
           .style('fill-opacity', .5);
 
@@ -104,6 +102,8 @@ function transcriptChart(style) {
           .attr('y', style.transcriptBarHeight)
           .style('fill', '#000')
           .style('fill-opacity', 0)
+          .style('font-size', 12)
+          .style('font-family', style.fontFamily)
           .text(function(d, i) { return d.name; });
 
       domainGroups.on('mouseover', function(d, i) {
@@ -163,8 +163,6 @@ function transcriptChart(style) {
                 pX[i] = px;
                 pY[i] = py;
 
-                //console.log(indexDict);
-
                 return 'translate(' + px + ', ' + py + ')';
             })// end symbols.attr('transform')
             .style('fill', function(d) { return sampleTypeToColor[d.dataset]; })
@@ -181,7 +179,7 @@ function transcriptChart(style) {
         // Update protein domains
         // Update the domains
         domainGroups.attr('transform', function(d, i) {
-          return 'translate(' + x(d.start) + ',' + (height/2) + ')';
+          return 'translate(' + x(d.start) + ',' + (height/2 - 5) + ')';
         });
 
         domains.attr('width', function(d, i) { return x(d.end) - x(d.start); });
