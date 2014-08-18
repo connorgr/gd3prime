@@ -416,7 +416,7 @@
         var start = 0, stop = data.get("length");
         var x = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(style.numXTicks).tickSize(0).tickPadding(style.xTickPadding);
-        var transcriptAxis = svg.append("g").attr("class", "xaxis").attr("transform", "translate(5," + (style.height / 2 + style.transcriptBarHeight + 2) + ")").style("font-size", "12px").style("fill", "#000").call(xAxis);
+        var transcriptAxis = svg.append("g").attr("class", "xaxis").attr("transform", "translate(5," + (style.height / 2 + style.transcriptBarHeight + 6) + ")").style("font-family", style.fontFamily).style("font-size", "12px").style("fill", "#000").call(xAxis);
         var transcriptBar = svg.append("rect").attr("height", style.transcriptBarHeight).attr("width", x(stop) - x(start)).attr("x", x(start)).attr("y", height / 2).style("fill", "#ccc");
         var zoom = d3.behavior.zoom().x(x).scaleExtent([ 1, 100 ]).on("zoom", function() {
           updateTranscript();

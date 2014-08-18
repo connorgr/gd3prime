@@ -44,7 +44,8 @@ function transcriptChart(style) {
       // Append the axis to the canvas
       var transcriptAxis = svg.append('g')
               .attr('class', 'xaxis')
-              .attr('transform', 'translate(5,' + ( style.height/2 +  style.transcriptBarHeight+2) +')')
+              .attr('transform', 'translate(5,' + ( style.height/2 +  style.transcriptBarHeight+6) +')')
+              .style('font-family', style.fontFamily)
               .style('font-size', '12px')
               .style('fill', '#000')
               .call(xAxis);
