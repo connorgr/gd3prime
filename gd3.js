@@ -379,6 +379,7 @@
         In_Frame_Del: 4,
         In_Frame_Ins: 4
       };
+      var proteinDomainDB = cdata.proteinDomainDB || "";
       var d = {
         geneName: cdata.gene,
         inactivatingMutations: cdata.inactivatingMutations || defaultInactivatingMutations,
@@ -386,10 +387,11 @@
         mutationCategories: cdata.mutationCategories || [],
         mutations: cdata.mutations,
         mutationTypesToSymbols: cdata.mutationTypesToSymbols || defaultMutationTypesToSymbols,
-        proteinDomains: cdata.domains
+        proteinDomainDB: proteinDomainDB,
+        proteinDomains: cdata.domains[proteinDomainDB]
       };
       d.get = function(str) {
-        if (str == "length") return d.length; else if (str == "mutationCategories") return d.mutationCategories; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else return null;
+        if (str == "length") return d.length; else if (str == "mutationCategories") return d.mutationCategories; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else if (str == "proteinDomains") return d.proteinDomains; else return null;
       };
       d.isMutationInactivating = function(mut) {
         return d.inactivatingMutations[mut];
@@ -415,6 +417,10 @@
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(style.numXTicks).tickSize(0).tickPadding(style.xTickPadding);
         var transcriptAxis = svg.append("g").attr("class", "xaxis").attr("transform", "translate(5," + (style.height / 2 + style.transcriptBarHeight + 2) + ")").style("font-size", "12px").style("fill", "#000").call(xAxis);
         var transcriptBar = svg.append("rect").attr("height", style.transcriptBarHeight).attr("width", x(stop) - x(start)).attr("x", x(start)).attr("y", height / 2).style("fill", "#ccc");
+        var zoom = d3.behavior.zoom().x(x).scaleExtent([ 1, 100 ]).on("zoom", function() {
+          updateTranscript();
+        });
+        svg.call(zoom);
         var mutationsG = svg.append("g").attr("class", "transcriptMutations");
         var mutations = mutationsG.selectAll(".symbols").data(data.get("mutations")).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
@@ -423,6 +429,28 @@
         }).style("stroke", function(d, i) {
           return sampleTypeToColor[d.dataset];
         }).style("stroke-width", 2);
+        console.log(data.get("proteinDomains"));
+        var test = data.get("proteinDomains");
+        console.log(test.slice());
+        console.log("---");
+        var domainGroups = svg.selectAll(".domains").data(data.get("proteinDomains").slice()).enter().append("g").attr("class", "domains");
+        var domains = domainGroups.append("rect").attr("id", function(d, i) {
+          return "domain-" + i;
+        }).attr("width", function(d, i) {
+          return x(d.end) - x(d.start);
+        }).attr("height", style.transcriptBarHeight + 5).style("fill", "#aaa").style("fill-opacity", .5);
+        var domainLabels = domainGroups.append("text").attr("id", function(d, i) {
+          return "domain-label-" + i;
+        }).attr("text-anchor", "middle").attr("y", style.transcriptBarHeight).style("fill", "#000").style("fill-opacity", 0).text(function(d, i) {
+          return d.name;
+        });
+        domainGroups.on("mouseover", function(d, i) {
+          d3.select(this).selectAll("rect").style("fill", "#f00");
+          domainGroups.select("#domain-label-" + i).style("fill-opacity", 1);
+        }).on("mouseout", function(d, i) {
+          d3.select(this).selectAll("rect").style("fill", "#aaa");
+          domainGroups.select("#domain-label-" + i).style("fill-opacity", 0);
+        });
         updateTranscript();
         function updateTranscript() {
           var curMin = d3.min(x.domain()), curMax = d3.max(x.domain()), curRes = Math.round((curMax - curMin) / mutationResolution);
@@ -451,6 +479,18 @@
           }).style("fill-opacity", 1).style("stroke", function(d) {
             return sampleTypeToColor[d.dataset];
           }).style("stroke-opacity", 1);
+          transcriptAxis.call(xAxis);
+          transcriptBar.attr("x", x(start)).attr("width", x(stop) - x(start));
+          domainGroups.attr("transform", function(d, i) {
+            return "translate(" + x(d.start) + "," + height / 2 + ")";
+          });
+          domains.attr("width", function(d, i) {
+            return x(d.end) - x(d.start);
+          });
+          domainLabels.attr("x", function(d, i) {
+            var w = d3.select(this.parentNode).select("rect").attr("width");
+            return w / 2;
+          });
         }
       });
     }
