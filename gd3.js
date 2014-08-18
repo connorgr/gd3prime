@@ -471,6 +471,7 @@
             } else {
               py = height / 2 - (indexDict[curIndex] * style.symbolWidth + 3 + 5);
             }
+            indexDict[curIndex]++;
             pX[i] = px;
             pY[i] = py;
             return "translate(" + px + ", " + py + ")";

@@ -58,7 +58,7 @@ function transcriptChart(style) {
       var zoom = d3.behavior.zoom()
         .x(x)
         .scaleExtent([1, 100])
-        .on('zoom', function() { updateTranscript()});
+        .on('zoom', function() { updateTranscript() });
       svg.call(zoom);
 
 
@@ -157,6 +157,8 @@ function transcriptChart(style) {
                   py = height/2 - (indexDict[curIndex] * style.symbolWidth + 3 + 5);
                 }
 
+                indexDict[curIndex]++;
+
                 // Store the x and y values
                 pX[i] = px;
                 pY[i] = py;
@@ -169,7 +171,6 @@ function transcriptChart(style) {
             .style('fill-opacity', 1)
             .style('stroke', function(d) { return sampleTypeToColor[d.dataset]; })
             .style('stroke-opacity', 1);
-
 
         // update the axis
         transcriptAxis.call(xAxis);
