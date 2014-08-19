@@ -14,7 +14,6 @@ function transcriptChart(style) {
 
       var height = style.height,
           width = style.width;
-      console.log(width);
 
       // max number of mutations that can fit along the axis
       var mutationResolution = Math.floor(width / style.symbolWidth);

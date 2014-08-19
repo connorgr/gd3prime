@@ -5,7 +5,7 @@ gd3.transcript = function(params) {
   var params = params || {},
       style  = transcriptStyle(params.style || {});
 
-  // mutmtxChart functions as a partial application, binding the given variables
+  // transcriptChart functions as a partial application, binding the given variables
   //   into the returned instance.
   return transcriptChart(style);
 };
