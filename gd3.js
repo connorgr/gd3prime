@@ -25,6 +25,148 @@
       return true;
     }
   };
+  function cnaData(data) {
+    function braph(cdata) {
+      var gene = cdata.gene || "", geneinfo = cdata.neighbors || [], region = cdata.region || {};
+      samplesToTypes = cdata.sampleToTypes || {}, seg = cdata.segments;
+      var chrm = region.chr, allmin = 0, allmax = 0, minSegXLoc = region.minSegX, maxSegXLoc = region.maxSegX;
+      var geneJSON = geneinfo.map(function(d) {
+        var selected = d.name == gene;
+        return {
+          fixed: selected ? true : false,
+          start: d.start,
+          end: d.end,
+          label: d.name,
+          selected: selected
+        };
+      });
+      var sampleTypes = [], samplelst = [], segJSON = [];
+      seg.forEach(function(d) {
+        samplelst.push(d.sample);
+        var dSegments = d.segments;
+        dSegments.forEach(function(s) {
+          segJSON.push({
+            gene: gene,
+            start: s.start,
+            end: s.end,
+            label: s.sample,
+            sample: d.sample,
+            dataset: samplesToTypes[d.sample],
+            ty: s.ty
+          });
+          if (sampleTypes.indexOf(samplesToTypes[d.sample])) {
+            sampleTypes.push(samplesToTypes[s.sample]);
+          }
+        });
+      });
+      segJSON.sort(function(a, b) {
+        if (a.dataset != b.dataset) return d3.ascending(a.dataset, b.dataset); else return d3.ascending(a.end - a.start, b.end - b.start);
+      });
+      var d = {
+        genes: geneJSON,
+        sampleTypes: sampleTypes,
+        samplesToTypes: samplesToTypes,
+        segments: segJSON,
+        segmentDomain: [ minSegXLoc, maxSegXLoc ]
+      };
+      d.get = function(arg) {
+        if (arg == "genes") return d.genes; else if (arg == "sampleTypes") return d.sampleTypes; else if (arg == "samplesToTypes") return d.samplesToTypes; else if (arg == "segments") return d.segments; else if (arg == "segmentDomain") return d.segmentDomain; else return undefined;
+      };
+      return d;
+    }
+    var cnaData = braph(data);
+    return cnaData;
+  }
+  function cnaChart(style) {
+    function chart(selection) {
+      selection.each(function(data) {
+        data = cnaData(data);
+        var height = style.height, width = style.width;
+        var d3color = d3.scale.category20(), segmentTypeToColor = {};
+        for (var i = 0; i < data.get("sampleTypes").length; i++) {
+          segmentTypeToColor[data.get("sampleTypes")[i]] = d3color(i);
+        }
+        var sampleTypesToInclude = {}, samplesToTypes = data.get("samplesToTypes");
+        data.sampleTypes.sort().forEach(function(d) {
+          sampleTypesToInclude[d] = true;
+        });
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg");
+        var start = d3.min(data.segmentDomain), stop = d3.max(data.segmentDomain);
+        var x = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
+        var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(0).tickPadding(1.25);
+        var normalize = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
+        var genomeG = svg.append("g"), genomeBar = svg.append("rect").attr("class", "genome").attr("y", style.genomeAreaHeight / 2 - style.genomeBarHeight).attr("x", 0).attr("width", width).attr("height", style.genomeBarHeight).style("fill", "#ccc");
+        var geneGroups = svg.selectAll(".genes").data(data.get("genes")).enter().append("g").attr("class", "genes"), genes = geneGroups.append("rect").attr("width", function(d) {
+          return normalize(d.end) - normalize(d.start);
+        }).attr("height", style.geneHeight).style("fill-opacity", function(d) {
+          return d.selected ? 1 : .2;
+        }).style("fill", function(d) {
+          return d.selected ? "#f00" : "#aaa";
+        }).attr("id", function(d, i) {
+          return "gene-" + i;
+        });
+        var segmentsG = svg.append("g").attr("class", "cnaSegmentsGroup").attr("transform", "translate(0," + style.genomeAreaHeight + ")"), segments = segmentsG.selectAll(".segments").data(data.get("segments")).enter().append("g").attr("class", "intervals");
+        var minSegmentX = d3.min(data.get("segmentDomain")), maxSegmentX = d3.max(data.get("segmentDomain"));
+        segs = segments.append("rect").attr("fill", function(d) {
+          return segmentTypeToColor[samplesToTypes[d.sample]];
+        }).attr("width", function(d) {
+          return normalize(d.end, minSegmentX, maxSegmentX) - normalize(d.start, minSegmentX, maxSegmentX);
+        }).attr("height", style.horizontalBarHeight).attr("id", function(d, i) {
+          return "interval-" + i;
+        });
+        verticalBars = svg.selectAll(".vert-bar").data(data.get("genes").filter(function(d) {
+          return d.selected;
+        })).enter().append("rect").attr("y", 0).attr("width", function(d) {
+          return normalize(d.end) - normalize(d.start);
+        }).attr("height", height).style("fill", "#f00").style("fill-opacity", .5);
+        updateGeneBar();
+        updateSegments();
+        function updateGeneBar() {
+          verticalBars.attr("x", function(d) {
+            return normalize(d.start);
+          }).attr("width", function(d) {
+            return normalize(d.end) - normalize(d.start);
+          });
+          genes.attr("transform", function(d, i) {
+            return "translate(" + normalize(d.start) + ",0)";
+          });
+          genes.attr("width", function(d, i) {
+            return normalize(d.end) - normalize(d.start);
+          });
+        }
+        function updateSegments() {
+          segs.attr("transform", function(d, i) {
+            return "translate(" + normalize(d.start) + "," + style.horizontalBarSpacing * i + ")";
+          }).attr("width", function(d, i) {
+            return normalize(d.end) - normalize(d.start);
+          });
+          var activeIntervals = segments.filter(function(d) {
+            return sampleTypesToInclude[samplesToTypes[d.sample]];
+          }).style("opacity", 1);
+          segments.filter(function(d) {
+            return !sampleTypesToInclude[samplesToTypes[d.sample]];
+          }).style("opacity", 0);
+        }
+      });
+    }
+    return chart;
+  }
+  function cnaStyle(style) {
+    return {
+      fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      geneHeight: 24,
+      genomeAreaHeight: 40,
+      genomeBarHeight: 14,
+      height: style.height || 200,
+      horizontalBarHeight: style.horizontalBarHeight || 5,
+      horizontalBarSpacing: style.horizontalBarSpacing || 6,
+      width: style.width || 500
+    };
+  }
+  gd3.cna = function(params) {
+    var params = params || {}, style = cnaStyle(params.style || {});
+    return cnaChart(style);
+  };
   function mutmtxData(data) {
     function parseCancer(d) {
       var showDuplicates = false, columnTypeToInclude = [], colorColumnTypes = true;
@@ -410,7 +552,6 @@
           sampleTypeToColor[data.get("mutationCategories")[i]] = d3color(i);
         }
         var height = style.height, width = style.width;
-        console.log(width);
         var mutationResolution = Math.floor(width / style.symbolWidth);
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width);
         var start = 0, stop = data.get("length");
