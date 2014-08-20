@@ -92,6 +92,7 @@
         });
         var svgActual = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width);
         var svg = svgActual.append("g");
+        var bgMask = svg.append("rect").attr("width", width).style("fill", "#fff");
         var start = d3.min(data.segmentDomain), stop = d3.max(data.segmentDomain);
         var x = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(0).tickPadding(1.25);
@@ -159,7 +160,6 @@
           zoom.translate([ tx, ty ]);
           var curMin = d3.min(x.domain()), curMax = d3.max(x.domain());
           normalize.domain([ curMin, curMax ]);
-          console.log("zozoooom");
           updateGeneBar();
           updateSegments();
         }
@@ -195,6 +195,7 @@
         }
         svgActual.attr("height", function() {
           height = svg.node().getBBox().height + style.horizontalBarHeight;
+          bgMask.attr("height", height);
           verticalBar.attr("height", height - style.geneHeight);
           return height;
         });

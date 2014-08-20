@@ -32,6 +32,11 @@ function cnaChart(style) {
               .attr('width', width);
       var svg = svgActual.append('g');
 
+      // Needed for zooming and panning to work
+      var bgMask = svg.append('rect')
+              .attr('width', width)
+              .style('fill', '#fff');
+
       // Set up scales
       var start = d3.min(data.segmentDomain),
           stop = d3.max(data.segmentDomain);
@@ -169,7 +174,6 @@ function cnaChart(style) {
           curMax = d3.max( x.domain() );
 
         normalize.domain([curMin, curMax]);
-        console.log('zozoooom');
 
         updateGeneBar();
         updateSegments();
@@ -215,6 +219,7 @@ function cnaChart(style) {
 
     svgActual.attr('height', function() {
       height = svg.node().getBBox().height + style.horizontalBarHeight;
+      bgMask.attr('height', height);
       verticalBar.attr('height', height - style.geneHeight);
       return height;
     });
