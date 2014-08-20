@@ -100,11 +100,6 @@
           updateAllComponents();
         });
         svg.call(zoom).on("dblclick.zoom", null);
-        var verticalBar = svg.selectAll(".vert-bar").data(data.get("genes").filter(function(d) {
-          return d.selected;
-        })).enter().append("rect").attr("y", 0).attr("width", function(d) {
-          return normalize(d.end) - normalize(d.start);
-        }).style("fill", style.geneSelectedColor).style("fill-opacity", .5);
         var genomeG = svg.append("g"), genomeBar = svg.append("rect").attr("class", "genome").attr("y", style.genomeAreaHeight / 2 - style.genomeBarHeight).attr("x", 0).attr("width", width).attr("height", style.genomeBarHeight).style("fill", "#ccc");
         var geneGroups = svg.selectAll(".genes").data(data.get("genes")).enter().append("g").attr("class", "genes"), genes = geneGroups.append("rect").attr("width", function(d) {
           return normalize(d.end) - normalize(d.start);
@@ -151,6 +146,11 @@
         }).attr("height", style.horizontalBarHeight).attr("id", function(d, i) {
           return "interval-" + i;
         });
+        var verticalBar = svg.selectAll(".vert-bar").data(data.get("genes").filter(function(d) {
+          return d.selected;
+        })).enter().append("rect").attr("y", style.geneHeight).attr("width", function(d) {
+          return normalize(d.end) - normalize(d.start);
+        }).style("fill", style.geneSelectedColor).style("fill-opacity", .5);
         updateGeneBar();
         updateSegments();
         function updateAllComponents() {
@@ -195,7 +195,7 @@
         }
         svgActual.attr("height", function() {
           height = svg.node().getBBox().height + style.horizontalBarHeight;
-          verticalBar.attr("height", height);
+          verticalBar.attr("height", height - style.geneHeight);
           return height;
         });
       });

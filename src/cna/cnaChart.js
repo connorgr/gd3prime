@@ -65,15 +65,6 @@ function cnaChart(style) {
       //////////////////////////////////////////////////////////////////////////
       // Draw the genome
 
-      // Add a vertical bar that spans the target gene
-      var verticalBar = svg.selectAll('.vert-bar')
-          .data(data.get('genes').filter(function(d){ return d.selected; })).enter()
-          .append("rect")
-          .attr("y", 0)
-          .attr("width", function(d){ return normalize(d.end) - normalize(d.start); })
-          .style("fill", style.geneSelectedColor)
-          .style("fill-opacity", 0.5);
-
       var genomeG = svg.append('g'),
           genomeBar = svg.append("rect")
               .attr("class", "genome")
@@ -151,6 +142,15 @@ function cnaChart(style) {
           .attr('height', style.horizontalBarHeight)
           .attr('id', function (d, i) { return "interval-" + i; });
 
+      // Add a vertical bar that spans the target gene
+      var verticalBar = svg.selectAll('.vert-bar')
+          .data(data.get('genes').filter(function(d){ return d.selected; })).enter()
+          .append("rect")
+          .attr("y", style.geneHeight)
+          .attr("width", function(d){ return normalize(d.end) - normalize(d.start); })
+          .style("fill", style.geneSelectedColor)
+          .style("fill-opacity", 0.5);
+
       updateGeneBar();
       updateSegments();
 
@@ -215,7 +215,7 @@ function cnaChart(style) {
 
     svgActual.attr('height', function() {
       height = svg.node().getBBox().height + style.horizontalBarHeight;
-      verticalBar.attr('height', height);
+      verticalBar.attr('height', height - style.geneHeight);
       return height;
     });
 
