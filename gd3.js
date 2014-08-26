@@ -345,7 +345,6 @@
         return data;
       };
       result.reorderColumns = function() {
-        console.log(result.byColumn);
         function sortByExclusivity(c1, c2) {
           var c1X = result.byColumn[c1].activeRows.length > 1, c2X = result.byColumn[c2].activeRows.length > 1;
           return d3.ascending(c1X, c2X);
@@ -517,8 +516,6 @@
             matrix.attr("transform", "translate(0,0)");
             data.summarize(this.checked, 40);
             var updatedData = data.getVizData(), firstGroupData = updatedData[0], summaryGroupsData = updatedData.slice(1, updatedData.length);
-            console.log(updatedData);
-            console.log("!");
             numVisibleCols = data.getVisibleColumns().length, columnWidth = (width - style.labelWidth) / numVisibleCols;
             firstGroupColumns = firstGroup.selectAll(".mutmtxColumn").data(firstGroupData);
             firstGroupColumns.enter().append("g");

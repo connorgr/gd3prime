@@ -147,7 +147,6 @@ function mutmtxChart(style) {
 
         firstGroupColumns.selectAll('rect')
             .data(function(d){return d.value.activeRows.map(function(row){
-              //console.log(data.columnsToTypes);
               return {row:row, type:data.columnsToTypes[d.key]}});
             })
             .enter()
@@ -187,9 +186,6 @@ function mutmtxChart(style) {
               var updatedData = data.getVizData(),
                   firstGroupData = updatedData[0],
                   summaryGroupsData = updatedData.slice(1,updatedData.length);
-
-              console.log(updatedData);
-              console.log('!');
 
               // Reconfigure xs so positioning is correct
               numVisibleCols = data.getVisibleColumns().length,

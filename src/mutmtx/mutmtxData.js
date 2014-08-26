@@ -143,7 +143,6 @@ function mutmtxData(data) {
 
 
     result.reorderColumns = function() {
-      console.log(result.byColumn);
       function sortByExclusivity(c1, c2) {
         var c1X = result.byColumn[c1].activeRows.length > 1,
             c2X = result.byColumn[c2].activeRows.length > 1;
