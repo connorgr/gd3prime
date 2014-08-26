@@ -14,7 +14,8 @@
     <script>
     console.log(gd3);
 
-    d3.json('testData/example-transcript.json', function(data) {
+    d3.json('testData/example2-mutation-matrix.json', function(data) {
+      console.log(data);
       d3.select('#test')
         .datum(data)
         .call(gd3.mutationMatrix().addSummaryToggle());

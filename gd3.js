@@ -228,7 +228,6 @@
       var showDuplicates = false, columnTypeToInclude = [], colorColumnTypes = true;
       var result = {
         byColumn: {},
-        columnNames: data.samples,
         columnsToTypes: d.sampleToTypes || {},
         columnTypes: d.sampleTypes || [],
         hiddenColumns: [],
@@ -237,11 +236,22 @@
         rowNames: Object.keys(d.M).sort(),
         typesToColumns: d.typeToSamples || {}
       };
-      if (!result.columnNames) {
-        result.columnNames = Object.keys(result.columnsToTypes).sort();
+      if (!data.samples) {
+        throw "No .samples field given with mutation matrx data. .samples should be an array, where each element corresponds to a column. Each element should have a ._id and a .name.";
+      }
+      result.columnIds = data.samples.map(function(s) {
+        return s._id;
+      });
+      result.columnNames = data.samples.map(function(s) {
+        return s.name;
+      });
+      result.columnIdsToNames = {};
+      for (var i in data.samples) {
+        var sample = data.samples[i];
+        result.columnIdsToNames[sample._id] = sample.name;
       }
       for (var i = 0; i < result.columnNames.length; i++) {
-        var cs = result.columnNames;
+        var cs = result.columnIds;
         if (result.columnTypes.indexOf(result.columnsToTypes[cs[i]]) == -1) {
           result.columnTypes.push(result.columnsToTypes[cs[i]]);
         }
@@ -249,6 +259,9 @@
       result.columnTypes.sort();
       result.columnTypes.forEach(function(t) {
         columnTypeToInclude[t] = true;
+      });
+      result.columnTypes = result.columnTypes.filter(function(t) {
+        return t != undefined;
       });
       result.multiDataset = result.columnTypes.length > 1 && colorColumnTypes;
       if (showDuplicates) {
@@ -258,7 +271,7 @@
       } else {
         var allSampleNames = {};
         if (Object.keys(result.typesToColumns).length > 0) {
-          columnTypes.forEach(function(t) {
+          result.columnTypes.forEach(function(t) {
             result.typesToColumns[t].forEach(function(s) {
               allSampleNames[s] = true;
             });
@@ -277,10 +290,10 @@
       d3.range(0, result.rowNames.length).forEach(function(i) {
         result.rowToIndex[result.sortedRows[i]] = i;
       });
-      for (var c in result.columnNames) {
-        var name = result.columnNames[c];
-        result.byColumn[name] = {};
-        result.byColumn[name].activeRows = [];
+      for (var c in result.columnIds) {
+        var cId = result.columnIds[c];
+        result.byColumn[cId] = {};
+        result.byColumn[cId].activeRows = [];
       }
       for (var k in Object.keys(result.rowsToColumns)) {
         var key = Object.keys(result.rowsToColumns)[k], rTC = result.rowsToColumns, row = rTC[key];
@@ -288,30 +301,38 @@
           result.byColumn[col].activeRows.push(key);
         });
       }
-      result.getColumnNames = function() {
-        return result.columnNames.filter(function(name) {
+      result.getColumnIds = function() {
+        return result.columnIds.filter(function(name) {
           return result.hiddenColumns.indexOf(name) == -1;
         });
       };
+      result.getColumnNames = function() {
+        return result.columnIds.filter(function(name) {
+          return result.hiddenColumns.indexOf(name) == -1;
+        }).map(function(id) {
+          return result.columnIdsToNames[id];
+        });
+      };
       result.getVisibleColumns = function() {
-        var cNames = result.columnNames, data = [];
-        for (var i = 0; i < cNames.length; i++) {
-          var name = cNames[i], entry = {
-            key: name,
-            value: result.byColumn[name]
-          };
-          if (result.hiddenColumns.indexOf(name) == -1) {
+        var cIds = result.columnIds, data = [];
+        for (var i = 0; i < cIds.length; i++) {
+          var cId = cIds[i];
+          if (result.hiddenColumns.indexOf(cId) == -1) {
+            var entry = {
+              key: cId,
+              value: result.byColumn[name._id]
+            };
             data.push(entry);
           }
         }
         return data;
       };
       result.getVizData = function() {
-        var cNames = result.columnNames, data = [], currentGroup = [];
-        for (var i = 0; i < cNames.length; i++) {
-          var name = cNames[i], entry = {
-            key: name,
-            value: result.byColumn[name]
+        var cIds = result.columnIds, data = [], currentGroup = [];
+        for (var i = 0; i < cIds.length; i++) {
+          var cId = cIds[i], entry = {
+            key: cId,
+            value: result.byColumn[cId]
           };
           if (result.hiddenColumns.indexOf(name) == -1) {
             currentGroup.push(entry);
@@ -324,6 +345,7 @@
         return data;
       };
       result.reorderColumns = function() {
+        console.log(result.byColumn);
         function sortByExclusivity(c1, c2) {
           var c1X = result.byColumn[c1].activeRows.length > 1, c2X = result.byColumn[c2].activeRows.length > 1;
           return d3.ascending(c1X, c2X);
@@ -343,7 +365,7 @@
           return d3.ascending(result.columnsToTypes[c1], result.columnsToTypes[c2]);
         }
         var sortFns = [ sortByFirstActiveRow, sortByColumnType, sortByExclusivity, sortByName ];
-        result.columnNames.sort(function(c1, c2) {
+        result.columnIds.sort(function(c1, c2) {
           var sortResult;
           for (var i = 0; i < sortFns.length; i++) {
             sortResult = sortFns[i](c1, c2);
@@ -359,17 +381,17 @@
         result.hiddenColumns = [];
         if (yes) {
           var listOfGroups = [], group = [];
-          for (var n in result.columnNames) {
-            var name = result.columnNames[n];
-            if (n == 0) {
-              group.push(name);
+          for (var i in result.columnIds) {
+            var cId = result.columnIds[i];
+            if (i == 0) {
+              group.push(cId);
             } else {
-              var prevName = result.columnNames[n - 1], curRows = result.byColumn[name].activeRows, prevRows = result.byColumn[prevName].activeRows, numActiveCur = curRows.length, numActivePrev = prevRows.length;
+              var prevCId = result.columnIds[i - 1], curRows = result.byColumn[cId].activeRows, prevRows = result.byColumn[prevCId].activeRows, numActiveCur = curRows.length, numActivePrev = prevRows.length;
               if (numActiveCur != numActivePrev || gd3_util.arraysEqual(curRows, prevRows) == false) {
                 listOfGroups.push(group);
-                group = [ name ];
+                group = [ cId ];
               } else {
-                group.push(name);
+                group.push(cId);
               }
             }
           }
@@ -430,7 +452,7 @@
         var firstGroupColumns = firstGroup.selectAll("g").data(data.getVizData()[0]).enter().append("g").attr("class", "mutmtxColumn").attr("id", function(d) {
           return d.key;
         }).attr("transform", function(d) {
-          var colIndex = data.columnNames.indexOf(d.key);
+          var colIndex = data.getColumnNames().indexOf(d.key);
           return "translate(" + wholeVisX(colIndex) + ",0)";
         });
         var summaryGroups = matrix.selectAll(".mutmtxSummaryGroup").data(data.getVizData().slice(1, data.getVizData().length)).enter().append("g").attr("class", "mutmtxSummaryGroup");
@@ -444,17 +466,18 @@
         });
         svg.call(zoom);
         renderMutationMatrix();
+        rerenderMutationMatrix();
         svg.attr("height", function(d) {
           return Math.ceil(rowLabelsG.node().getBBox().height + 10);
         });
         function rerenderMutationMatrix() {
           var colWidth = wholeVisX(1) - wholeVisX(0);
           firstGroupColumns.attr("transform", function(d) {
-            var colIndex = data.getColumnNames().indexOf(d.key);
+            var colIndex = data.getColumnIds().indexOf(d.key);
             return "translate(" + wholeVisX(colIndex) + ",0)";
           });
           summaryGroupsColumns.attr("transform", function(d) {
-            var colIndex = data.getColumnNames().indexOf(d.key);
+            var colIndex = data.getColumnIds().indexOf(d.key);
             return "translate(" + wholeVisX(colIndex) + ",0)";
           });
           firstGroupColumns.selectAll("rect").attr("width", colWidth);
@@ -494,6 +517,8 @@
             matrix.attr("transform", "translate(0,0)");
             data.summarize(this.checked, 40);
             var updatedData = data.getVizData(), firstGroupData = updatedData[0], summaryGroupsData = updatedData.slice(1, updatedData.length);
+            console.log(updatedData);
+            console.log("!");
             numVisibleCols = data.getVisibleColumns().length, columnWidth = (width - style.labelWidth) / numVisibleCols;
             firstGroupColumns = firstGroup.selectAll(".mutmtxColumn").data(firstGroupData);
             firstGroupColumns.enter().append("g");
@@ -501,7 +526,7 @@
             firstGroupColumns.attr("class", "mutmtxColumn").attr("id", function(d) {
               return d.key;
             }).attr("transform", function(d) {
-              var colIndex = data.getColumnNames().indexOf(d.key);
+              var colIndex = data.getColumnIds().indexOf(d.key);
               return "translate(" + wholeVisX(colIndex) + ",0)";
             });
             summaryGroups = matrix.selectAll(".mutmtxSummaryGroup").data(summaryGroupsData);
@@ -515,7 +540,7 @@
             }).enter().append("g").attr("class", "mutmtxColumn").attr("id", function(d) {
               return d.key;
             }).attr("transform", function(d) {
-              var colIndex = data.getColumnNames().indexOf(d.key);
+              var colIndex = data.getColumnIds().indexOf(d.key);
               return "translate(" + wholeVisX(colIndex) + ",0)";
             });
             renderMutationMatrix();

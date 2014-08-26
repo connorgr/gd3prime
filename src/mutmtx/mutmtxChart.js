@@ -93,7 +93,7 @@ function mutmtxChart(style) {
                 .attr('class', 'mutmtxColumn')
                 .attr('id', function(d) { return d.key; })
                 .attr('transform', function(d) {
-                  var colIndex = data.columnNames.indexOf(d.key);
+                  var colIndex = data.getColumnNames().indexOf(d.key);
                   return 'translate('+wholeVisX(colIndex)+',0)';
                 });
 
@@ -120,6 +120,7 @@ function mutmtxChart(style) {
       svg.call(zoom);
 
       renderMutationMatrix();
+      rerenderMutationMatrix();
 
       svg.attr('height', function(d) {
         return Math.ceil(rowLabelsG.node().getBBox().height + 10);
@@ -129,11 +130,11 @@ function mutmtxChart(style) {
       function rerenderMutationMatrix() {
         var colWidth = wholeVisX(1)-wholeVisX(0);
         firstGroupColumns.attr('transform', function(d) {
-              var colIndex = data.getColumnNames().indexOf(d.key);
+              var colIndex = data.getColumnIds().indexOf(d.key);
               return 'translate('+wholeVisX(colIndex)+',0)';
             });
         summaryGroupsColumns.attr('transform', function(d) {
-              var colIndex = data.getColumnNames().indexOf(d.key);
+              var colIndex = data.getColumnIds().indexOf(d.key);
               return 'translate('+wholeVisX(colIndex)+',0)';
             });
         firstGroupColumns.selectAll('rect').attr('width', colWidth);
@@ -145,7 +146,10 @@ function mutmtxChart(style) {
         var colWidth = wholeVisX(1)-wholeVisX(0);
 
         firstGroupColumns.selectAll('rect')
-            .data(function(d){ return d.value.activeRows.map(function(row){return {row:row, type:data.columnsToTypes[d.key]}});})
+            .data(function(d){return d.value.activeRows.map(function(row){
+              //console.log(data.columnsToTypes);
+              return {row:row, type:data.columnsToTypes[d.key]}});
+            })
             .enter()
             .append('rect')
               .attr('x', 0)
@@ -184,6 +188,9 @@ function mutmtxChart(style) {
                   firstGroupData = updatedData[0],
                   summaryGroupsData = updatedData.slice(1,updatedData.length);
 
+              console.log(updatedData);
+              console.log('!');
+
               // Reconfigure xs so positioning is correct
               numVisibleCols = data.getVisibleColumns().length,
               columnWidth = (width-style.labelWidth)/numVisibleCols;
@@ -199,7 +206,8 @@ function mutmtxChart(style) {
               firstGroupColumns.attr('class', 'mutmtxColumn')
                   .attr('id', function(d) { return d.key; })
                   .attr('transform', function(d) {
-                    var colIndex = data.getColumnNames().indexOf(d.key);
+                    var colIndex = data.getColumnIds().indexOf(d.key);
+
                     return 'translate('+wholeVisX(colIndex)+',0)';
                   });
 
@@ -219,7 +227,7 @@ function mutmtxChart(style) {
                     .attr('class', 'mutmtxColumn')
                     .attr('id', function(d) { return d.key; })
                     .attr('transform', function(d) {
-                      var colIndex = data.getColumnNames().indexOf(d.key);
+                      var colIndex = data.getColumnIds().indexOf(d.key);
                       return 'translate('+wholeVisX(colIndex)+',0)';
                     });
 
