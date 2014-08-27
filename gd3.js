@@ -470,6 +470,9 @@
           return Math.ceil(rowLabelsG.node().getBBox().height + 10);
         });
         function rerenderMutationMatrix() {
+          var t = zoom.translate(), tx = t[0], ty = t[1], scale = zoom.scale();
+          tx = Math.min(tx, 0);
+          zoom.translate([ tx, ty ]);
           var colWidth = wholeVisX(1) - wholeVisX(0);
           firstGroupColumns.attr("transform", function(d) {
             var colIndex = data.getColumnIds().indexOf(d.key);
@@ -670,6 +673,9 @@
         });
         updateTranscript();
         function updateTranscript() {
+          var t = zoom.translate(), tx = t[0], ty = t[1], scale = zoom.scale();
+          tx = Math.min(tx, 0);
+          zoom.translate([ tx, ty ]);
           var curMin = d3.min(x.domain()), curMax = d3.max(x.domain()), curRes = Math.round((curMax - curMin) / mutationResolution);
           curRes = curRes ? curRes : 1;
           var bottomIndex = {}, topIndex = {}, pX = {}, pY = {};
