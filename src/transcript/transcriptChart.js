@@ -64,8 +64,6 @@ function transcriptChart(style) {
         .on('zoom', function() { updateTranscript() });
       svg.call(zoom);
 
-
-      console.log(data.get('mutations'));
       // Add mutations to the transcript
       var mutationsG = svg.append('g').attr('class','transcriptMutations');
       var mutations = mutationsG.selectAll('.symbols')
@@ -162,7 +160,7 @@ function transcriptChart(style) {
                 // Store the x and y values
                 pX[i] = px;
                 pY[i] = py;
-                console.log(py, d.locus);
+
                 return 'translate(' + px + ', ' + py + ')';
             })// end symbols.attr('transform')
             .style('fill', function(d) { return sampleTypeToColor[d.dataset]; })

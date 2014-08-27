@@ -641,7 +641,6 @@
           updateTranscript();
         });
         svg.call(zoom);
-        console.log(data.get("mutations"));
         var mutationsG = svg.append("g").attr("class", "transcriptMutations");
         var mutations = mutationsG.selectAll(".symbols").data(data.get("mutations")).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
@@ -691,7 +690,6 @@
             indexDict[curIndex]++;
             pX[i] = px;
             pY[i] = py;
-            console.log(py, d.locus);
             return "translate(" + px + ", " + py + ")";
           }).style("fill", function(d) {
             return sampleTypeToColor[d.dataset];
