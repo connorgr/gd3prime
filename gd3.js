@@ -641,6 +641,7 @@
           updateTranscript();
         });
         svg.call(zoom);
+        console.log(data.get("mutations"));
         var mutationsG = svg.append("g").attr("class", "transcriptMutations");
         var mutations = mutationsG.selectAll(".symbols").data(data.get("mutations")).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
@@ -649,7 +650,8 @@
         }).style("stroke", function(d, i) {
           return sampleTypeToColor[d.dataset];
         }).style("stroke-width", 2);
-        var domainGroups = svg.selectAll(".domains").data(data.get("proteinDomains").slice()).enter().append("g").attr("class", "domains");
+        var domainGroupsData = data.get("proteinDomains");
+        var domainGroups = svg.selectAll(".domains").data(domainGroupsData ? data.get("proteinDomains").slice() : []).enter().append("g").attr("class", "domains");
         var domains = domainGroups.append("rect").attr("id", function(d, i) {
           return "domain-" + i;
         }).attr("width", function(d, i) {
@@ -679,17 +681,17 @@
             topIndex[i] = 0;
           }
           mutations.attr("transform", function(d, i) {
-            var curRes = 1;
             var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex, curIndex = Math.round(d.locus / curRes), px = x(curIndex * curRes), py;
             if (indexDict[curIndex] == undefined) indexDict[curIndex] = 0;
             if (data.isMutationInactivating(d.ty)) {
-              py = height / 2 + (style.transcriptBarHeight + indexDict[curIndex] * style.symbolWidth + 3 + 10);
+              py = height / 2 + (style.transcriptBarHeight + indexDict[curIndex] * (style.symbolWidth / 2) + 21);
             } else {
-              py = height / 2 - (indexDict[curIndex] * style.symbolWidth + 3 + 5);
+              py = height / 2 - (indexDict[curIndex] * (style.symbolWidth / 2) + 3 + 5 + 1);
             }
             indexDict[curIndex]++;
             pX[i] = px;
             pY[i] = py;
+            console.log(py, d.locus);
             return "translate(" + px + ", " + py + ")";
           }).style("fill", function(d) {
             return sampleTypeToColor[d.dataset];
@@ -718,7 +720,7 @@
       fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       height: style.height || 200,
       numXTicks: style.numXTicks || 5,
-      symbolWidth: style.symbolWidth || 10,
+      symbolWidth: style.symbolWidth || 20,
       transcriptBarHeight: style.transcriptBarHeight || 20,
       width: style.width || 500,
       xTickPadding: style.xTickPadding || 1.25

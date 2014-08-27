@@ -65,6 +65,7 @@ function transcriptChart(style) {
       svg.call(zoom);
 
 
+      console.log(data.get('mutations'));
       // Add mutations to the transcript
       var mutationsG = svg.append('g').attr('class','transcriptMutations');
       var mutations = mutationsG.selectAll('.symbols')
@@ -81,10 +82,10 @@ function transcriptChart(style) {
             .style('stroke', function(d, i) { return sampleTypeToColor[d.dataset]; })
             .style('stroke-width', 2);
 
-
       // Draw domain data with labels with mouse over
+      var domainGroupsData = data.get('proteinDomains');
       var domainGroups = svg.selectAll('.domains')
-          .data(data.get('proteinDomains').slice())
+          .data(domainGroupsData ? data.get('proteinDomains').slice() : [])
           .enter()
           .append('g')
             .attr('class', 'domains');
@@ -141,7 +142,6 @@ function transcriptChart(style) {
 
         // render mutation glpyhs and move/color them
         mutations.attr('transform', function(d, i) {
-                var curRes = 1;
                 var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex,
                     curIndex = Math.round(d.locus/curRes),
                     px = x(curIndex*curRes),
@@ -152,9 +152,9 @@ function transcriptChart(style) {
 
 
                 if ( data.isMutationInactivating(d.ty) ) {
-                  py = height/2 + (style.transcriptBarHeight + indexDict[curIndex] * style.symbolWidth + 3 + 10);
+                  py = height/2 + (style.transcriptBarHeight + indexDict[curIndex] * (style.symbolWidth/2) + 21);
                 } else {
-                  py = height/2 - (indexDict[curIndex] * style.symbolWidth + 3 + 5);
+                  py = height/2 - (indexDict[curIndex] * (style.symbolWidth/2) + 3 + 5 + 1);
                 }
 
                 indexDict[curIndex]++;
@@ -162,7 +162,7 @@ function transcriptChart(style) {
                 // Store the x and y values
                 pX[i] = px;
                 pY[i] = py;
-
+                console.log(py, d.locus);
                 return 'translate(' + px + ', ' + py + ')';
             })// end symbols.attr('transform')
             .style('fill', function(d) { return sampleTypeToColor[d.dataset]; })

@@ -14,7 +14,7 @@
     <script>
     console.log(gd3);
 
-    d3.json('testData/example-transcript.json', function(data) {
+    d3.json('testData/example2-transcript.json', function(data) {
 
       var styling = {
       };
@@ -48,11 +48,17 @@
       sampleTypes = Object.keys(sampleTypes);
       params.sampleTypes = sampleTypes;
 
-      for(v in vizData) {
-        d3.select('#test')
-            .datum(vizData[v])
-            .call(gd3.transcript());
-      }
+      d3.select('#test')
+          .datum(vizData[1])
+          .call(gd3.transcript());
+
+      console.log(vizData[1]);
+
+      // for(v in vizData) {
+      //   d3.select('#test')
+      //       .datum(vizData[v])
+      //       .call(gd3.transcript());
+      // }
 
     });
     </script>
