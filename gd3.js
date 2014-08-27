@@ -691,7 +691,7 @@
             if (data.isMutationInactivating(d.ty)) {
               py = height / 2 + (style.transcriptBarHeight + indexDict[curIndex] * (style.symbolWidth / 2) + 21);
             } else {
-              py = height / 2 - (indexDict[curIndex] * (style.symbolWidth / 2) + 3 + 5 + 1);
+              py = height / 2 - (indexDict[curIndex] * (style.symbolWidth / 2) + 11);
             }
             indexDict[curIndex]++;
             pX[i] = px;
