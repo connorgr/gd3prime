@@ -12,6 +12,9 @@
   }
   function annotationView(style) {
     function view(selection) {
+      function appendText(selection, d) {
+        selection.append("p").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(d.title + ": " + d.value);
+      }
       function getScreenCoords(ctm) {
         return {
           x: ctm.e,
@@ -19,8 +22,14 @@
         };
       }
       selection.on("mouseover", function(d) {
+        if (d.annotation == undefined) {
+          return;
+        }
+        var aData = d.annotation;
         var coords = getScreenCoords(this.getCTM());
+        d3.selectAll(".gd3AnnotationViewDiv").remove();
         var node = d3.select(document.createElement("div"));
+        node.attr("class", "gd3AnnotationViewDiv");
         node.style({
           background: "rgba(0,0,0,.5)",
           left: coords.x.toString() + "px",
@@ -28,7 +37,12 @@
           position: "absolute",
           top: coords.y.toString() + "px"
         });
-        node.append("p").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text("Sample: " + d.sample);
+        for (var i in aData) {
+          var aPart = aData[i], type = aPart.type;
+          if (type == "text") {
+            appendText(node, aPart);
+          }
+        }
         document.body.appendChild(node.node());
         node.on("mouseout", function() {
           d3.select(this).on("mouseout", null);
@@ -653,6 +667,19 @@
         proteinDomainDB: proteinDomainDB,
         proteinDomains: cdata.domains[proteinDomainDB]
       };
+      console.log(d.mutations);
+      for (var mutation in d.mutations) {
+        var m = d.mutations[mutation];
+        m.annotation = [ {
+          type: "text",
+          title: "Sample",
+          value: m.sample
+        }, {
+          type: "text",
+          title: "Test",
+          value: "is working"
+        } ];
+      }
       d.get = function(str) {
         if (str == "length") return d.length; else if (str == "mutationCategories") return d.mutationCategories; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else if (str == "proteinDomains") return d.proteinDomains; else return null;
       };

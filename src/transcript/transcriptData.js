@@ -31,6 +31,23 @@ function transcriptData(data) {
       proteinDomains: cdata.domains[proteinDomainDB]
     };
 
+    console.log(d.mutations);
+    for (var mutation in d.mutations) {
+      var m = d.mutations[mutation];
+      m.annotation = [
+        {
+          type: 'text',
+          title: 'Sample',
+          value: m.sample
+        },
+        {
+          type: 'text',
+          title: 'Test',
+          value: 'is working'
+        }
+      ];
+    }
+
     d.get = function(str) {
       if (str == 'length') return d.length;
       else if (str == 'mutationCategories') return d.mutationCategories;
