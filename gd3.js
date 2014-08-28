@@ -2,6 +2,45 @@
   var gd3 = {
     version: "0.2.1"
   };
+  function annotationStyle(style) {
+    return {
+      fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      height: style.height || 200,
+      width: style.width || 500
+    };
+  }
+  function annotationView(style) {
+    function view(selection) {
+      function getScreenCoords(ctm) {
+        return {
+          x: ctm.e,
+          y: ctm.f
+        };
+      }
+      selection.on("mouseover", function(e) {
+        var coords = getScreenCoords(this.getCTM());
+        console.log(coords);
+        var node = d3.select(document.createElement("div"));
+        node.style({
+          background: "#ccc",
+          height: "200px",
+          left: coords.x.toString() + "px",
+          position: "absolute",
+          top: coords.y.toString() + "px",
+          width: "200px"
+        });
+        document.body.appendChild(node.node());
+        node.on("mouseout", function() {
+          document.body.removeChild(this);
+        });
+      });
+    }
+    return view;
+  }
+  gd3.annotation = function(params) {
+    var params = params || {}, style = annotationStyle(params.style || {});
+    return annotationView(style);
+  };
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -701,7 +740,7 @@
             return sampleTypeToColor[d.dataset];
           }).style("fill-opacity", 1).style("stroke", function(d) {
             return sampleTypeToColor[d.dataset];
-          }).style("stroke-opacity", 1);
+          }).style("stroke-opacity", 1).call(gd3.annotation());
           transcriptAxis.call(xAxis);
           transcriptBar.attr("x", x(start)).attr("width", x(stop) - x(start));
           domainGroups.attr("transform", function(d, i) {
