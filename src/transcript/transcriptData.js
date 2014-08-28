@@ -38,12 +38,20 @@ function transcriptData(data) {
         {
           type: 'text',
           title: 'Sample',
-          value: m.sample
+          text: m.sample
         },
         {
           type: 'text',
           title: 'Test',
-          value: 'is working'
+          text: 'is working'
+        },
+        {
+          type: 'table',
+          header: ['gene', 'pubmed', 'other'],
+          data: [
+            ['1', '2', '3'],
+            ['4', '5', '6']
+          ]
         }
       ];
     }

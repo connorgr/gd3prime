@@ -13,7 +13,30 @@
   function annotationView(style) {
     function view(selection) {
       function appendText(selection, d) {
-        selection.append("p").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(d.title + ": " + d.value);
+        var title = d.title ? d.title + ": " : "", text = d.text ? d.text : "";
+        selection.append("p").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(title + text);
+      }
+      function appendLink(selection, d) {
+        selection.append("a").attr("href", d.href).style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(d.text);
+      }
+      function appendTable(selection, data) {
+        var table = selection.append("table"), header = table.append("thead").append("tr"), body = table.append("tbody");
+        header.style("border-bottom", "1px solid #ccc");
+        header.selectAll("td").data(data.header).enter().append("td").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(function(d) {
+          return d;
+        });
+        var rows = body.selectAll("tr").data(data.data).enter().append("tr");
+        var cells = rows.selectAll("td").data(function(d) {
+          return d;
+        }).enter().append("td").each(function(d) {
+          console.log(d, typeof d);
+          if (typeof d === "string") {
+            console.log("works!");
+            appendText(d3.select(this), {
+              text: d
+            });
+          }
+        });
       }
       function getScreenCoords(ctm) {
         return {
@@ -39,15 +62,15 @@
         });
         for (var i in aData) {
           var aPart = aData[i], type = aPart.type;
-          if (type == "text") {
+          if (type == "link") {
+            appendLink(node, aPart);
+          } else if (type == "table") {
+            appendTable(node, aPart);
+          } else if (type == "text") {
             appendText(node, aPart);
           }
         }
         document.body.appendChild(node.node());
-        node.on("mouseout", function() {
-          d3.select(this).on("mouseout", null);
-          document.body.removeChild(this);
-        });
       });
     }
     return view;
@@ -673,11 +696,15 @@
         m.annotation = [ {
           type: "text",
           title: "Sample",
-          value: m.sample
+          text: m.sample
         }, {
           type: "text",
           title: "Test",
-          value: "is working"
+          text: "is working"
+        }, {
+          type: "table",
+          header: [ "gene", "pubmed", "other" ],
+          data: [ [ "1", "2", "3" ], [ "4", "5", "6" ] ]
         } ];
       }
       d.get = function(str) {
