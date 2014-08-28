@@ -5,6 +5,7 @@
   function annotationStyle(style) {
     return {
       fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      fontSize: "12px",
       height: style.height || 200,
       width: style.width || 500
     };
@@ -17,20 +18,20 @@
           y: ctm.f
         };
       }
-      selection.on("mouseover", function(e) {
+      selection.on("mouseover", function(d) {
         var coords = getScreenCoords(this.getCTM());
-        console.log(coords);
         var node = d3.select(document.createElement("div"));
         node.style({
           background: "rgba(0,0,0,.5)",
-          height: "200px",
           left: coords.x.toString() + "px",
+          padding: "5px",
           position: "absolute",
-          top: coords.y.toString() + "px",
-          width: "200px"
+          top: coords.y.toString() + "px"
         });
+        node.append("p").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text("Sample: " + d.sample);
         document.body.appendChild(node.node());
         node.on("mouseout", function() {
+          d3.select(this).on("mouseout", null);
           document.body.removeChild(this);
         });
       });
