@@ -29,9 +29,7 @@
         var cells = rows.selectAll("td").data(function(d) {
           return d;
         }).enter().append("td").each(function(d) {
-          console.log(d, typeof d);
           if (typeof d === "string") {
-            console.log("works!");
             appendText(d3.select(this), {
               text: d
             });
@@ -70,7 +68,11 @@
             appendText(node, aPart);
           }
         }
+        var nNode = node.node();
         document.body.appendChild(node.node());
+        node.style("height", function() {
+          return nNode.clientHeight.toString() + "px";
+        });
         node.on("mouseout", function() {
           d3.select(this).on("mouseout", null);
           document.body.removeChild(this);
@@ -694,7 +696,6 @@
         proteinDomainDB: proteinDomainDB,
         proteinDomains: cdata.domains[proteinDomainDB]
       };
-      console.log(d.mutations);
       for (var mutation in d.mutations) {
         var m = d.mutations[mutation];
         m.annotation = [ {

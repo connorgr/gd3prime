@@ -31,7 +31,6 @@ function transcriptData(data) {
       proteinDomains: cdata.domains[proteinDomainDB]
     };
 
-    console.log(d.mutations);
     for (var mutation in d.mutations) {
       var m = d.mutations[mutation];
       m.annotation = [
