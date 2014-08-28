@@ -22,7 +22,7 @@
         console.log(coords);
         var node = d3.select(document.createElement("div"));
         node.style({
-          background: "#ccc",
+          background: "rgba(0,0,0,.5)",
           height: "200px",
           left: coords.x.toString() + "px",
           position: "absolute",
