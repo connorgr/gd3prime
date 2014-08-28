@@ -21,8 +21,14 @@
       }
       function appendTable(selection, data) {
         var table = selection.append("table"), header = table.append("thead").append("tr"), body = table.append("tbody");
+        table.style({
+          "border-collapse": "collapse",
+          "border-bottom": "2px solid #ccc",
+          "border-top": "2px solid #ccc",
+          "margin-top": "3px"
+        });
         header.style("border-bottom", "1px solid #ccc");
-        header.selectAll("td").data(data.header).enter().append("td").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(function(d) {
+        header.selectAll("td").data(data.header).enter().append("td").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0 5px 2px 0").text(function(d) {
           return d;
         });
         var rows = body.selectAll("tr").data(data.data).enter().append("tr");
@@ -52,7 +58,7 @@
         var node = d3.select(document.createElement("div"));
         node.attr("class", "gd3AnnotationViewDiv");
         node.style({
-          background: "rgba(0,0,0,.5)",
+          background: "rgba(0,0,0,.75)",
           left: coords.x.toString() + "px",
           padding: "5px",
           position: "absolute",
@@ -68,11 +74,7 @@
             appendText(node, aPart);
           }
         }
-        var nNode = node.node();
         document.body.appendChild(node.node());
-        node.style("height", function() {
-          return nNode.clientHeight.toString() + "px";
-        });
         node.on("mouseout", function() {
           d3.select(this).on("mouseout", null);
           document.body.removeChild(this);
