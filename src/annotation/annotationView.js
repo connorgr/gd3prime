@@ -67,11 +67,6 @@ function annotationView(style) {
           });
     }
 
-    // Get screen coordinates of selection, even if it has been transformed
-    // http://stackoverflow.com/questions/18554224
-    function getScreenCoords(ctm) {
-      return { x: ctm.e, y: ctm.f };
-    }
 
     selection.on('mouseover', function(d) {
       // Do nothing if no annotation data exists
@@ -92,10 +87,10 @@ function annotationView(style) {
       node.attr('class', 'gd3AnnotationViewDiv');
       node.style({
         background: 'rgba(0,0,0,.75)',
-        left: this.getBoundingClientRect().left.toString() + 'px', //coords.x.toString() + 'px',
+        left: this.getBoundingClientRect().left.toString() + 'px', // http://stackoverflow.com/questions/18554224
         padding: '5px',
         position: 'absolute',
-        top: this.getBoundingClientRect().top.toString() + 'px'//coords.y.toString() + 'px'
+        top: this.getBoundingClientRect().top.toString() + 'px'
       });
 
       for (var i in aData) {
