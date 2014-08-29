@@ -33,26 +33,30 @@ function transcriptData(data) {
 
     for (var mutation in d.mutations) {
       var m = d.mutations[mutation];
-      m.annotation = [
-        {
-          type: 'text',
-          title: 'Sample',
-          text: m.sample
-        },
-        {
-          type: 'text',
-          title: 'Test',
-          text: 'is working'
-        },
-        {
-          type: 'table',
-          header: ['Cancer', 'PMIDs', 'Votes'],
-          data: [
-            ['1', '2', '3'],
-            ['4', '5', '6']
-          ]
-        }
-      ];
+
+      // create simulated annotation data if it does not exist.
+      if (m.annotation == undefined) {
+        m.annotation = [
+          {
+            type: 'text',
+            title: 'Sample',
+            text: m.sample
+          },
+          {
+            type: 'text',
+            title: 'Test',
+            text: 'is working'
+          },
+          {
+            type: 'table',
+            header: ['Cancer', 'PMIDs', 'Votes'],
+            data: [
+              ['1', '2', '3'],
+              ['4', '5', '6']
+            ]
+          }
+        ];
+      } // end simulated m.annotation
     }
 
     d.get = function(str) {
