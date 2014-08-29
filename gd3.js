@@ -54,6 +54,7 @@
         }
         var aData = d.annotation;
         var coords = getScreenCoords(this.getCTM());
+        console.log(this.getCTM());
         d3.selectAll(".gd3AnnotationViewDiv").remove();
         var node = d3.select(document.createElement("div"));
         node.attr("class", "gd3AnnotationViewDiv");
