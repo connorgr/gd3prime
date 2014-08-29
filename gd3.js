@@ -61,10 +61,10 @@
         node.attr("class", "gd3AnnotationViewDiv");
         node.style({
           background: "rgba(0,0,0,.75)",
-          left: coords.x.toString() + "px",
+          left: this.getBoundingClientRect().left.toString() + "px",
           padding: "5px",
           position: "absolute",
-          top: coords.y.toString() + "px"
+          top: this.getBoundingClientRect().top.toString() + "px"
         });
         for (var i in aData) {
           var aPart = aData[i], type = aPart.type;
