@@ -46,7 +46,7 @@ function transcriptData(data) {
         },
         {
           type: 'table',
-          header: ['gene', 'pubmed', 'other'],
+          header: ['Cancer', 'PMIDs', 'Votes'],
           data: [
             ['1', '2', '3'],
             ['4', '5', '6']

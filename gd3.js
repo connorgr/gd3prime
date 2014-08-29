@@ -34,7 +34,7 @@
         var rows = body.selectAll("tr").data(data.data).enter().append("tr");
         var cells = rows.selectAll("td").data(function(d) {
           return d;
-        }).enter().append("td").each(function(d) {
+        }).enter().append("td").style("max-width", "115px").each(function(d) {
           if (typeof d === "string") {
             appendText(d3.select(this), {
               text: d
@@ -710,7 +710,7 @@
           text: "is working"
         }, {
           type: "table",
-          header: [ "gene", "pubmed", "other" ],
+          header: [ "Cancer", "PMIDs", "Votes" ],
           data: [ [ "1", "2", "3" ], [ "4", "5", "6" ] ]
         } ];
       }
