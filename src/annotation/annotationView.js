@@ -75,10 +75,6 @@ function annotationView(style) {
       }
       var aData = d.annotation;
 
-      var coords = getScreenCoords(this.getCTM());
-      console.log(this.getCTM());
-      console.log(this.getBoundingClientRect());
-
       // Remove any lingering tooltips that might exist
       d3.selectAll('.gd3AnnotationViewDiv').remove();
 
