@@ -57,6 +57,9 @@ function transcriptData(data) {
           }
         ];
       } // end simulated m.annotation
+      else {
+        console.log('defined annotation');
+      }
     }
 
     d.get = function(str) {
