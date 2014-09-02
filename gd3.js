@@ -98,6 +98,8 @@
       }
       selection.on("mouseover", function(d) {
         console.log(getScreenBBox());
+        var target = d3.event.target;
+        console.log(target, target.ownerSVGElement);
         if (d.annotation == undefined) {
           return;
         }

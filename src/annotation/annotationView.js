@@ -166,6 +166,8 @@ function annotationView(style, votingFns) {
 
     selection.on('mouseover', function(d) {
       console.log(getScreenBBox());
+       var target = d3.event.target;
+      console.log(target, target.ownerSVGElement);
       // Do nothing if no annotation data exists
       if (d.annotation == undefined) {
         return;
