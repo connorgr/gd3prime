@@ -75,10 +75,6 @@
           }
         }
         document.body.appendChild(node.node());
-        node.on("mouseout", function() {
-          d3.select(this).on("mouseout", null);
-          document.body.removeChild(this);
-        });
       });
     }
     return view;

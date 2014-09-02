@@ -112,10 +112,10 @@ function annotationView(style) {
 
       document.body.appendChild(node.node());
 
-      node.on('mouseout', function() {
-        d3.select(this).on('mouseout', null); // patch for mouseout behavior
-        document.body.removeChild(this);
-      });
+      // node.on('mouseout', function() {
+      //   d3.select(this).on('mouseout', null); // patch for mouseout behavior
+      //   document.body.removeChild(this);
+      // });
     });
   }
 
