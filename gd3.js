@@ -118,8 +118,7 @@
             appendText(container, aPart);
           }
         }
-        var node = container.node(), nodeL = bbox.n.x - node.offsetWidth / 2, nodeT = bbox.n.y - node.offsetHeight;
-        console.log(bbox.n.x, bbox.n.y, node.node(), node.node().offsetWidth, node.offsetWidth, node.offsetHeight);
+        var node = container.node(), nodeL = bbox.n.x, nodeT = bbox.n.y;
         container.attr("left", nodeL.toString() + "px").attr("top", nodeT.toString() + "px");
         document.body.appendChild(container.node());
       }
