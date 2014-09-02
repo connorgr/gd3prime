@@ -60,6 +60,7 @@ function annotationView(style) {
           .enter()
           .append('td')
               .style('max-width', '115px')
+              .style('padding', '0 3px')
               .each(function(d) {
                 console.log(d);
                 if(typeof(d) === 'string') {
