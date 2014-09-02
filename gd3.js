@@ -11,8 +11,10 @@
     };
   }
   function annotationView(style, votingFns) {
+    console.log(document.getElementById("#gd3AnnotationSvgPtHelper"));
     if (d3.select("#gd3AnnotationSvgPtHelper").empty() == true) {
-      var svg = d3.select("document").append("svg").attr("id", "gd3AnnotationSvgPtHelper");
+      var svg = document.createElement("svg");
+      svg.setAttribute("id", "gd3AnnotationSvgPtHelper");
       console.log(svg);
       console.log("!-!-!-!");
     }
