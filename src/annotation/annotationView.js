@@ -1,10 +1,10 @@
 function annotationView(style, votingFns) {
-  console.log(document.getElementById('#gd3AnnotationSvgPtHelper'));
-  if(d3.select('#gd3AnnotationSvgPtHelper').empty() == true) {
-    var svg = document.createElement('svg');
+  var svg = document.getElementById('#gd3AnnotationSvgPtHelper');
+  if(svg === null) {
+    svg = document.createElement('svg');
     svg.setAttribute('id', 'gd3AnnotationSvgPtHelper');
+    d3.select(svg).append('SVGPoint');
     console.log(svg);
-    console.log('!-!-!-!');
   }
   // Private - gets the screen coordinates of a shape
   // Thanks to Caged @ Github via https://github.com/Caged/d3-tip/blob/master/index.js
