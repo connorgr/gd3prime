@@ -11,8 +11,11 @@
     };
   }
   function annotationView(style, votingFns) {
-    var svg = document.createElement("svg");
-    console.log(d3.select("#kljsdlfkj"));
+    if (d3.select("#gd3AnnotationSvgPtHelper").empty() == true) {
+      var svg = d3.select("document").append("svg").attr("id", "gd3AnnotationSvgPtHelper");
+      console.log(svg);
+      console.log("!-!-!-!");
+    }
     function getScreenBBox() {
       var targetel = d3.event.target, bbox = {}, matrix = targetel.getScreenCTM(), tbbox = targetel.getBBox(), width = tbbox.width, height = tbbox.height, x = tbbox.x, y = tbbox.y;
       point.x = x;

@@ -1,6 +1,9 @@
 function annotationView(style, votingFns) {
-  var svg = document.createElement('svg');
-  console.log(d3.select('#kljsdlfkj'));
+  if(d3.select('#gd3AnnotationSvgPtHelper').empty() == true) {
+    var svg = d3.select('document').append('svg').attr('id', 'gd3AnnotationSvgPtHelper');
+    console.log(svg);
+    console.log('!-!-!-!');
+  }
   // Private - gets the screen coordinates of a shape
   // Thanks to Caged @ Github via https://github.com/Caged/d3-tip/blob/master/index.js
   //
