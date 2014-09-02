@@ -89,7 +89,6 @@
         selection.append("p").style(textStyle).style("padding", "0").text("+1").on("click", upVote);
       }
       selection.on("mouseover", function(d) {
-        console.log(getScreenBBox());
         var target = d3.event.target;
         console.log(target, target.ownerSVGElement);
         if (d.annotation == undefined) {
