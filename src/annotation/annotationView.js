@@ -78,7 +78,7 @@ function annotationView(style) {
         .style('font-size', style.fontSize)
         .style('margin', '0px')
         .style('padding', '0px')
-        .text(d.score);
+        .text(data.score);
     }
 
 
