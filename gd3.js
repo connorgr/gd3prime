@@ -118,10 +118,10 @@
             appendText(node, aPart);
           }
         }
+        document.body.appendChild(node.node());
         var nodeL = bbox.n.x - node.offsetWidth / 2, nodeT = bbox.n.y - node.offsetHeight;
         console.log(bbox.n.x, bbox.n.y, node.offsetWidth, node.offsetHeight);
         node.attr("left", nodeL.toString() + "px").attr("top", nodeT.toString() + "px");
-        document.body.appendChild(node.node());
       }
       selection.on("mouseover", activate);
     }
