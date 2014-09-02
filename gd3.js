@@ -11,6 +11,28 @@
     };
   }
   function annotationView(style, votingFns) {
+    function getScreenBBox() {
+      var targetel = target || d3.event.target, bbox = {}, matrix = targetel.getScreenCTM(), tbbox = targetel.getBBox(), width = tbbox.width, height = tbbox.height, x = tbbox.x, y = tbbox.y;
+      point.x = x;
+      point.y = y;
+      bbox.nw = point.matrixTransform(matrix);
+      point.x += width;
+      bbox.ne = point.matrixTransform(matrix);
+      point.y += height;
+      bbox.se = point.matrixTransform(matrix);
+      point.x -= width;
+      bbox.sw = point.matrixTransform(matrix);
+      point.y -= height / 2;
+      bbox.w = point.matrixTransform(matrix);
+      point.x += width;
+      bbox.e = point.matrixTransform(matrix);
+      point.x -= width / 2;
+      point.y -= height / 2;
+      bbox.n = point.matrixTransform(matrix);
+      point.y += height;
+      bbox.s = point.matrixTransform(matrix);
+      return bbox;
+    }
     function view(selection) {
       function appendText(selection, data) {
         var title = data.title ? data.title + ": " : "", text = data.text ? data.text : "";
@@ -48,11 +70,11 @@
       function appendVote(selection, data) {
         function downVote(d) {
           console.log("down");
-          console.log(d);
+          if (votingFns.upVote) votingFns.upVote(d);
         }
         function upVote(d) {
           console.log("up");
-          console.log(d);
+          if (votingFns.downVote) votingFns.downVote(d);
         }
         var textStyle = {
           color: "#fff",
@@ -66,6 +88,7 @@
         selection.append("p").style(textStyle).style("padding", "0").text("+1").on("click", upVote);
       }
       selection.on("mouseover", function(d) {
+        console.log(d3.event.target);
         if (d.annotation == undefined) {
           return;
         }
