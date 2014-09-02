@@ -1,4 +1,51 @@
 function annotationView(style, votingFns) {
+
+  // Private - gets the screen coordinates of a shape
+    //
+    // Given a shape on the screen, will return an SVGPoint for the directions
+    // n(north), s(south), e(east), w(west), ne(northeast), se(southeast), nw(northwest),
+    // sw(southwest).
+    //
+    //    +-+-+
+    //    |   |
+    //    +   +
+    //    |   |
+    //    +-+-+
+    //
+    // Returns an Object {n, s, e, w, nw, sw, ne, se}
+    function getScreenBBox() {
+      var targetel   = target || d3.event.target,
+          bbox       = {},
+          matrix     = targetel.getScreenCTM(),
+          tbbox      = targetel.getBBox(),
+          width      = tbbox.width,
+          height     = tbbox.height,
+          x          = tbbox.x,
+          y          = tbbox.y
+
+      point.x = x
+      point.y = y
+      bbox.nw = point.matrixTransform(matrix)
+      point.x += width
+      bbox.ne = point.matrixTransform(matrix)
+      point.y += height
+      bbox.se = point.matrixTransform(matrix)
+      point.x -= width
+      bbox.sw = point.matrixTransform(matrix)
+      point.y -= height / 2
+      bbox.w  = point.matrixTransform(matrix)
+      point.x += width
+      bbox.e = point.matrixTransform(matrix)
+      point.x -= width / 2
+      point.y -= height / 2
+      bbox.n = point.matrixTransform(matrix)
+      point.y += height
+      bbox.s = point.matrixTransform(matrix)
+
+      return bbox
+    }
+
+
   function view(selection) {
 
     // Append text to the annotation view
@@ -75,11 +122,11 @@ function annotationView(style, votingFns) {
     function appendVote(selection, data) {
       function downVote(d) {
         console.log('down');
-        console.log(d);
+        if (votingFns.upVote) votingFns.upVote(d);
       }
       function upVote(d) {
         console.log('up');
-        console.log(d);
+        if (votingFns.downVote) votingFns.downVote(d);
       }
       var textStyle = {
         color: '#fff',
@@ -107,6 +154,7 @@ function annotationView(style, votingFns) {
 
 
     selection.on('mouseover', function(d) {
+      console.log(d3.event.target);
       // Do nothing if no annotation data exists
       if (d.annotation == undefined) {
         return;
