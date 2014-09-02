@@ -195,10 +195,8 @@ function annotationView(style, votingFns) {
     node.attr('class', 'gd3AnnotationViewDiv');
     node.style({
       background: 'rgba(0,0,0,.75)',
-      left: bbox.n.x - node.offsetWidth / 2,//this.getBoundingClientRect().left.toString() + 'px', // http://stackoverflow.com/questions/18554224
       padding: '5px',
-      position: 'absolute',
-      top: bbox.n.y - node.offsetHeight//this.getBoundingClientRect().top.toString() + 'px'
+      position: 'absolute'
     });
 
     console.log(bbox);
@@ -214,6 +212,14 @@ function annotationView(style, votingFns) {
         appendText(node, aPart);
       }
     }
+
+    // Determine positioning of the annotation
+    var nodeL =  bbox.n.x - node.offsetWidth / 2,//this.getBoundingClientRect().left.toString() + 'px', // http://stackoverflow.com/questions/18554224
+        nodeT = bbox.n.y - node.offsetHeight;//this.getBoundingClientRect().top.toString() + 'px'
+    node.style({
+      left: nodeL.toString() + 'px',
+      top: nodeT.toString() + 'px'
+    });
 
     document.body.appendChild(node.node());
 
