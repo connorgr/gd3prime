@@ -51,12 +51,11 @@
           display: "inline-block",
           "font-family": style.fontFamily,
           "font-size": style.fontSize,
-          margin: "0px",
-          padding: "0px"
+          margin: "0px"
         };
-        selection.append("p").style(textStyle).text("-1");
-        selection.append("p").style(textStyle).text(data.score);
-        selection.append("p").style(textStyle).text("+1");
+        selection.append("p").style(textStyle).style("padding", "0").text("-1");
+        selection.append("p").style(textStyle).style("background", "#aaa").style("padding", "0 1px 0 1px").text(data.score);
+        selection.append("p").style(textStyle).style("padding", "0").text("+1");
       }
       selection.on("mouseover", function(d) {
         if (d.annotation == undefined) {
