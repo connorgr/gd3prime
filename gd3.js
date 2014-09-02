@@ -12,12 +12,12 @@
   }
   function annotationView(style) {
     function view(selection) {
-      function appendText(selection, d) {
-        var title = d.title ? d.title + ": " : "", text = d.text ? d.text : "";
+      function appendText(selection, data) {
+        var title = data.title ? data.title + ": " : "", text = data.text ? data.text : "";
         selection.append("p").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(title + text);
       }
-      function appendLink(selection, d) {
-        selection.append("a").attr("href", d.href).style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(d.text);
+      function appendLink(selection, data) {
+        selection.append("a").attr("href", data.href).style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(data.text);
       }
       function appendTable(selection, data) {
         var table = selection.append("table"), header = table.append("thead").append("tr"), body = table.append("tbody");
@@ -35,12 +35,16 @@
         var cells = rows.selectAll("td").data(function(d) {
           return d;
         }).enter().append("td").style("max-width", "115px").each(function(d) {
+          console.log(d);
           if (typeof d === "string") {
             appendText(d3.select(this), {
               text: d
             });
           }
         });
+      }
+      function appendVote(selection, data) {
+        selection.append("p").text("test");
       }
       selection.on("mouseover", function(d) {
         if (d.annotation == undefined) {
