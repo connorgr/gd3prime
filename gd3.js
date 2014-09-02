@@ -34,7 +34,7 @@
         var rows = body.selectAll("tr").data(data.data).enter().append("tr");
         var cells = rows.selectAll("td").data(function(d) {
           return d;
-        }).enter().append("td").style("max-width", "115px").each(function(d) {
+        }).enter().append("td").style("max-width", "115px").style("padding", "0 3px 0 3px").each(function(d) {
           console.log(d);
           if (typeof d === "string") {
             appendText(d3.select(this), {
