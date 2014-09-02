@@ -118,8 +118,9 @@
             appendText(container, aPart);
           }
         }
-        var node = container.node(), nodeL = bbox.n.x - node.offsetWidth / 2, nodeT = bbox.n.y - node.offsetHeight;
+        var node = container.node(), scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft, scrollTop = document.documentElement.scrollTop || document.body.scrollTop, nodeL = bbox.n.x - node.offsetWidth / 2, nodeT = bbox.n.y - node.offsetHeight;
         container.style("left", nodeL.toString() + "px").style("top", nodeT.toString() + "px");
+        console.log(scrollTop);
         document.body.appendChild(container.node());
       }
       selection.on("mouseover", activate);

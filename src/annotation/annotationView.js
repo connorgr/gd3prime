@@ -215,11 +215,15 @@ function annotationView(style, votingFns) {
 
     // Determine positioning of the annotation
     var node = container.node(),
+        scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft,
+        scrollTop = document.documentElement.scrollTop || document.body.scrollTop,
         nodeL =  bbox.n.x - node.offsetWidth / 2,
         nodeT = bbox.n.y - node.offsetHeight;
 
     container.style('left', nodeL.toString() + 'px')
         .style('top', nodeT.toString() + 'px');
+
+    console.log(scrollTop);
 
     document.body.appendChild(container.node());
 
