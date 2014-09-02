@@ -46,6 +46,7 @@
         });
       }
       function appendVote(selection, data) {
+        console.log("success");
         selection.append("p").text("test");
       }
       selection.on("mouseover", function(d) {

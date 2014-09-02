@@ -72,6 +72,7 @@ function annotationView(style) {
 
     // Append a voting counter
     function appendVote(selection, data) {
+      console.log('success');
       selection.append('p').text('test');
     }
 
