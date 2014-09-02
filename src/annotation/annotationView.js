@@ -6,7 +6,7 @@ function annotationView(style, votingFns) {
     d3.select(svg).append('SVGPoint');
     console.log(svg);
   }
-  var point = svg.getElementsByTagName('SVGPoint')[0];
+  var point = svg.getElementsByTagName('SVGPoint');
   console.log(point, svg);
   // Private - gets the screen coordinates of a shape
   // Thanks to Caged @ Github via https://github.com/Caged/d3-tip/blob/master/index.js
