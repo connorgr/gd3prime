@@ -2,9 +2,9 @@ function annotationView(style) {
   function view(selection) {
 
     // Append text to the annotation view
-    function appendText(selection, d) {
-      var title = d.title ? d.title+': ' : '',
-          text = d.text ? d.text : '';
+    function appendText(selection, data) {
+      var title = data.title ? data.title+': ' : '',
+          text = data.text ? data.text : '';
       selection.append('p')
         .style('color', '#fff')
         .style('font-family', style.fontFamily)
@@ -15,15 +15,15 @@ function annotationView(style) {
     }
 
     // Append link to the annotation view
-    function appendLink(selection, d) {
+    function appendLink(selection, data) {
       selection.append('a')
-        .attr('href', d.href)
+        .attr('href', data.href)
         .style('color', '#fff')
         .style('font-family', style.fontFamily)
         .style('font-size', style.fontSize)
         .style('margin', '0px')
         .style('padding', '0px')
-        .text(d.text);
+        .text(data.text);
     }
 
     // Append a table to the annotation view
@@ -61,10 +61,16 @@ function annotationView(style) {
           .append('td')
               .style('max-width', '115px')
               .each(function(d) {
+                console.log(d);
                 if(typeof(d) === 'string') {
                   appendText(d3.select(this), {text:d});
                 }
           });
+    }
+
+    // Append a voting counter
+    function appendVote(selection, data) {
+      selection.append('p').text('test');
     }
 
 
