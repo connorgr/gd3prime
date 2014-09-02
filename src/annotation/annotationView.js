@@ -216,10 +216,8 @@ function annotationView(style, votingFns) {
     // Determine positioning of the annotation
     var nodeL =  bbox.n.x - node.offsetWidth / 2,//this.getBoundingClientRect().left.toString() + 'px', // http://stackoverflow.com/questions/18554224
         nodeT = bbox.n.y - node.offsetHeight;//this.getBoundingClientRect().top.toString() + 'px'
-    node.style({
-      left: nodeL.toString() + 'px',
-      top: nodeT.toString() + 'px'
-    });
+    node.attr('left', nodeL.toString() + 'px')
+        .attr('top', nodeT.toString() + 'px');
 
     document.body.appendChild(node.node());
 
