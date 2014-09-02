@@ -119,10 +119,7 @@
           }
         }
         var nodeL = bbox.n.x - node.offsetWidth / 2, nodeT = bbox.n.y - node.offsetHeight;
-        node.style({
-          left: nodeL.toString() + "px",
-          top: nodeT.toString() + "px"
-        });
+        node.attr("left", nodeL.toString() + "px").attr("top", nodeT.toString() + "px");
         document.body.appendChild(node.node());
       }
       selection.on("mouseover", activate);
