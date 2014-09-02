@@ -12,7 +12,7 @@
   }
   function annotationView(style, votingFns) {
     function getScreenBBox() {
-      var targetel = target || d3.event.target, bbox = {}, matrix = targetel.getScreenCTM(), tbbox = targetel.getBBox(), width = tbbox.width, height = tbbox.height, x = tbbox.x, y = tbbox.y;
+      var targetel = d3.event.target, bbox = {}, matrix = targetel.getScreenCTM(), tbbox = targetel.getBBox(), width = tbbox.width, height = tbbox.height, x = tbbox.x, y = tbbox.y;
       point.x = x;
       point.y = y;
       bbox.nw = point.matrixTransform(matrix);
