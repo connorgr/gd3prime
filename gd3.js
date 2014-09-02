@@ -54,7 +54,9 @@
           margin: "0px",
           padding: "0px"
         };
+        selection.append("p").style(textStyle).text("-1");
         selection.append("p").style(textStyle).text(data.score);
+        selection.append("p").style(textStyle).text("+1");
       }
       selection.on("mouseover", function(d) {
         if (d.annotation == undefined) {

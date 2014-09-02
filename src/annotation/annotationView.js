@@ -84,7 +84,13 @@ function annotationView(style) {
       }
       selection.append('p')
         .style(textStyle)
+        .text('-1');
+      selection.append('p')
+        .style(textStyle)
         .text(data.score);
+      selection.append('p')
+        .style(textStyle)
+        .text('+1');
     }
 
 
