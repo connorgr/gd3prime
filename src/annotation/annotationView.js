@@ -1,4 +1,62 @@
 function annotationView(style, votingFns) {
+  // Global variables for the annotation
+  var point = null,
+      svg = null,
+      target = null;
+  // This function gets called whenever an element gets moused overed
+  function activate (d) {
+
+    // Update annotation globals
+    target = target || d3.event.target;
+    svg = target.tagName.toLowerCase() == 'svg' ? target : target.ownerSVGElement;
+    if (d3.select(svg).select('SVGPoint').empty() == true) {
+      point = svg.createSVGPoint();
+    } else {
+      point = d3.select(svg).select('SVGPoint').node();
+    }
+
+    console.log(svg, target, point);
+    // Do nothing if no annotation data exists
+    if (d.annotation == undefined) {
+      return;
+    }
+    var aData = d.annotation;
+
+    // Remove any lingering tooltips that might exist
+    d3.selectAll('.gd3AnnotationViewDiv').remove();
+
+    // Create the new tooltip
+    var node = d3.select(document.createElement('div'));
+    node.attr('class', 'gd3AnnotationViewDiv');
+    node.style({
+      background: 'rgba(0,0,0,.75)',
+      left: this.getBoundingClientRect().left.toString() + 'px', // http://stackoverflow.com/questions/18554224
+      padding: '5px',
+      position: 'absolute',
+      top: this.getBoundingClientRect().top.toString() + 'px'
+    });
+
+    for (var i in aData) {
+      var aPart = aData[i],
+          type = aPart.type;
+      if (type == 'link') {
+        appendLink(node, aPart);
+      } else if (type == 'table') {
+        appendTable(node, aPart);
+      } else if (type == 'text') {
+        appendText(node, aPart);
+      }
+    }
+
+    document.body.appendChild(node.node());
+
+    // node.on('mouseout', function() {
+    //   d3.select(this).on('mouseout', null); // patch for mouseout behavior
+    //   document.body.removeChild(this);
+    // });
+  }
+
+
   // var svg = document.getElementById('#gd3AnnotationSvgPtHelper');
   // if(svg === null) {
   //   svg = document.createElement('svg');
@@ -31,8 +89,6 @@ function annotationView(style, votingFns) {
         height     = tbbox.height,
         x          = tbbox.x,
         y          = tbbox.y
-
-    console.log(point);
 
     point.x = x
     point.y = y
@@ -120,7 +176,6 @@ function annotationView(style, votingFns) {
               .style('max-width', '115px')
               .style('padding', '0 3px 0 3px')
               .each(function(d) {
-                console.log(d);
                 if(typeof(d) === 'string') {
                   appendText(d3.select(this), {text:d});
                 } else if (d.type === 'vote') {
@@ -164,49 +219,7 @@ function annotationView(style, votingFns) {
     }
 
 
-    selection.on('mouseover', function(d) {
-      //console.log(getScreenBBox());
-       var target = d3.event.target;
-      console.log(target, target.ownerSVGElement);
-      // Do nothing if no annotation data exists
-      if (d.annotation == undefined) {
-        return;
-      }
-      var aData = d.annotation;
-
-      // Remove any lingering tooltips that might exist
-      d3.selectAll('.gd3AnnotationViewDiv').remove();
-
-      // Create the new tooltip
-      var node = d3.select(document.createElement('div'));
-      node.attr('class', 'gd3AnnotationViewDiv');
-      node.style({
-        background: 'rgba(0,0,0,.75)',
-        left: this.getBoundingClientRect().left.toString() + 'px', // http://stackoverflow.com/questions/18554224
-        padding: '5px',
-        position: 'absolute',
-        top: this.getBoundingClientRect().top.toString() + 'px'
-      });
-
-      for (var i in aData) {
-        var aPart = aData[i],
-            type = aPart.type;
-        if (type == 'link') {
-          appendLink(node, aPart);
-        } else if (type == 'table') {
-          appendTable(node, aPart);
-        } else if (type == 'text') {
-          appendText(node, aPart);
-        }
-      }
-
-      document.body.appendChild(node.node());
-
-      // node.on('mouseout', function() {
-      //   d3.select(this).on('mouseout', null); // patch for mouseout behavior
-      //   document.body.removeChild(this);
-      // });
-    });
+    selection.on('mouseover', activate);
   }
 
   return view;
