@@ -15,7 +15,7 @@ function annotationView(style, votingFns) {
   //
   // Returns an Object {n, s, e, w, nw, sw, ne, se}
   function getScreenBBox() {
-    var targetel   = target || d3.event.target,
+    var targetel   = d3.event.target,//target || d3.event.target,
         bbox       = {},
         matrix     = targetel.getScreenCTM(),
         tbbox      = targetel.getBBox(),
