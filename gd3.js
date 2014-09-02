@@ -11,6 +11,7 @@
     };
   }
   function annotationView(style, votingFns) {
+    var svg = document.createElement("svg"), point = svg.createSVGPoint();
     function getScreenBBox() {
       var targetel = d3.event.target, bbox = {}, matrix = targetel.getScreenCTM(), tbbox = targetel.getBBox(), width = tbbox.width, height = tbbox.height, x = tbbox.x, y = tbbox.y;
       point.x = x;
