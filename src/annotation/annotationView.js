@@ -195,6 +195,7 @@ function annotationView(style, votingFns) {
     container.attr('class', 'gd3AnnotationViewDiv');
     container.style({
       background: 'rgba(0,0,0,.75)',
+      'border-radius': '3px',
       padding: '5px',
       position: 'absolute'
     });
