@@ -119,7 +119,7 @@
           }
         }
         var nodeL = bbox.n.x - node.node().offsetWidth / 2, nodeT = bbox.n.y - node.node().offsetHeight;
-        console.log(bbox.n.x, bbox.n.y, node.noffsetWidth, node.offsetHeight);
+        console.log(bbox.n.x, bbox.n.y, node.node(), node.node().offsetWidth, node.offsetWidth, node.offsetHeight);
         node.attr("left", nodeL.toString() + "px").attr("top", nodeT.toString() + "px");
         document.body.appendChild(node.node());
       }
