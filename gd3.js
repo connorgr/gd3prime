@@ -12,41 +12,6 @@
   }
   function annotationView(style, votingFns) {
     var point = null, svg = null, target = null;
-    function activate(d) {
-      target = target || d3.event.target;
-      svg = target.tagName.toLowerCase() == "svg" ? target : target.ownerSVGElement;
-      if (d3.select(svg).select("SVGPoint").empty() == true) {
-        point = svg.createSVGPoint();
-      } else {
-        point = d3.select(svg).select("SVGPoint").node();
-      }
-      console.log(svg, target, point);
-      if (d.annotation == undefined) {
-        return;
-      }
-      var aData = d.annotation;
-      d3.selectAll(".gd3AnnotationViewDiv").remove();
-      var node = d3.select(document.createElement("div"));
-      node.attr("class", "gd3AnnotationViewDiv");
-      node.style({
-        background: "rgba(0,0,0,.75)",
-        left: this.getBoundingClientRect().left.toString() + "px",
-        padding: "5px",
-        position: "absolute",
-        top: this.getBoundingClientRect().top.toString() + "px"
-      });
-      for (var i in aData) {
-        var aPart = aData[i], type = aPart.type;
-        if (type == "link") {
-          appendLink(node, aPart);
-        } else if (type == "table") {
-          appendTable(node, aPart);
-        } else if (type == "text") {
-          appendText(node, aPart);
-        }
-      }
-      document.body.appendChild(node.node());
-    }
     function getScreenBBox() {
       var targetel = d3.event.target, bbox = {}, matrix = targetel.getScreenCTM(), tbbox = targetel.getBBox(), width = tbbox.width, height = tbbox.height, x = tbbox.x, y = tbbox.y;
       point.x = x;
@@ -121,6 +86,43 @@
         selection.append("p").style(textStyle).style("padding", "0").text("-1").on("click", downVote);
         selection.append("p").style(textStyle).style("background", "#aaa").style("padding", "0 1px 0 1px").text(data.score);
         selection.append("p").style(textStyle).style("padding", "0").text("+1").on("click", upVote);
+      }
+      function activate(d) {
+        target = target || d3.event.target;
+        svg = target.tagName.toLowerCase() == "svg" ? target : target.ownerSVGElement;
+        if (d3.select(svg).select("SVGPoint").empty() == true) {
+          point = svg.createSVGPoint();
+        } else {
+          point = d3.select(svg).select("SVGPoint").node();
+        }
+        console.log(svg, target, point);
+        console.log(getScreenBBox());
+        console.log("----");
+        if (d.annotation == undefined) {
+          return;
+        }
+        var aData = d.annotation;
+        d3.selectAll(".gd3AnnotationViewDiv").remove();
+        var node = d3.select(document.createElement("div"));
+        node.attr("class", "gd3AnnotationViewDiv");
+        node.style({
+          background: "rgba(0,0,0,.75)",
+          left: this.getBoundingClientRect().left.toString() + "px",
+          padding: "5px",
+          position: "absolute",
+          top: this.getBoundingClientRect().top.toString() + "px"
+        });
+        for (var i in aData) {
+          var aPart = aData[i], type = aPart.type;
+          if (type == "link") {
+            appendLink(node, aPart);
+          } else if (type == "table") {
+            appendTable(node, aPart);
+          } else if (type == "text") {
+            appendText(node, aPart);
+          }
+        }
+        document.body.appendChild(node.node());
       }
       selection.on("mouseover", activate);
     }
