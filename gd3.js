@@ -88,7 +88,7 @@
         selection.append("p").style(textStyle).style("padding", "0").text("+1").on("click", upVote);
       }
       selection.on("mouseover", function(d) {
-        console.log(d3.event.target);
+        console.log(getScreenBBox());
         if (d.annotation == undefined) {
           return;
         }
