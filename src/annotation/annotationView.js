@@ -7,7 +7,7 @@ function annotationView(style, votingFns) {
     console.log(svg);
   }
   var point = svg.getElementsByTagName('SVGPoint');
-  console.log(point, svg);
+  console.log(point, svg, svg.children);
   // Private - gets the screen coordinates of a shape
   // Thanks to Caged @ Github via https://github.com/Caged/d3-tip/blob/master/index.js
   //

@@ -19,7 +19,7 @@
       console.log(svg);
     }
     var point = svg.getElementsByTagName("SVGPoint");
-    console.log(point, svg);
+    console.log(point, svg, svg.children);
     function getScreenBBox() {
       var targetel = d3.event.target, bbox = {}, matrix = targetel.getScreenCTM(), tbbox = targetel.getBBox(), width = tbbox.width, height = tbbox.height, x = tbbox.x, y = tbbox.y;
       point.x = x;
