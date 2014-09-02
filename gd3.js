@@ -10,7 +10,7 @@
       width: style.width || 500
     };
   }
-  function annotationView(style) {
+  function annotationView(style, votingFns) {
     function view(selection) {
       function appendText(selection, data) {
         var title = data.title ? data.title + ": " : "", text = data.text ? data.text : "";
@@ -46,6 +46,14 @@
         });
       }
       function appendVote(selection, data) {
+        function downVote(d) {
+          console.log("down");
+          console.log(d);
+        }
+        function upVote(d) {
+          console.log("up");
+          console.log(d);
+        }
         var textStyle = {
           color: "#fff",
           display: "inline-block",
@@ -53,9 +61,9 @@
           "font-size": style.fontSize,
           margin: "0px"
         };
-        selection.append("p").style(textStyle).style("padding", "0").text("-1");
+        selection.append("p").style(textStyle).style("padding", "0").text("-1").on("click", downVote);
         selection.append("p").style(textStyle).style("background", "#aaa").style("padding", "0 1px 0 1px").text(data.score);
-        selection.append("p").style(textStyle).style("padding", "0").text("+1");
+        selection.append("p").style(textStyle).style("padding", "0").text("+1").on("click", upVote);
       }
       selection.on("mouseover", function(d) {
         if (d.annotation == undefined) {
@@ -88,7 +96,7 @@
     return view;
   }
   gd3.annotation = function(params) {
-    var params = params || {}, style = annotationStyle(params.style || {});
+    var params = params || {}, style = annotationStyle(params.style || {}), votingFns = params.votingFns || {};
     return annotationView(style);
   };
   function gd3_class(ctor, properties) {

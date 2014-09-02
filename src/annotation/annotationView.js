@@ -1,4 +1,4 @@
-function annotationView(style) {
+function annotationView(style, votingFns) {
   function view(selection) {
 
     // Append text to the annotation view
@@ -73,6 +73,14 @@ function annotationView(style) {
 
     // Append a voting counter
     function appendVote(selection, data) {
+      function downVote(d) {
+        console.log('down');
+        console.log(d);
+      }
+      function upVote(d) {
+        console.log('up');
+        console.log(d);
+      }
       var textStyle = {
         color: '#fff',
         display: 'inline-block',
@@ -83,7 +91,8 @@ function annotationView(style) {
       selection.append('p')
         .style(textStyle)
         .style('padding', '0')
-        .text('-1');
+        .text('-1')
+        .on('click', downVote);
       selection.append('p')
         .style(textStyle)
         .style('background', '#aaa')
@@ -92,7 +101,8 @@ function annotationView(style) {
       selection.append('p')
         .style(textStyle)
         .style('padding', '0')
-        .text('+1');
+        .text('+1')
+        .on('click', upVote);
     }
 
 
