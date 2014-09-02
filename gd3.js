@@ -88,6 +88,9 @@
         selection.append("p").style(textStyle).style("padding", "0").text("+1").on("click", upVote);
       }
       function activate(d) {
+        if (d.annotation == undefined) {
+          return;
+        }
         target = target || d3.event.target;
         svg = target.tagName.toLowerCase() == "svg" ? target : target.ownerSVGElement;
         if (d3.select(svg).select("SVGPoint").empty() == true) {
@@ -95,22 +98,16 @@
         } else {
           point = d3.select(svg).select("SVGPoint").node();
         }
-        console.log(svg, target, point);
-        console.log(getScreenBBox());
-        console.log("----");
-        if (d.annotation == undefined) {
-          return;
-        }
-        var aData = d.annotation;
+        var aData = d.annotation, bbox = getScreenBBox();
         d3.selectAll(".gd3AnnotationViewDiv").remove();
         var node = d3.select(document.createElement("div"));
         node.attr("class", "gd3AnnotationViewDiv");
         node.style({
           background: "rgba(0,0,0,.75)",
-          left: this.getBoundingClientRect().left.toString() + "px",
+          left: bbox.n.x - node.offsetWidth / 2,
           padding: "5px",
           position: "absolute",
-          top: this.getBoundingClientRect().top.toString() + "px"
+          top: bbox.n.y - node.offsetHeight
         });
         for (var i in aData) {
           var aPart = aData[i], type = aPart.type;

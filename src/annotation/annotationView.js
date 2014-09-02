@@ -169,6 +169,11 @@ function annotationView(style, votingFns) {
   // This function gets called whenever an element gets mouseovered
   function activate (d) {
 
+    // Do nothing if no annotation data exists
+    if (d.annotation == undefined) {
+      return;
+    }
+
     // Update annotation globals
     target = target || d3.event.target;
     svg = target.tagName.toLowerCase() == 'svg' ? target : target.ownerSVGElement;
@@ -178,14 +183,9 @@ function annotationView(style, votingFns) {
       point = d3.select(svg).select('SVGPoint').node();
     }
 
-    console.log(svg, target, point);
-    console.log(getScreenBBox());
-    console.log('----');
-    // Do nothing if no annotation data exists
-    if (d.annotation == undefined) {
-      return;
-    }
-    var aData = d.annotation;
+
+    var aData = d.annotation,
+        bbox = getScreenBBox();
 
     // Remove any lingering tooltips that might exist
     d3.selectAll('.gd3AnnotationViewDiv').remove();
@@ -195,10 +195,10 @@ function annotationView(style, votingFns) {
     node.attr('class', 'gd3AnnotationViewDiv');
     node.style({
       background: 'rgba(0,0,0,.75)',
-      left: this.getBoundingClientRect().left.toString() + 'px', // http://stackoverflow.com/questions/18554224
+      left: bbox.n.x - node.offsetWidth / 2,//this.getBoundingClientRect().left.toString() + 'px', // http://stackoverflow.com/questions/18554224
       padding: '5px',
       position: 'absolute',
-      top: this.getBoundingClientRect().top.toString() + 'px'
+      top: bbox.n.y - node.offsetHeight//this.getBoundingClientRect().top.toString() + 'px'
     });
 
     for (var i in aData) {
