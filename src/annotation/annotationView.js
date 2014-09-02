@@ -193,11 +193,6 @@ function annotationView(style, votingFns) {
     // Create the new tooltip
     var container = d3.select(document.createElement('div'));
     container.attr('class', 'gd3AnnotationViewDiv');
-    container.style({
-      background: 'rgba(0,0,0,.75)',
-      padding: '5px',
-      position: 'absolute'
-    });
 
     console.log(bbox);
 
@@ -218,7 +213,11 @@ function annotationView(style, votingFns) {
         nodeL =  bbox.n.x,// - node.offsetWidth / 2,
         nodeT = bbox.n.y;// - node.offsetHeight;
 
-    container.attr('left', nodeL.toString() + 'px')
+    container
+        .attr('background', 'rgba(0,0,0,.75)')
+        .attr('padding', '5px')
+        .attr('position', 'absolute')
+        .attr('left', nodeL.toString() + 'px')
         .attr('top', nodeT.toString() + 'px');
 
     document.body.appendChild(container.node());
