@@ -109,6 +109,7 @@
           position: "absolute",
           top: bbox.n.y - node.offsetHeight
         });
+        console.log(bbox);
         for (var i in aData) {
           var aPart = aData[i], type = aPart.type;
           if (type == "link") {

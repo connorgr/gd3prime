@@ -201,6 +201,8 @@ function annotationView(style, votingFns) {
       top: bbox.n.y - node.offsetHeight//this.getBoundingClientRect().top.toString() + 'px'
     });
 
+    console.log(bbox);
+
     for (var i in aData) {
       var aPart = aData[i],
           type = aPart.type;
