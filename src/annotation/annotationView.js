@@ -64,6 +64,8 @@ function annotationView(style) {
                 console.log(d);
                 if(typeof(d) === 'string') {
                   appendText(d3.select(this), {text:d});
+                } else if (d.type === 'vote') {
+                  appendVote(d3.select(this), d);
                 }
           });
     }
