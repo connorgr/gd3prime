@@ -104,10 +104,8 @@
         node.attr("class", "gd3AnnotationViewDiv");
         node.style({
           background: "rgba(0,0,0,.75)",
-          left: bbox.n.x - node.offsetWidth / 2,
           padding: "5px",
-          position: "absolute",
-          top: bbox.n.y - node.offsetHeight
+          position: "absolute"
         });
         console.log(bbox);
         for (var i in aData) {
@@ -120,6 +118,11 @@
             appendText(node, aPart);
           }
         }
+        var nodeL = bbox.n.x - node.offsetWidth / 2, nodeT = bbox.n.y - node.offsetHeight;
+        node.style({
+          left: nodeL.toString() + "px",
+          top: nodeT.toString() + "px"
+        });
         document.body.appendChild(node.node());
       }
       selection.on("mouseover", activate);
