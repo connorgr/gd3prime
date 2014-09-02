@@ -46,8 +46,7 @@
         });
       }
       function appendVote(selection, data) {
-        console.log("success");
-        selection.append("p").text("test");
+        selection.append("p").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(d.score);
       }
       selection.on("mouseover", function(d) {
         if (d.annotation == undefined) {
