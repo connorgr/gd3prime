@@ -73,12 +73,17 @@ function annotationView(style) {
 
     // Append a voting counter
     function appendVote(selection, data) {
+      var textStyle = {
+        color: '#fff',
+        display: 'inline-block',
+        'font-family': style.fontFamily,
+        'font-size': style.fontSize,
+        margin: '0px',
+        padding: '0px'
+
+      }
       selection.append('p')
-        .style('color', '#fff')
-        .style('font-family', style.fontFamily)
-        .style('font-size', style.fontSize)
-        .style('margin', '0px')
-        .style('padding', '0px')
+        .style(textStyle)
         .text(data.score);
     }
 
