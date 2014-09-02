@@ -100,9 +100,9 @@
         }
         var aData = d.annotation, bbox = getScreenBBox();
         d3.selectAll(".gd3AnnotationViewDiv").remove();
-        var node = d3.select(document.createElement("div"));
-        node.attr("class", "gd3AnnotationViewDiv");
-        node.style({
+        var container = d3.select(document.createElement("div"));
+        container.attr("class", "gd3AnnotationViewDiv");
+        container.style({
           background: "rgba(0,0,0,.75)",
           padding: "5px",
           position: "absolute"
@@ -111,17 +111,17 @@
         for (var i in aData) {
           var aPart = aData[i], type = aPart.type;
           if (type == "link") {
-            appendLink(node, aPart);
+            appendLink(container, aPart);
           } else if (type == "table") {
-            appendTable(node, aPart);
+            appendTable(container, aPart);
           } else if (type == "text") {
-            appendText(node, aPart);
+            appendText(container, aPart);
           }
         }
-        var nodeL = bbox.n.x - node.node().offsetWidth / 2, nodeT = bbox.n.y - node.node().offsetHeight;
+        var node = container.node(), nodeL = bbox.n.x - node.offsetWidth / 2, nodeT = bbox.n.y - node.offsetHeight;
         console.log(bbox.n.x, bbox.n.y, node.node(), node.node().offsetWidth, node.offsetWidth, node.offsetHeight);
-        node.attr("left", nodeL.toString() + "px").attr("top", nodeT.toString() + "px");
-        document.body.appendChild(node.node());
+        container.attr("left", nodeL.toString() + "px").attr("top", nodeT.toString() + "px");
+        document.body.appendChild(container.node());
       }
       selection.on("mouseover", activate);
     }
