@@ -119,7 +119,7 @@
           }
         }
         var node = container.node(), nodeL = bbox.n.x, nodeT = bbox.n.y;
-        container.attr("left", nodeL.toString() + "px").attr("top", nodeT.toString() + "px");
+        container.style("left", nodeL.toString() + "px").style("top", nodeT.toString() + "px");
         document.body.appendChild(container.node());
       }
       selection.on("mouseover", activate);
