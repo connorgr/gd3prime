@@ -1,6 +1,7 @@
 function annotationView(style, votingFns) {
-  var svg = document.createElement('svg'),
-      point = svg.createSVGPoint();
+  var svg = document.createElement('svg');
+  console.log(svg);
+      //point = svg.createSVGPoint();
   // Private - gets the screen coordinates of a shape
   // Thanks to Caged @ Github via https://github.com/Caged/d3-tip/blob/master/index.js
   //
