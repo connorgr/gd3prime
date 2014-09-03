@@ -71,7 +71,7 @@
         function downVote(d) {
           var color = d3.select(this).style("color") == "#fff" ? "#f00" : "#fff";
           d3.select(this).style("color", color);
-          if (votingFns.upVote) votingFns.upVote(d);
+          if (votingFns.downVote != undefined) votingFns.downVote(d);
         }
         function upVote(d) {
           console.log("up");
