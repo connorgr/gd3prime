@@ -69,7 +69,8 @@
       }
       function appendVote(selection, data) {
         function downVote(d) {
-          console.log("down");
+          var color = d3.select(this).style("color") == "#fff" ? "#f00" : "#fff";
+          d3.select(this).style("color", color);
           if (votingFns.upVote) votingFns.upVote(d);
         }
         function upVote(d) {
@@ -83,9 +84,9 @@
           "font-size": style.fontSize,
           margin: "0px"
         };
-        selection.append("p").style(textStyle).style("padding", "0").text("▼").on("click", downVote);
-        selection.append("p").style(textStyle).style("background", "#aaa").style("padding", "0 1px 0 1px").text(data.score);
-        selection.append("p").style(textStyle).style("padding", "0").text("▲").on("click", upVote);
+        var up = selection.append("p").style(textStyle).style("padding", "0").text("▼").on("click", downVote);
+        var score = selection.append("p").style(textStyle).style("padding", "0 1px 0 1px").text(data.score);
+        var down = selection.append("p").style(textStyle).style("padding", "0").text("▲").on("click", upVote);
       }
       function activate(d) {
         if (d.annotation == undefined) {
