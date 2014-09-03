@@ -229,6 +229,31 @@ function annotationView(style, votingFns) {
     container.style('left', offsetLeft.toString() + 'px')
         .style('top', offsetTop.toString() + 'px');
 
+    container.append('span')
+        .style({
+          content: '\2613',
+          'font-size': '6px',
+          left: bbox.ne.x,
+          position: 'absolute',
+          top: -8px
+
+
+          //           display: inline;
+          // font-size: 10px;
+          // width: 100%;
+          // line-height: 1;
+          // color: rgba(0, 0, 0, 0.8);
+          // position: absolute;
+          // pointer-events: none;
+
+
+          // content: "\25B2";
+          // margin: 0 0 1px 0;
+          // top: -8px;
+          // left: 0;
+          // text-align: center;
+        });
+
     console.log(container.node().offsetWidth);
 
     // node.on('mouseout', function() {
