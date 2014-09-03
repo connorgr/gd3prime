@@ -229,7 +229,7 @@ function annotationView(style, votingFns) {
     container.style('left', offsetLeft.toString() + 'px')
         .style('top', offsetTop.toString() + 'px');
 
-    var xoutLeft = offsetLeft.toString() + 'px';
+    var xoutLeft = node.offsetWidth.toString() + 'px';
     console.log(xoutLeft, 'xoutLeft');
     container.append('span')
         .text('☓')

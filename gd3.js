@@ -123,7 +123,7 @@
         var node = container.node(), scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft, scrollTop = document.documentElement.scrollTop || document.body.scrollTop, nodeL = bbox.s.x - node.offsetWidth / 2, nodeT = bbox.s.y;
         var offsetTop = nodeT + scrollTop, offsetLeft = nodeL + scrollLeft;
         container.style("left", offsetLeft.toString() + "px").style("top", offsetTop.toString() + "px");
-        var xoutLeft = offsetLeft.toString() + "px";
+        var xoutLeft = node.offsetWidth.toString() + "px";
         console.log(xoutLeft, "xoutLeft");
         container.append("span").text("☓").style({
           color: "#000",
