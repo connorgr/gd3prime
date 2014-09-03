@@ -155,7 +155,8 @@ function annotationView(style, votingFns) {
           score.text(parseInt(score.text()) + 1 );
         }
 
-        scoreData = score.data();
+        // Assumes only one score datum
+        scoreData = score.datum();
         console.log(scoreData);
 
         if (votingFns.downVote != undefined) votingFns.downVote(d);
