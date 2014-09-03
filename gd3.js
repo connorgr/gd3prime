@@ -70,30 +70,31 @@
       }
       function appendVote(selection, data) {
         var down = null, score = null, up = null;
+        var defaultColor = "rgb(255, 255, 255)", activeColor = "rgb(255, 165, 0)";
         function downVote(d) {
-          if (down.style("color") == "rgb(255, 255, 255)") {
-            if (up.style("color") != "rgb(255,255,255)") {
+          if (down.style("color") == defaultColor) {
+            if (up.style("color") == activeColor) {
               score.text(parseInt(score.text()) - 1);
             }
-            down.style("color", "rgb(255, 165, 0)");
-            up.style("color", "rgb(255, 255, 255)");
+            down.style("color", activeColor);
+            up.style("color", defaultColor);
             score.text(parseInt(score.text()) - 1);
           } else {
-            down.style("color", "rgb(255, 255, 255)");
+            down.style("color", defaultColor);
             score.text(parseInt(score.text()) + 1);
           }
           if (votingFns.downVote != undefined) votingFns.downVote(d);
         }
         function upVote(d) {
-          if (up.style("color") == "rgb(255, 255, 255)") {
-            if (down.style("color") != "rgb(255,255,255)") {
+          if (up.style("color") == defaultColor) {
+            if (down.style("color") == activeColor) {
               score.text(parseInt(score.text()) + 1);
             }
-            up.style("color", "rgb(255, 165, 0)");
-            down.style("color", "rgb(255, 255, 255)");
+            up.style("color", activeColor);
+            down.style("color", defaultColor);
             score.text(parseInt(score.text()) + 1);
           } else {
-            up.style("color", "rgb(255, 255, 255)");
+            up.style("color", defaultColor);
             score.text(parseInt(score.text()) - 1);
           }
           if (votingFns.upVote) votingFns.upVote(d);
