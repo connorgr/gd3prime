@@ -224,6 +224,19 @@ function annotationView(style, votingFns) {
     var offsetTop = nodeT + scrollTop,
         offsetLeft = nodeL + scrollLeft;
 
+    container.append('span')
+        .style({
+          'box-sizing': 'border-box',
+          display: 'inline',
+          'font-size': '10px',
+          width: '100%',
+          'line-height': 1,
+          color: 'rgba(0, 0, 0, 0.8)',
+          content: '\25BC',
+          position: 'absolute',
+          'text-align': 'center'
+        });
+
     container.style('left', offsetLeft.toString() + 'px')
         .style('top', offsetTop.toString() + 'px');
 

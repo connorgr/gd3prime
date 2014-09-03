@@ -121,6 +121,17 @@
         }
         var node = container.node(), scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft, scrollTop = document.documentElement.scrollTop || document.body.scrollTop, nodeL = bbox.n.x - node.offsetWidth / 2, nodeT = bbox.n.y - node.offsetHeight;
         var offsetTop = nodeT + scrollTop, offsetLeft = nodeL + scrollLeft;
+        container.append("span").style({
+          "box-sizing": "border-box",
+          display: "inline",
+          "font-size": "10px",
+          width: "100%",
+          "line-height": 1,
+          color: "rgba(0, 0, 0, 0.8)",
+          content: "BC",
+          position: "absolute",
+          "text-align": "center"
+        });
         container.style("left", offsetLeft.toString() + "px").style("top", offsetTop.toString() + "px");
         document.body.appendChild(container.node());
       }
