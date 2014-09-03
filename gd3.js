@@ -81,11 +81,11 @@
             clickedArrow.style("color", activeColor);
             otherArrow.style("color", defaultColor);
             score.text(parseInt(score.text()) + adjust);
-            scoreDatum.voted = true;
+            scoreDatum.voted = upvote ? "upVote" : "downVote";
           } else {
             clickedArrow.style("color", defaultColor);
             score.text(parseInt(score.text()) - adjust);
-            scoreDatum.voted = false;
+            scoreDatum.voted = "none";
           }
           scoreDatum.score = parseInt(score.text());
           score.datum(scoreDatum);
@@ -109,6 +109,10 @@
         down = selection.append("p").style(textStyle).style("padding", "0").style("cursor", "pointer").text("▼").on("click", downVote);
         score = selection.append("p").style(textStyle).style("padding", "0 1px 0 1px").text(data.score);
         up = selection.append("p").style(textStyle).style("padding", "0").style("cursor", "pointer").text("▲").on("click", upVote);
+        if (score.datum().voted != undefined) {
+          if (score.datum().voted == "upVote") up.style("color", activeColor);
+          if (score.datum().voted == "downVote") down.style("color", activeColor);
+        }
       }
       function activate(d) {
         if (d.annotation == undefined) {
