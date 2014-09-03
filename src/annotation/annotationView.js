@@ -230,9 +230,9 @@ function annotationView(style, votingFns) {
         .style('top', offsetTop.toString() + 'px');
 
     container.append('span')
+        .text('☓')
         .style({
           color: '#000',
-          content: '\2613',
           display: 'inline',
           'font-size': '6px',
           left: bbox.ne.x,
