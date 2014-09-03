@@ -70,6 +70,7 @@
       }
       function appendVote(selection, data) {
         function downVote(d) {
+          console.log(d3.select(this).style("color"), "down");
           var color = d3.select(this).style("color") == "rgb(255,255,255)" ? "rgb(255,0,0)" : "rgb(255,255,255)";
           d3.select(this).style("color", color);
           if (votingFns.downVote != undefined) votingFns.downVote(d);
