@@ -130,7 +130,7 @@
           display: "inline",
           "font-size": "10px",
           "font-weight": "bold",
-          left: xoutLeft,
+          left: xoutLeft.toString() + "px",
           "line-height": 1,
           position: "absolute",
           "text-align": "right",
