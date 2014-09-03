@@ -186,7 +186,15 @@ function annotationView(style, votingFns) {
         display: 'inline-block',
         'font-family': style.fontFamily,
         'font-size': style.fontSize,
-        margin: '0px'
+        margin: '0px',
+
+        // prevent selection
+        '-webkit-touch-callout': 'none',
+        '-webkit-user-select': 'none',
+        '-khtml-user-select': 'none',
+        '-moz-user-select': 'none',
+        '-ms-user-select': 'none',
+        'user-select': 'none'
       }
       down = selection.append('p')
         .style(textStyle)

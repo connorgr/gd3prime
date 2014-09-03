@@ -104,7 +104,13 @@
           display: "inline-block",
           "font-family": style.fontFamily,
           "font-size": style.fontSize,
-          margin: "0px"
+          margin: "0px",
+          "-webkit-touch-callout": "none",
+          "-webkit-user-select": "none",
+          "-khtml-user-select": "none",
+          "-moz-user-select": "none",
+          "-ms-user-select": "none",
+          "user-select": "none"
         };
         down = selection.append("p").style(textStyle).style("padding", "0").style("cursor", "pointer").text("▼").on("click", downVote);
         score = selection.append("p").style(textStyle).style("padding", "0 1px 0 1px").text(data.score);
