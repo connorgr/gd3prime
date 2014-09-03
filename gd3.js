@@ -72,6 +72,9 @@
         var down = null, score = null, up = null;
         function downVote(d) {
           if (down.style("color") == "rgb(255, 255, 255)") {
+            if (up.style("color") != "rgb(255,255,255)") {
+              score.text(parseInt(score.text()) - 1);
+            }
             down.style("color", "rgb(255, 165, 0)");
             up.style("color", "rgb(255, 255, 255)");
             score.text(parseInt(score.text()) - 1);
@@ -83,6 +86,9 @@
         }
         function upVote(d) {
           if (up.style("color") == "rgb(255, 255, 255)") {
+            if (down.style("color") != "rgb(255,255,255)") {
+              score.text(parseInt(score.text()) + 1);
+            }
             up.style("color", "rgb(255, 165, 0)");
             down.style("color", "rgb(255, 255, 255)");
             score.text(parseInt(score.text()) + 1);
