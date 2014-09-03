@@ -231,6 +231,8 @@ function annotationView(style, votingFns) {
 
     document.body.appendChild(container.node());
 
+    console.log(container.node().offsetWidth);
+
     // node.on('mouseout', function() {
     //   d3.select(this).on('mouseout', null); // patch for mouseout behavior
     //   document.body.removeChild(this);
