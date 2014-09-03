@@ -229,14 +229,16 @@ function annotationView(style, votingFns) {
     container.style('left', offsetLeft.toString() + 'px')
         .style('top', offsetTop.toString() + 'px');
 
+    var xoutLeft = bbox.ne.x;
+    console.log(xoutLeft, 'xoutLeft');
     container.append('span')
         .text('☓')
         .style({
           color: '#000',
           display: 'inline',
-          'font-size': '8px',
+          'font-size': '10px',
           'font-weight': 'bold',
-          left: bbox.ne.x,
+          left: xoutLeft,
           'line-height': 1,
           position: 'absolute',
           'text-align': 'center',
