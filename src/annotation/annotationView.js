@@ -146,6 +146,8 @@ function annotationView(style, votingFns) {
         var upvote = clickedArrow == up,
             adjust = upvote ? 1 : -1;
 
+        var scoreDatum = score.datum();
+
         if (clickedArrow.style('color') == defaultColor) {
           // fix vote if the other vote direction active
           if (otherArrow.style('color') == activeColor) {
@@ -154,14 +156,14 @@ function annotationView(style, votingFns) {
           clickedArrow.style('color', activeColor);
           otherArrow.style('color', defaultColor);
           score.text(parseInt(score.text()) + adjust);
+          scoreDatum.voted = true;
         } else {
           clickedArrow.style('color', defaultColor);
           score.text(parseInt(score.text()) - adjust);
+          scoreDatum.voted = false;
         }
 
-        var scoreDatum = score.datum();
         scoreDatum.score = parseInt(score.text());
-        scoreDatum.voted(true);
         score.datum(scoreDatum);
         console.log(scoreDatum);
       } // end abstractVote()

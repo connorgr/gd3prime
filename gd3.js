@@ -73,6 +73,7 @@
         var defaultColor = "rgb(255, 255, 255)", activeColor = "rgb(255, 165, 0)";
         function abstractVote(clickedArrow, otherArrow) {
           var upvote = clickedArrow == up, adjust = upvote ? 1 : -1;
+          var scoreDatum = score.datum();
           if (clickedArrow.style("color") == defaultColor) {
             if (otherArrow.style("color") == activeColor) {
               score.text(parseInt(score.text()) + adjust);
@@ -80,13 +81,13 @@
             clickedArrow.style("color", activeColor);
             otherArrow.style("color", defaultColor);
             score.text(parseInt(score.text()) + adjust);
+            scoreDatum.voted = true;
           } else {
             clickedArrow.style("color", defaultColor);
             score.text(parseInt(score.text()) - adjust);
+            scoreDatum.voted = false;
           }
-          var scoreDatum = score.datum();
           scoreDatum.score = parseInt(score.text());
-          scoreDatum.voted(true);
           score.datum(scoreDatum);
           console.log(scoreDatum);
         }
