@@ -218,8 +218,8 @@ function annotationView(style, votingFns) {
     var node = container.node(),
         scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft,
         scrollTop = document.documentElement.scrollTop || document.body.scrollTop,
-        nodeL =  bbox.n.x - node.offsetWidth / 2,
-        nodeT = bbox.n.y - node.offsetHeight;
+        nodeL =  bbox.s.x - node.offsetWidth / 2,
+        nodeT = bbox.s.y;
 
     var offsetTop = nodeT + scrollTop,
         offsetLeft = nodeL + scrollLeft;
