@@ -144,8 +144,10 @@ function annotationView(style, votingFns) {
         if (down.style('color') == 'rgb(255, 255, 255)') {
           down.style('color', 'rgb(255, 165, 0)');
           up.style('color', 'rgb(255, 255, 255)');
+          score.text(parseInt(score.text()) - 1 );
         } else {
           down.style('color', 'rgb(255, 255, 255)');
+          score.text(parseInt(score.text()) + 1 );
         }
 
         if (votingFns.downVote != undefined) votingFns.downVote(d);
@@ -154,8 +156,10 @@ function annotationView(style, votingFns) {
         if (up.style('color') == 'rgb(255, 255, 255)') {
           up.style('color', 'rgb(255, 165, 0)');
           down.style('color', 'rgb(255, 255, 255)');
+          score.text(parseInt(score.text()) + 1 );
         } else {
           up.style('color', 'rgb(255, 255, 255)');
+          score.text(parseInt(score.text()) - 1 );
         }
 
         if (votingFns.upVote) votingFns.upVote(d);
