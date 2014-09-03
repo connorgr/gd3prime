@@ -124,6 +124,7 @@
         var offsetTop = nodeT + scrollTop, offsetLeft = nodeL + scrollLeft;
         container.style("left", offsetLeft.toString() + "px").style("top", offsetTop.toString() + "px");
         document.body.appendChild(container.node());
+        console.log(container.node().offsetWidth);
       }
       selection.on("mouseover", activate);
     }
