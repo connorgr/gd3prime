@@ -135,21 +135,33 @@ function annotationView(style, votingFns) {
 
     // Append a voting counter
     function appendVote(selection, data) {
+      var down = null,
+          score = null,
+          up = null;
+
+
       function downVote(d) {
-        console.log(d3.select(this).style('color'), 'down');
-        var thisEl = d3.select(this);
-        if (thisEl.style('color') == 'rgb(255, 255, 255)') {
-          thisEl.style('color', 'rgb(255, 165, 0)');
+        if (down.style('color') == 'rgb(255, 255, 255)') {
+          down.style('color', 'rgb(255, 165, 0)');
+          up.style('color', 'rgb(255, 255, 255)');
         } else {
-          thisEl.style('color', 'rgb(255, 255, 255)')
+          down.style('color', 'rgb(255, 255, 255)');
         }
 
         if (votingFns.downVote != undefined) votingFns.downVote(d);
       }
       function upVote(d) {
-        console.log('up');
+        if (up.style('color') == 'rgb(255, 255, 255)') {
+          up.style('color', 'rgb(255, 165, 0)');
+          down.style('color', 'rgb(255, 255, 255)');
+        } else {
+          up.style('color', 'rgb(255, 255, 255)');
+        }
+
         if (votingFns.upVote) votingFns.upVote(d);
       }
+
+
       var textStyle = {
         color: '#fff',
         display: 'inline-block',
@@ -157,17 +169,17 @@ function annotationView(style, votingFns) {
         'font-size': style.fontSize,
         margin: '0px'
       }
-      var down = selection.append('p')
+      down = selection.append('p')
         .style(textStyle)
         .style('padding', '0')
         .style('cursor', 'pointer')
         .text('▼')
         .on('click', downVote);
-      var score = selection.append('p')
+      score = selection.append('p')
         .style(textStyle)
         .style('padding', '0 1px 0 1px')
         .text(data.score);
-      var up = selection.append('p')
+      up = selection.append('p')
         .style(textStyle)
         .style('padding', '0')
         .style('cursor', 'pointer')
