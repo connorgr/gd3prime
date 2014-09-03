@@ -73,9 +73,9 @@
           console.log(d3.select(this).style("color"), "down");
           var thisEl = d3.select(this);
           if (thisEl.style("color") == "rgb(255, 255, 255)") {
-            thisEl.style("color", "rgb(255, 0, 0)");
+            thisEl.style("color", "rgb(255, 165, 0)");
           } else {
-            thisEl.style("color", "rgb(255, 0, 255)");
+            thisEl.style("color", "rgb(255, 255, 255)");
           }
           if (votingFns.downVote != undefined) votingFns.downVote(d);
         }
