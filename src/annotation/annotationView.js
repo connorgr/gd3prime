@@ -235,7 +235,7 @@ function annotationView(style, votingFns) {
           'font-size': '6px',
           left: bbox.ne.x,
           position: 'absolute',
-          top: -8px
+          top: '-8px'
 
 
           //           display: inline;
