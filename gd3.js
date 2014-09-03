@@ -129,6 +129,7 @@
           d3.selectAll(".gd3AnnotationViewDiv").remove();
         }).style({
           color: "#000",
+          cursor: "pointer",
           display: "inline",
           "font-size": "10px",
           "font-weight": "bold",
