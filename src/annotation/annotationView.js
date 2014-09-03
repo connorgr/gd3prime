@@ -231,11 +231,16 @@ function annotationView(style, votingFns) {
 
     container.append('span')
         .style({
+          color: '#000',
           content: '\2613',
+          display: 'inline',
           'font-size': '6px',
           left: bbox.ne.x,
+          'line-height': 1,
           position: 'absolute',
-          top: '-8px'
+          'text-align': 'center',
+          top: '-8px',
+          width: '20px'
 
 
           //           display: inline;

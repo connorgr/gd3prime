@@ -124,11 +124,16 @@
         var offsetTop = nodeT + scrollTop, offsetLeft = nodeL + scrollLeft;
         container.style("left", offsetLeft.toString() + "px").style("top", offsetTop.toString() + "px");
         container.append("span").style({
+          color: "#000",
           content: "±3",
+          display: "inline",
           "font-size": "6px",
           left: bbox.ne.x,
+          "line-height": 1,
           position: "absolute",
-          top: "-8px"
+          "text-align": "center",
+          top: "-8px",
+          width: "20px"
         });
         console.log(container.node().offsetWidth);
       }
