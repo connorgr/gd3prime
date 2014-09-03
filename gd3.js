@@ -77,7 +77,6 @@
           } else {
             thisEl.style("color", "rgb(255, 0, 255)");
           }
-          d3.select(this).style("color", color);
           if (votingFns.downVote != undefined) votingFns.downVote(d);
         }
         function upVote(d) {
