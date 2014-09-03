@@ -71,36 +71,31 @@
       function appendVote(selection, data) {
         var down = null, score = null, up = null;
         var defaultColor = "rgb(255, 255, 255)", activeColor = "rgb(255, 165, 0)";
-        function downVote(d) {
-          if (down.style("color") == defaultColor) {
-            if (up.style("color") == activeColor) {
-              score.text(parseInt(score.text()) - 1);
+        function abstractVote(clickedArrow, otherArrow) {
+          var upvote = clickedArrow == up, adjust = upvote ? 1 : -1;
+          if (clickedArrow.style("color") == defaultColor) {
+            if (otherArrow.style("color")) {
+              score.text(parseInt(score.text()) + adjust);
             }
-            down.style("color", activeColor);
-            up.style("color", defaultColor);
-            score.text(parseInt(score.text()) - 1);
+            clickedArrow.style("color", activeColor);
+            otherArrow.style("color", defaultColor);
+            score.text(parseInt(score.text()) + adjust);
           } else {
-            down.style("color", defaultColor);
+            clickedArrow.style("color", defaultColor);
             score.text(parseInt(score.text()) + 1);
           }
           var scoreDatum = score.datum();
           scoreDatum.score = parseInt(score.text());
           score.datum(scoreDatum);
+          score.voted(true);
           console.log(scoreDatum);
+        }
+        function downVote(d) {
+          abstractVote(down, up);
           if (votingFns.downVote != undefined) votingFns.downVote(d);
         }
         function upVote(d) {
-          if (up.style("color") == defaultColor) {
-            if (down.style("color") == activeColor) {
-              score.text(parseInt(score.text()) + 1);
-            }
-            up.style("color", activeColor);
-            down.style("color", defaultColor);
-            score.text(parseInt(score.text()) + 1);
-          } else {
-            up.style("color", defaultColor);
-            score.text(parseInt(score.text()) - 1);
-          }
+          abstractVote(up, down);
           if (votingFns.upVote) votingFns.upVote(d);
         }
         var textStyle = {
