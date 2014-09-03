@@ -214,6 +214,8 @@ function annotationView(style, votingFns) {
       }
     }
 
+    document.body.appendChild(container.node());
+
     // Determine positioning of the annotation
     var node = container.node(),
         scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft,
@@ -221,15 +223,11 @@ function annotationView(style, votingFns) {
         nodeL =  bbox.s.x - node.offsetWidth / 2,
         nodeT = bbox.s.y;
 
-    console.log(node.offsetWidth);
-
     var offsetTop = nodeT + scrollTop,
         offsetLeft = nodeL + scrollLeft;
 
     container.style('left', offsetLeft.toString() + 'px')
         .style('top', offsetTop.toString() + 'px');
-
-    document.body.appendChild(container.node());
 
     console.log(container.node().offsetWidth);
 
