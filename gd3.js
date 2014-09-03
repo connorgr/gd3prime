@@ -86,8 +86,8 @@
           }
           var scoreDatum = score.datum();
           scoreDatum.score = parseInt(score.text());
+          scoreDatum.voted(true);
           score.datum(scoreDatum);
-          score.voted(true);
           console.log(scoreDatum);
         }
         function downVote(d) {
