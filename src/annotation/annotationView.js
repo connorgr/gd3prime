@@ -241,7 +241,7 @@ function annotationView(style, votingFns) {
           left: xoutLeft,
           'line-height': 1,
           position: 'absolute',
-          'text-align': 'center',
+          'text-align': 'right',
           top: '-8px',
           width: '20px'
 
