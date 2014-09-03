@@ -234,7 +234,8 @@ function annotationView(style, votingFns) {
         .style({
           color: '#000',
           display: 'inline',
-          'font-size': '6px',
+          'font-size': '8px',
+          'font-weight': 'bold',
           left: bbox.ne.x,
           'line-height': 1,
           position: 'absolute',
