@@ -192,7 +192,7 @@ function annotationView(style, votingFns) {
 
     // Create the new tooltip
     var container = d3.select(document.createElement('div'));
-    container.attr('class', 'gd3AnnotationViewDiv');
+    container.classed('class', 'gd3AnnotationViewDiv');
     container.style({
       background: 'rgba(0,0,0,.75)',
       'border-radius': '3px',
@@ -223,19 +223,6 @@ function annotationView(style, votingFns) {
 
     var offsetTop = nodeT + scrollTop,
         offsetLeft = nodeL + scrollLeft;
-
-    container.append('span')
-        .style({
-          'box-sizing': 'border-box',
-          display: 'inline',
-          'font-size': '10px',
-          width: '100%',
-          'line-height': 1,
-          color: 'rgba(0, 0, 0, 0.8)',
-          content: '\25BC',
-          position: 'absolute',
-          'text-align': 'center'
-        });
 
     container.style('left', offsetLeft.toString() + 'px')
         .style('top', offsetTop.toString() + 'px');
