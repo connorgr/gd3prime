@@ -83,8 +83,10 @@
             down.style("color", defaultColor);
             score.text(parseInt(score.text()) + 1);
           }
-          scoreData = score.datum();
-          console.log(scoreData);
+          var scoreDatum = score.datum();
+          scoreDatum.score = parseInt(score.text());
+          score.datum(scoreDatum);
+          console.log(scoreDatum);
           if (votingFns.downVote != undefined) votingFns.downVote(d);
         }
         function upVote(d) {
