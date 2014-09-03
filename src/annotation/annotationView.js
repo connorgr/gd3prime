@@ -4,6 +4,8 @@ function annotationView(style, votingFns) {
       svg = null,
       target = null;
 
+  var votingFns = votingFns || {};
+
   // var svg = document.getElementById('#gd3AnnotationSvgPtHelper');
   // if(svg === null) {
   //   svg = document.createElement('svg');
@@ -140,7 +142,7 @@ function annotationView(style, votingFns) {
       }
       function upVote(d) {
         console.log('up');
-        if (votingFns.downVote) votingFns.downVote(d);
+        if (votingFns.upVote) votingFns.upVote(d);
       }
       var textStyle = {
         color: '#fff',

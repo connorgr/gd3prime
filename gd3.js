@@ -12,6 +12,7 @@
   }
   function annotationView(style, votingFns) {
     var point = null, svg = null, target = null;
+    var votingFns = votingFns || {};
     function getScreenBBox() {
       var targetel = d3.event.target, bbox = {}, matrix = targetel.getScreenCTM(), tbbox = targetel.getBBox(), width = tbbox.width, height = tbbox.height, x = tbbox.x, y = tbbox.y;
       point.x = x;
@@ -75,7 +76,7 @@
         }
         function upVote(d) {
           console.log("up");
-          if (votingFns.downVote) votingFns.downVote(d);
+          if (votingFns.upVote) votingFns.upVote(d);
         }
         var textStyle = {
           color: "#fff",
