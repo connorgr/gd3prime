@@ -156,7 +156,7 @@ function annotationView(style, votingFns) {
           score.text(parseInt(score.text()) + adjust);
         } else {
           clickedArrow.style('color', defaultColor);
-          score.text(parseInt(score.text()) + 1 );
+          score.text(parseInt(score.text()) + adjust );
         }
 
         var scoreDatum = score.datum();
