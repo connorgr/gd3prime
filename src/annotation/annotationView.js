@@ -148,7 +148,7 @@ function annotationView(style, votingFns) {
 
         if (clickedArrow.style('color') == defaultColor) {
           // fix vote if the other vote direction active
-          if (otherArrow.style('color')) {
+          if (otherArrow.style('color') == activeColor) {
             score.text( parseInt(score.text()) + adjust );
           }
           clickedArrow.style('color', activeColor);

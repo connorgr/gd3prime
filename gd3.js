@@ -74,7 +74,7 @@
         function abstractVote(clickedArrow, otherArrow) {
           var upvote = clickedArrow == up, adjust = upvote ? 1 : -1;
           if (clickedArrow.style("color") == defaultColor) {
-            if (otherArrow.style("color")) {
+            if (otherArrow.style("color") == activeColor) {
               score.text(parseInt(score.text()) + adjust);
             }
             clickedArrow.style("color", activeColor);
