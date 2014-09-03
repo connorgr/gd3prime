@@ -83,9 +83,9 @@
           "font-size": style.fontSize,
           margin: "0px"
         };
-        selection.append("p").style(textStyle).style("padding", "0").text("-1").on("click", downVote);
+        selection.append("p").style(textStyle).style("padding", "0").text("▼").on("click", downVote);
         selection.append("p").style(textStyle).style("background", "#aaa").style("padding", "0 1px 0 1px").text(data.score);
-        selection.append("p").style(textStyle).style("padding", "0").text("+1").on("click", upVote);
+        selection.append("p").style(textStyle).style("padding", "0").text("▲").on("click", upVote);
       }
       function activate(d) {
         if (d.annotation == undefined) {

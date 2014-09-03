@@ -151,7 +151,7 @@ function annotationView(style, votingFns) {
       selection.append('p')
         .style(textStyle)
         .style('padding', '0')
-        .text('-1')
+        .text('▼')
         .on('click', downVote);
       selection.append('p')
         .style(textStyle)
@@ -161,7 +161,7 @@ function annotationView(style, votingFns) {
       selection.append('p')
         .style(textStyle)
         .style('padding', '0')
-        .text('+1')
+        .text('▲')
         .on('click', upVote);
     }
 
