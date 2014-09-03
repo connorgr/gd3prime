@@ -125,7 +125,9 @@
         container.style("left", offsetLeft.toString() + "px").style("top", offsetTop.toString() + "px");
         var xoutLeft = (node.offsetWidth - 10).toString() + "px";
         console.log(xoutLeft, "xoutLeft");
-        container.append("span").text("☓").style({
+        container.append("span").text("☓").on("click", function() {
+          d3.selectAll(".gd3AnnotationViewDiv").remove();
+        }).style({
           color: "#000",
           display: "inline",
           "font-size": "10px",

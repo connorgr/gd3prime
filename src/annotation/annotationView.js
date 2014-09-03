@@ -229,10 +229,14 @@ function annotationView(style, votingFns) {
     container.style('left', offsetLeft.toString() + 'px')
         .style('top', offsetTop.toString() + 'px');
 
+    // Add an "x-out" button for the annotation
     var xoutLeft = (node.offsetWidth - 10).toString() + 'px';
     console.log(xoutLeft, 'xoutLeft');
     container.append('span')
         .text('☓')
+        .on('click', function() {
+          d3.selectAll('.gd3AnnotationViewDiv').remove();
+        })
         .style({
           color: '#000',
           display: 'inline',
