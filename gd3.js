@@ -667,6 +667,7 @@
           summaryGroupsColumns.selectAll("rect").attr("width", colWidth);
         }
         function renderMutationMatrix() {
+          console.log(data);
           var colWidth = wholeVisX(1) - wholeVisX(0);
           firstGroupColumns.selectAll("rect").data(function(d) {
             return d.value.activeRows.map(function(row) {
