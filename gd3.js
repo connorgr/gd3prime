@@ -479,17 +479,7 @@
       for (var k in Object.keys(result.rowsToColumns)) {
         var key = Object.keys(result.rowsToColumns)[k], rTC = result.rowsToColumns, row = rTC[key];
         row.forEach(function(col) {
-          var testAnnotation = [];
-          testAnnotation.push({
-            text: "Test",
-            title: "Sample",
-            type: "text"
-          });
-          var cellInformation = {
-            annotation: testAnnotation,
-            row: key
-          };
-          result.byColumn[col].activeRows.push(cellInformation);
+          result.byColumn[col].activeRows.push(key);
         });
       }
       result.getColumnIds = function() {
@@ -677,7 +667,6 @@
           summaryGroupsColumns.selectAll("rect").attr("width", colWidth);
         }
         function renderMutationMatrix() {
-          console.log(data);
           var colWidth = wholeVisX(1) - wholeVisX(0);
           firstGroupColumns.selectAll("rect").data(function(d) {
             return d.value.activeRows.map(function(row) {
@@ -702,7 +691,7 @@
             return style.rowHeight * data.rowNames.indexOf(d.row) + style.rowHeight;
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.type];
-          }).call(gd3.annotation());
+          });
         }
         if (options.showSummary == true) {
           var summaryArea = selection.append("div");
