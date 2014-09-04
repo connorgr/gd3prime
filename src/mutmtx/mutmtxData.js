@@ -85,6 +85,16 @@ function mutmtxData(data) {
           rTC = result.rowsToColumns,
           row = rTC[key];
       row.forEach(function(col) {
+        var testAnnotation = []
+        annotation.push({
+          text: 'Test',
+          title: 'Sample',
+          type: 'text'
+        });
+        var cellInformation = {
+          annotation: testAnnotation,
+          row: key
+        };
         result.byColumn[col].activeRows.push(key);
       });
     }

@@ -479,6 +479,16 @@
       for (var k in Object.keys(result.rowsToColumns)) {
         var key = Object.keys(result.rowsToColumns)[k], rTC = result.rowsToColumns, row = rTC[key];
         row.forEach(function(col) {
+          var testAnnotation = [];
+          annotation.push({
+            text: "Test",
+            title: "Sample",
+            type: "text"
+          });
+          var cellInformation = {
+            annotation: testAnnotation,
+            row: key
+          };
           result.byColumn[col].activeRows.push(key);
         });
       }
