@@ -679,7 +679,7 @@
             return style.rowHeight * data.rowNames.indexOf(d.row);
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.type];
-          });
+          }).call(gd3.annotation());
           summaryGroupsColumns.selectAll("rect").data(function(d) {
             return d.value.activeRows.map(function(row) {
               return {
@@ -691,7 +691,7 @@
             return style.rowHeight * data.rowNames.indexOf(d.row) + style.rowHeight;
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.type];
-          });
+          }).call(gd3.annotation());
         }
         if (options.showSummary == true) {
           var summaryArea = selection.append("div");
