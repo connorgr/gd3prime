@@ -86,7 +86,7 @@ function mutmtxData(data) {
           row = rTC[key];
       row.forEach(function(col) {
         var testAnnotation = []
-        annotation.push({
+        testAnnotation.push({
           text: 'Test',
           title: 'Sample',
           type: 'text'

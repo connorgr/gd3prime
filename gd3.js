@@ -480,7 +480,7 @@
         var key = Object.keys(result.rowsToColumns)[k], rTC = result.rowsToColumns, row = rTC[key];
         row.forEach(function(col) {
           var testAnnotation = [];
-          annotation.push({
+          testAnnotation.push({
             text: "Test",
             title: "Sample",
             type: "text"
