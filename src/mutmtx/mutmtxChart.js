@@ -152,7 +152,6 @@ function mutmtxChart(style) {
 
 
       function renderMutationMatrix() {
-        console.log(data);
         var colWidth = wholeVisX(1)-wholeVisX(0);
 
         firstGroupColumns.selectAll('rect')
@@ -180,8 +179,7 @@ function mutmtxChart(style) {
             })
             .attr('height', style.rowHeight)
             .attr('width', colWidth)
-            .style('fill', function(d) { return colTypeToColor[d.type]; })
-            .call(gd3.annotation());
+            .style('fill', function(d) { return colTypeToColor[d.type]; });
       }
 
       if(options.showSummary == true) {
