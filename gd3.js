@@ -489,7 +489,7 @@
             annotation: testAnnotation,
             row: key
           };
-          result.byColumn[col].activeRows.push(key);
+          result.byColumn[col].activeRows.push(cellInformation);
         });
       }
       result.getColumnIds = function() {
