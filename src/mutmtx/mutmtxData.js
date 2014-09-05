@@ -5,5 +5,7 @@ function mutmtxData(inputData) {
     console.log(inputData);
   }
 
+  parseMagi();
+
   return data;
 }

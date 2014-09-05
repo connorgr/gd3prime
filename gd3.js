@@ -409,6 +409,7 @@
     function parseMagi() {
       console.log(inputData);
     }
+    parseMagi();
     return data;
   }
   function mutmtxChart(style) {
