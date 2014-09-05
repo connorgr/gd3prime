@@ -48,7 +48,7 @@ function mutmtxData(inputData) {
     });
     Object.keys(inputData.M).forEach(function(k, i) {
       data.maps.rowIdToLabel[i] = k;
-      data.labels.rows[i].push(k);
+      data.labels.rows.push(k);
     });
 
     parseDatasets();
