@@ -90,14 +90,13 @@ function mutmtxChart(style) {
       var firstGroup = matrix.append('g')
                 .attr('class', '.mutmtxFirstGroup');
       var firstGroupColumns = firstGroup.selectAll('g')
-              .data(data.get('matrix'))
+              .data(data.get('labels').columns)
               .enter()
               .append('g')
                 .attr('class', 'mutmtxColumn')
                 .attr('id', function(d) { return d.key; })
-                .attr('transform', function(d) {
-                  var colIndex = data.getColumnNames().indexOf(d.key);
-                  return 'translate('+wholeVisX(colIndex)+',0)';
+                .attr('transform', function(d, i) {
+                  return 'translate('+wholeVisX(i)+',0)';
                 });
 
       // var summaryGroups = matrix.selectAll('.mutmtxSummaryGroup')
