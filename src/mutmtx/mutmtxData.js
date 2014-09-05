@@ -2,16 +2,21 @@ function mutmtxData(inputData) {
   var data = {
     datasets: [],
     labels: {
-      columns: {},
-      rows: {}
+      columns: [],
+      rows: []
+    },
+    maps: {
+      columnIdToLabel: {},
+      rowIdToLabel: {}
     },
     matrix: {}
   };
 
   data.get = function(attr) {
     if (!attr) return null;
-    if (attr === 'matrix') return data.matrix;
-    if (attr === 'labels') return data.labels;
+    else if (attr === 'datasets') return data.datsets;
+    else if (attr === 'labels') return data.labels;
+    else if (attr === 'matrix') return data.matrix;
   }
 
   function parseMagi() {
@@ -37,9 +42,13 @@ function mutmtxData(inputData) {
     data.matrix = inputData.M;
 
     // Scrape labels from the matrix
-    inputData.samples.forEach(function(s) { data.labels.columns[s._id] = s.name; });
+    inputData.samples.forEach(function(s) {
+      data.maps.columnIdToLabel[s._id] = s.name;
+      data.labels.columns.push(s.name);
+    });
     Object.keys(inputData.M).forEach(function(k, i) {
-      data.labels.rows[i] = k;
+      data.maps.rowIdToLabel[i] = k;
+      data.labels.rows[i].push(k);
     });
 
     parseDatasets();

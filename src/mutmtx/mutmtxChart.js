@@ -13,9 +13,10 @@ function mutmtxChart(style) {
 
       // Determine coloration
       var d3color = d3.scale.category20(),
-          colTypeToColor = {};
-      for (var i = 0; i < data.columnTypes.length; i++) {
-        colTypeToColor[data.columnTypes[i]] = d3color(i);
+          colTypeToColor = {},
+          datasets = data.get('datasets');
+      for (var i = 0; i < datasets.length; i++) {
+        colTypeToColor[datasets[i]] = d3color(i);
       }
 
       // Select the svg element, if it exists.
@@ -41,7 +42,7 @@ function mutmtxChart(style) {
               .attr('y', 0)
               .style('fill', '#fff'),
           rowLabels = rowLabelsG.selectAll('text')
-              .data(data.rowNames)
+              .data(data.get('labels').rows)
               .enter()
                 .append('text')
                     .attr('text-anchor', 'end')

@@ -408,15 +408,17 @@
     var data = {
       datasets: [],
       labels: {
-        columns: {},
-        rows: {}
+        columns: [],
+        rows: []
+      },
+      maps: {
+        columnIdToLabel: {},
+        rowIdToLabel: {}
       },
       matrix: {}
     };
     data.get = function(attr) {
-      if (!attr) return null;
-      if (attr === "matrix") return data.matrix;
-      if (attr === "labels") return data.labels;
+      if (!attr) return null; else if (attr === "datasets") return data.datsets; else if (attr === "labels") return data.labels; else if (attr === "matrix") return data.matrix;
     };
     function parseMagi() {
       function parseDatasets() {
@@ -436,10 +438,12 @@
       }
       data.matrix = inputData.M;
       inputData.samples.forEach(function(s) {
-        data.labels.columns[s._id] = s.name;
+        data.maps.columnIdToLabel[s._id] = s.name;
+        data.labels.columns.push(s.name);
       });
       Object.keys(inputData.M).forEach(function(k, i) {
-        data.labels.rows[i] = k;
+        data.maps.rowIdToLabel[i] = k;
+        data.labels.rows[i].push(k);
       });
       parseDatasets();
     }
@@ -456,14 +460,14 @@
       selection.each(function(data) {
         data = mutmtxData(data);
         var height = style.fullHeight, width = style.fullWidth;
-        var d3color = d3.scale.category20(), colTypeToColor = {};
-        for (var i = 0; i < data.columnTypes.length; i++) {
-          colTypeToColor[data.columnTypes[i]] = d3color(i);
+        var d3color = d3.scale.category20(), colTypeToColor = {}, datasets = data.get("datasets");
+        for (var i = 0; i < datasets.length; i++) {
+          colTypeToColor[datasets[i]] = d3color(i);
         }
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg");
         svg.attr("id", "mutation-matrix").attr("width", width).attr("height", height + style.labelHeight).attr("xmlns", "http://www.w3.org/2000/svg");
         var matrix = svg.append("g");
-        var rowLabelsG = svg.append("g").attr("class", "mutmtx-rowLabels"), rowLabelsBG = rowLabelsG.append("rect").attr("x", 0).attr("y", 0).style("fill", "#fff"), rowLabels = rowLabelsG.selectAll("text").data(data.rowNames).enter().append("text").attr("text-anchor", "end").attr("x", 0).attr("y", function(d, i) {
+        var rowLabelsG = svg.append("g").attr("class", "mutmtx-rowLabels"), rowLabelsBG = rowLabelsG.append("rect").attr("x", 0).attr("y", 0).style("fill", "#fff"), rowLabels = rowLabelsG.selectAll("text").data(data.get("labels").rows).enter().append("text").attr("text-anchor", "end").attr("x", 0).attr("y", function(d, i) {
           return style.rowHeight * data.rowNames.indexOf(d) + style.rowHeight - 3;
         }).style("font-family", style.fontFamily).text(function(d) {
           return d;
