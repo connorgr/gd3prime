@@ -461,7 +461,7 @@
         data = mutmtxData(data);
         var height = style.fullHeight, width = style.fullWidth;
         var d3color = d3.scale.category20(), colTypeToColor = {}, datasets = data.get("datasets");
-        console.log("datasets:", datasets);
+        console.log("datasets:", datasets, data);
         for (var i = 0; i < datasets.length; i++) {
           colTypeToColor[datasets[i]] = d3color(i);
         }
