@@ -66,16 +66,17 @@ function mutmtxChart(style) {
       rowLabelsBG.attr('width', style.labelWidth).attr('height', rowLabelsG.node().getBBox().height);
 
       // Add horizontal rules to the table
-      var rowRules = svg.append('g')
+      var rowNames = data.get('labels').rows,
+          rowRules = svg.append('g')
               .attr('class', 'mutmtxRowRules')
               .selectAll('line')
-              .data(data.rowNames)
+              .data(rowNames)
               .enter()
                 .append('line')
                     .attr('x1', style.labelWidth)
                     .attr('x2', style.labelWidth + style.matrixWidth)
-                    .attr('y1', function(d,i) { return style.rowHeight*data.rowNames.indexOf(d) + style.rowHeight})
-                    .attr('y2', function(d,i) { return style.rowHeight*data.rowNames.indexOf(d) + style.rowHeight})
+                    .attr('y1', function(d,i) { return style.rowHeight*rowNames.indexOf(d) + style.rowHeight})
+                    .attr('y2', function(d,i) { return style.rowHeight*rowNames.indexOf(d) + style.rowHeight})
                     .style('stroke-width', '.5px')
                     .style('stroke', '#ddd');
 

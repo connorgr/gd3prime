@@ -481,10 +481,10 @@
         style.labelWidth = Math.ceil(maxTextWidth) + 5;
         style.matrixWidth = width - style.labelWidth;
         rowLabelsBG.attr("width", style.labelWidth).attr("height", rowLabelsG.node().getBBox().height);
-        var rowRules = svg.append("g").attr("class", "mutmtxRowRules").selectAll("line").data(data.rowNames).enter().append("line").attr("x1", style.labelWidth).attr("x2", style.labelWidth + style.matrixWidth).attr("y1", function(d, i) {
-          return style.rowHeight * data.rowNames.indexOf(d) + style.rowHeight;
+        var rowNames = data.get("labels").rows, rowRules = svg.append("g").attr("class", "mutmtxRowRules").selectAll("line").data(rowNames).enter().append("line").attr("x1", style.labelWidth).attr("x2", style.labelWidth + style.matrixWidth).attr("y1", function(d, i) {
+          return style.rowHeight * rowNames.indexOf(d) + style.rowHeight;
         }).attr("y2", function(d, i) {
-          return style.rowHeight * data.rowNames.indexOf(d) + style.rowHeight;
+          return style.rowHeight * rowNames.indexOf(d) + style.rowHeight;
         }).style("stroke-width", ".5px").style("stroke", "#ddd");
         data.reorderColumns();
         var wholeVisX = d3.scale.linear().domain([ 0, data.getVisibleColumns().length ]).range([ style.labelWidth, width ]);
