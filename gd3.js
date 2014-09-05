@@ -419,17 +419,20 @@
       if (attr === "labels") return data.labels;
     };
     function parseMagi() {
-      function addDatasetsToMatrix() {
-        var matrix = data.matrix;
+      function parseDatasets() {
+        var matrix = data.matrix, datasetList = {};
         for (var rowKey in matrix) {
           if (matrix.hasOwnProperty(rowKey)) {
             for (var colKey in matrix[rowKey]) {
               if (matrix[rowKey].hasOwnProperty(colKey)) {
-                matrix[rowKey][colKey].dataset = inputData.sampleToTypes[colKey];
+                dataset = inputData.sampleToTypes[colKey];
+                matrix[rowKey][colKey].dataset = dataset;
+                datasetList[dataset] = null;
               }
             }
           }
         }
+        data.datasets = Object.keys(datasetList);
       }
       data.matrix = inputData.M;
       inputData.samples.forEach(function(s) {
@@ -438,7 +441,7 @@
       Object.keys(inputData.M).forEach(function(k, i) {
         data.labels.rows[i] = k;
       });
-      addDatasetsToMatrix();
+      parseDatasets();
     }
     parseMagi();
     console.log(inputData);
