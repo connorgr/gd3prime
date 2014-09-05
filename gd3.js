@@ -433,7 +433,7 @@
       }
       data.matrix = inputData.M;
       inputData.samples.forEach(function(s) {
-        columns[s._id] = s.name;
+        data.labels.columns[s._id] = s.name;
       });
       Object.keys(inputData.M).forEach(function(k, i) {
         data.labels.rows[i] = k;

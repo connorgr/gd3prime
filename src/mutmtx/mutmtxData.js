@@ -32,7 +32,7 @@ function mutmtxData(inputData) {
     data.matrix = inputData.M;
 
     // Scrape labels from the matrix
-    inputData.samples.forEach(function(s) { columns[s._id] = s.name; });
+    inputData.samples.forEach(function(s) { data.labels.columns[s._id] = s.name; });
     Object.keys(inputData.M).forEach(function(k, i) {
       data.labels.rows[i] = k;
     });
