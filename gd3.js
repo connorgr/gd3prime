@@ -418,7 +418,7 @@
       matrix: {}
     };
     data.get = function(attr) {
-      if (!attr) return null; else if (attr == "datasets") return data.datsets; else if (attr == "labels") return data.labels; else if (attr == "matrix") return data.matrix;
+      if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "labels") return data.labels; else if (attr === "matrix") return data.matrix;
     };
     function parseMagi() {
       function parseDatasets() {
