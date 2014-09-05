@@ -15,7 +15,7 @@ function mutmtxChart(style) {
       var d3color = d3.scale.category20(),
           colTypeToColor = {},
           datasets = data.get('datasets');
-      console.log('datasets:', datasets, data);
+
       for (var i = 0; i < datasets.length; i++) {
         colTypeToColor[datasets[i]] = d3color(i);
       }
@@ -48,7 +48,7 @@ function mutmtxChart(style) {
                 .append('text')
                     .attr('text-anchor', 'end')
                     .attr('x', 0)
-                    .attr('y', function(d,i) { return style.rowHeight*data.rowNames.indexOf(d) + style.rowHeight - 3})
+                    .attr('y', function(d,i) { return style.rowHeight*data.labels.rows.indexOf(d) + style.rowHeight - 3})
                     .style('font-family', style.fontFamily)
                     .text(function(d){return d});
 

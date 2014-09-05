@@ -461,7 +461,6 @@
         data = mutmtxData(data);
         var height = style.fullHeight, width = style.fullWidth;
         var d3color = d3.scale.category20(), colTypeToColor = {}, datasets = data.get("datasets");
-        console.log("datasets:", datasets, data);
         for (var i = 0; i < datasets.length; i++) {
           colTypeToColor[datasets[i]] = d3color(i);
         }
@@ -469,7 +468,7 @@
         svg.attr("id", "mutation-matrix").attr("width", width).attr("height", height + style.labelHeight).attr("xmlns", "http://www.w3.org/2000/svg");
         var matrix = svg.append("g");
         var rowLabelsG = svg.append("g").attr("class", "mutmtx-rowLabels"), rowLabelsBG = rowLabelsG.append("rect").attr("x", 0).attr("y", 0).style("fill", "#fff"), rowLabels = rowLabelsG.selectAll("text").data(data.get("labels").rows).enter().append("text").attr("text-anchor", "end").attr("x", 0).attr("y", function(d, i) {
-          return style.rowHeight * data.rowNames.indexOf(d) + style.rowHeight - 3;
+          return style.rowHeight * data.labels.rows.indexOf(d) + style.rowHeight - 3;
         }).style("font-family", style.fontFamily).text(function(d) {
           return d;
         });
