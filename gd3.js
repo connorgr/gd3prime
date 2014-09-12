@@ -445,7 +445,7 @@
         return d3.ascending(data.maps.columnIdToType[c1], data.maps.columnIdToType[c2]);
       }
       var sortFns = [ sortByFirstActiveRow, sortByColumnType, sortByExclusivity, sortByName ];
-      result.columnIds.sort(function(c1, c2) {
+      data.ids.columns.sort(function(c1, c2) {
         var sortResult;
         for (var i = 0; i < sortFns.length; i++) {
           sortResult = sortFns[i](c1, c2);
