@@ -75,7 +75,7 @@ function mutmtxData(inputData) {
 
         // Add cell data
         data.matrix.cells[[rowId,colId].join()] = {
-          dataset: inputData.sampleToTypes[colKey],
+          dataset: inputData.sampleToTypes[colId],
           type: inputData.M[rowLabel][colId][0]
         };
       });
