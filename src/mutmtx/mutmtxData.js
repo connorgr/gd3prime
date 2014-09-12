@@ -34,7 +34,7 @@ function mutmtxData(inputData) {
       data.labels.columns.push(s.name);
     });
     Object.keys(inputData.M).forEach(function(k, i) {
-      data.maps.rowIdToLabel[i] = k;
+      data.maps.rowIdToLabel[i.toString()] = k;
       data.labels.rows.push(k);
     });
     data.ids.columns = Object.keys(data.maps.columnIdToLabel);
