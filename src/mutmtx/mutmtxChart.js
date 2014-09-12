@@ -90,7 +90,7 @@ function mutmtxChart(style) {
       var firstGroup = matrix.append('g')
                 .attr('class', '.mutmtxFirstGroup');
       var firstGroupColumns = firstGroup.selectAll('g')
-              .data(data.get('labels').columns)
+              .data(data.get('ids').columns)
               .enter()
               .append('g')
                 .attr('class', 'mutmtxColumn')
