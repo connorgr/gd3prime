@@ -457,12 +457,8 @@
           if (!data.matrix.columnIdToActiveRows[colId]) {
             data.matrix.columnIdToActiveRows[colId] = [];
           }
-          console.log(data.matrix.columnIdToActiveRows[colId]);
           data.matrix.columnIdToActiveRows[colId].push(rowId);
-          data.matrix.cells[{
-            col: colId,
-            row: rowId
-          }] = {
+          data.matrix.cells[[ rowId, colId ].join()] = {
             dataset: null,
             type: inputData.M[rowLabel][colId][0]
           };
