@@ -50,6 +50,7 @@ function mutmtxData(inputData) {
     // Build matrix data and maps
     Object.keys(inputData.M).forEach(function(rowLabel, rowId) {
       var columns = Object.keys(inputData.M[rowLabel]);
+      rowId = rowId.toString();
       // Add rowId -> columns mapping
       data.matrix.rowIdToActiveColumns[rowId] = columns;
       // Add columnId -> row mapping

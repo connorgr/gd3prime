@@ -446,6 +446,7 @@
       data.datasets = Object.keys(setOfDatasets);
       Object.keys(inputData.M).forEach(function(rowLabel, rowId) {
         var columns = Object.keys(inputData.M[rowLabel]);
+        rowId = rowId.toString();
         data.matrix.rowIdToActiveColumns[rowId] = columns;
         columns.forEach(function(colId) {
           if (!data.matrix.columnIdToActiveRows[colId]) {
