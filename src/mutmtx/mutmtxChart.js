@@ -141,7 +141,6 @@ function mutmtxChart(style) {
 
         var colWidth = wholeVisX(1)-wholeVisX(0);
         firstGroupColumns.attr('transform', function(d) {
-              console.log(d);
               var colIndex = data.ids.columns.indexOf(d);
               return 'translate('+wholeVisX(colIndex)+',0)';
             });
@@ -168,6 +167,7 @@ function mutmtxChart(style) {
             .append('rect')
               .attr('x', 0)
               .attr('y', function(d) {
+                console.log(d);
                 return style.rowHeight*data.ids.rows.indexOf(d.row);
               })
               .attr('height', style.rowHeight)
