@@ -167,7 +167,6 @@ function mutmtxChart(style) {
             .append('rect')
               .attr('x', 0)
               .attr('y', function(d) {
-                console.log(d.row, data.ids.rows, data.ids.rows.indexOf(d.row), style.rowHeight);
                 return style.rowHeight*data.ids.rows.indexOf(d.row);
               })
               .attr('height', style.rowHeight)
