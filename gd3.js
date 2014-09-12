@@ -533,7 +533,7 @@
             var activeRows = data.matrix.columnIdToActiveRows[colId];
             return activeRows.map(function(rowId) {
               return {
-                row: row,
+                row: rowId,
                 cell: data.matrix.cells[[ rowId, colId ].join()]
               };
             });

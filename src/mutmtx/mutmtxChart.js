@@ -160,7 +160,7 @@ function mutmtxChart(style) {
             .data(function(colId){
               var activeRows = data.matrix.columnIdToActiveRows[colId];
               return activeRows.map(function(rowId){
-                return {row:row, cell:data.matrix.cells[[rowId, colId].join()]}
+                return {row:rowId, cell:data.matrix.cells[[rowId, colId].join()]}
               });
             })
             .enter()
