@@ -171,7 +171,7 @@ function mutmtxChart(style) {
               })
               .attr('height', style.rowHeight)
               .attr('width', colWidth)
-              .style('fill', function(d) { console.log(d, d.datset, colTypeToColor); return colTypeToColor[d.dataset]; })
+              .style('fill', function(d) { return colTypeToColor[d.cell.dataset]; })
               .call(gd3.annotation());
 
         // summaryGroupsColumns.selectAll('rect')
