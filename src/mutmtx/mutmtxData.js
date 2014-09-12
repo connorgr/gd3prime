@@ -43,7 +43,7 @@ function mutmtxData(inputData) {
       return d3.ascending(data.labels.column[c1],data.labels.column[c2]);
     }
     function sortByColumnType(c1,c2) {
-      return d3.ascending(data.columnIdToType[c1], data.columnIdToType[c2]);
+      return d3.ascending(data.maps.columnIdToType[c1], data.maps.columnIdToType[c2]);
     }
 
     var sortFns = [sortByFirstActiveRow, sortByColumnType, sortByExclusivity, sortByName];
@@ -76,7 +76,7 @@ function mutmtxData(inputData) {
     var setOfDatasets = {};
     Object.keys(inputData.sampleToTypes).forEach(function(colId) {
       setOfDatasets[inputData.sampleToTypes[colId]] = null;
-      data.columnIdToType[colId] = inputData.sampleToTypes[colId];
+      data.maps.columnIdToType[colId] = inputData.sampleToTypes[colId];
     });
     data.datasets = Object.keys(setOfDatasets);
 
