@@ -538,7 +538,7 @@
               };
             });
           }).enter().append("rect").attr("x", 0).attr("y", function(d) {
-            return style.rowHeight * data.rowNames.indexOf(d.row);
+            return style.rowHeight * data.ids.indexOf(d.row);
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.type];
           }).call(gd3.annotation());
