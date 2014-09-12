@@ -417,6 +417,7 @@
       },
       maps: {
         columnIdToLabel: {},
+        columnIdToType: {},
         rowIdToLabel: {}
       },
       matrix: {
@@ -427,6 +428,33 @@
     };
     data.get = function(attr) {
       if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "ids") return data.ids; else if (attr === "labels") return data.labels;
+    };
+    data.reorderColumns = function() {
+      function sortByExclusivity(c1, c2) {
+        var c1X = data.matrix.columnIdToActiveRows[c1].length > 1, c2X = data.matrix.columnIdToActiveRows[c2].length > 1;
+        return d3.ascending(c1X, c2X);
+      }
+      function sortByFirstActiveRow(c1, c2) {
+        var c1First = data.matrix.columnIdToActiveRows[c1][0], c2First = data.matrix.columnIdToActiveRows[c2][0];
+        return d3.descending(c1First, c2First);
+      }
+      function sortByName(c1, c2) {
+        return d3.ascending(data.labels.column[c1], data.labels.column[c2]);
+      }
+      function sortByColumnType(c1, c2) {
+        return d3.ascending(data.columnIdToType[c1], data.columnIdToType[c2]);
+      }
+      var sortFns = [ sortByFirstActiveRow, sortByColumnType, sortByExclusivity, sortByName ];
+      result.columnIds.sort(function(c1, c2) {
+        var sortResult;
+        for (var i = 0; i < sortFns.length; i++) {
+          sortResult = sortFns[i](c1, c2);
+          if (sortResult != 0) {
+            return sortResult;
+          }
+        }
+        return sortResult;
+      });
     };
     function parseMagi() {
       inputData.samples.forEach(function(s) {
@@ -442,6 +470,7 @@
       var setOfDatasets = {};
       Object.keys(inputData.sampleToTypes).forEach(function(colId) {
         setOfDatasets[inputData.sampleToTypes[colId]] = null;
+        data.columnIdToType[colId] = inputData.sampleToTypes[colId];
       });
       data.datasets = Object.keys(setOfDatasets);
       Object.keys(inputData.M).forEach(function(rowLabel, rowId) {
