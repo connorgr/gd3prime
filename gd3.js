@@ -446,7 +446,7 @@
         data.labels.rows.push(k);
       });
       data.ids.columns = Object.keys(data.maps.columnIdToLabel);
-      data.ids.rows = Object.keys(data.maps.rows);
+      data.ids.rows = Object.keys(data.maps.rowIdToLabel);
       data.matrix.cells = {};
       data.matrix.columnIdToActiveRows = {};
       data.matrix.rowIdToActiveColumns = {};
