@@ -425,18 +425,6 @@
       if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "labels") return data.labels;
     };
     function parseMagi() {
-      function parseDatasets() {
-        var matrix = inputData.M, datasetList = {};
-        matrix.forEach(function(row) {
-          row.forEach(function(column) {
-            dataset = inputData.sampleToTypes[colKey];
-            matrix[rowKey][colKey].dataset = dataset;
-            datasetList[dataset] = null;
-          });
-        });
-        data.datasets = Object.keys(datasetList);
-      }
-      console.log(inputData.M);
       inputData.samples.forEach(function(s) {
         data.maps.columnIdToLabel[s._id] = s.name;
         data.labels.columns.push(s.name);
@@ -466,7 +454,6 @@
       });
       console.log(data.matrix);
       console.log("----");
-      parseDatasets();
     }
     parseMagi();
     console.log(inputData);
