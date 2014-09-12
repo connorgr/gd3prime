@@ -439,7 +439,7 @@
         return d3.descending(c1First, c2First);
       }
       function sortByName(c1, c2) {
-        return d3.ascending(data.labels.column[c1], data.labels.column[c2]);
+        return d3.ascending(data.labels.columns[c1], data.labels.columns[c2]);
       }
       function sortByColumnType(c1, c2) {
         return d3.ascending(data.maps.columnIdToType[c1], data.maps.columnIdToType[c2]);
