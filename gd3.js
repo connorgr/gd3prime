@@ -522,7 +522,7 @@
           zoom.translate([ tx, ty ]);
           var colWidth = wholeVisX(1) - wholeVisX(0);
           firstGroupColumns.attr("transform", function(d) {
-            var colIndex = data.getColumnIds().indexOf(d.key);
+            var colIndex = data.ids.columns.indexOf(d.key);
             return "translate(" + wholeVisX(colIndex) + ",0)";
           });
           firstGroupColumns.selectAll("rect").attr("width", colWidth);
