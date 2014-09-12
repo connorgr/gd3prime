@@ -55,6 +55,33 @@ function mutmtxData(inputData) {
     data.ids.columns = Object.keys(data.maps.columnIdToLabel);
     data.ids.rows = Object.keys(data.maps.rows);
 
+    // Build matrix data and maps
+    data.matrix.cells = {};
+    data.matrix.columnIdToActiveRows = {};
+    data.matrix.rowIdToActiveColumns = {};
+
+    inputData.M.forEach(function(rowLabel, rowId) {
+      var columns = Object.keys(inputData.M[rowId]);
+      // Add rowId -> columns mapping
+      data.matrix.rowIdToActiveColumns[rowId] = columns;
+      // Add columnId -> row mapping
+      columns.forEach(function(colId) {
+        // If the entry doesn't exist, build it
+        if(!data.matrix.columnIdToActiveRows[colId]) {
+          data.matrix.columnIdToActiveRows[colId] = [];
+        }
+        // Add the row to the column
+        data.matrix.columnIdToActiveRows.append(rowId);
+
+        // Add cell data
+        data.matrix.cells[{col:colId, row: rowId}] = {
+          dataset: null,
+          type: inputData.M[rowLabel][colId][0]
+        };
+      });
+    }); // end matrix mapping
+    console.log(data.matrix);
+    console.log('----');
     parseDatasets();
   }
 
