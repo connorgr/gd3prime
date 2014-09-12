@@ -157,8 +157,11 @@ function mutmtxChart(style) {
         var colWidth = wholeVisX(1)-wholeVisX(0);
 
         firstGroupColumns.selectAll('rect')
-            .data(function(d){return d.value.activeRows.map(function(row){
-              return {row:row, type:data.columnsToTypes[d.key]}});
+            .data(function(d){
+              console.log(d);
+              return d.value.activeRows.map(function(row){
+                return {row:row, type:data.columnsToTypes[d.key]}
+              });
             })
             .enter()
             .append('rect')
