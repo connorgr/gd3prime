@@ -71,6 +71,7 @@ function mutmtxData(inputData) {
           data.matrix.columnIdToActiveRows[colId] = [];
         }
         // Add the row to the column
+        console.log(data.matrix.columnIdToActiveRows[colId]);
         data.matrix.columnIdToActiveRows[colId].append(rowId);
 
         // Add cell data

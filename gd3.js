@@ -457,6 +457,7 @@
           if (!data.matrix.columnIdToActiveRows[colId]) {
             data.matrix.columnIdToActiveRows[colId] = [];
           }
+          console.log(data.matrix.columnIdToActiveRows[colId]);
           data.matrix.columnIdToActiveRows[colId].append(rowId);
           data.matrix.cells[{
             col: colId,
