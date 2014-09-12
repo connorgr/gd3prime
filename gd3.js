@@ -447,6 +447,28 @@
       });
       data.ids.columns = Object.keys(data.maps.columnIdToLabel);
       data.ids.rows = Object.keys(data.maps.rows);
+      data.matrix.cells = {};
+      data.matrix.columnIdToActiveRows = {};
+      data.matrix.rowIdToActiveColumns = {};
+      inputData.M.forEach(function(rowLabel, rowId) {
+        var columns = Object.keys(inputData.M[rowId]);
+        data.matrix.rowIdToActiveColumns[rowId] = columns;
+        columns.forEach(function(colId) {
+          if (!data.matrix.columnIdToActiveRows[colId]) {
+            data.matrix.columnIdToActiveRows[colId] = [];
+          }
+          data.matrix.columnIdToActiveRows.append(rowId);
+          data.matrix.cells[{
+            col: colId,
+            row: rowId
+          }] = {
+            dataset: null,
+            type: inputData.M[rowLabel][colId][0]
+          };
+        });
+      });
+      console.log(data.matrix);
+      console.log("----");
       parseDatasets();
     }
     parseMagi();
