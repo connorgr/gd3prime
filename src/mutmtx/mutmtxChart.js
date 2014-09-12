@@ -157,9 +157,9 @@ function mutmtxChart(style) {
         var colWidth = wholeVisX(1)-wholeVisX(0);
 
         firstGroupColumns.selectAll('rect')
-            .data(function(d){
-              console.log(d);
-              return d.value.activeRows.map(function(row){
+            .data(function(colId){
+              var activeRows = data.matrix.columnIdToActiveRows[colId];
+              return activeRows.map(function(row){
                 return {row:row, type:data.columnsToTypes[d.key]}
               });
             })

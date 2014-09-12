@@ -13,7 +13,11 @@ function mutmtxData(inputData) {
       columnIdToLabel: {},
       rowIdToLabel: {}
     },
-    matrix: {}, // constructed below
+    matrix: {
+      cells : {},
+      columnIdToActiveRows = {},
+      rowIdToActiveColumns = {}
+    }, // constructed below
   };
 
   data.get = function(attr) {
@@ -44,10 +48,6 @@ function mutmtxData(inputData) {
     data.datasets = Object.keys(setOfDatasets);
 
     // Build matrix data and maps
-    data.matrix.cells = {};
-    data.matrix.columnIdToActiveRows = {};
-    data.matrix.rowIdToActiveColumns = {};
-
     Object.keys(inputData.M).forEach(function(rowLabel, rowId) {
       var columns = Object.keys(inputData.M[rowLabel]);
       // Add rowId -> columns mapping
