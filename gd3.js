@@ -459,7 +459,7 @@
           }
           data.matrix.columnIdToActiveRows[colId].push(rowId);
           data.matrix.cells[[ rowId, colId ].join()] = {
-            dataset: null,
+            dataset: inputData.sampleToTypes[colKey],
             type: inputData.M[rowLabel][colId][0]
           };
         });
