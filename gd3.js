@@ -435,6 +435,11 @@
       });
       data.ids.columns = Object.keys(data.maps.columnIdToLabel);
       data.ids.rows = Object.keys(data.maps.rowIdToLabel);
+      var setOfDatasets = {};
+      Object.keys(inputData.sampleToTypes).forEach(function(colId) {
+        setOfDatasets[inputData.sampleToTypes[colId]] = null;
+      });
+      data.datasets = Object.keys(setOfDatasets);
       data.matrix.cells = {};
       data.matrix.columnIdToActiveRows = {};
       data.matrix.rowIdToActiveColumns = {};

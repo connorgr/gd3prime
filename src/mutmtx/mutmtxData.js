@@ -35,6 +35,13 @@ function mutmtxData(inputData) {
     data.ids.columns = Object.keys(data.maps.columnIdToLabel);
     data.ids.rows = Object.keys(data.maps.rowIdToLabel);
 
+    // Make set of datasets in data
+    var setOfDatasets = {};
+    Object.keys(inputData.sampleToTypes).forEach(function(colId) {
+      setOfDatasets[inputData.sampleToTypes[colId]] = null;
+    });
+    data.datasets = Object.keys(setOfDatasets);
+
     // Build matrix data and maps
     data.matrix.cells = {};
     data.matrix.columnIdToActiveRows = {};
@@ -58,6 +65,7 @@ function mutmtxData(inputData) {
           dataset: inputData.sampleToTypes[colId],
           type: inputData.M[rowLabel][colId][0]
         };
+        // Track which datasets have been added
       });
     }); // end matrix mapping
     console.log(data.matrix);
