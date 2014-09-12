@@ -19,6 +19,7 @@ function mutmtxData(inputData) {
   data.get = function(attr) {
     if (!attr) return null;
     else if (attr === 'datasets') return data.datasets;
+    else if (attr === 'ids') return data.ids;
     else if (attr === 'labels') return data.labels;
   }
 

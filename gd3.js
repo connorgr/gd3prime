@@ -422,7 +422,7 @@
       matrix: {}
     };
     data.get = function(attr) {
-      if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "labels") return data.labels;
+      if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "ids") return data.ids; else if (attr === "labels") return data.labels;
     };
     function parseMagi() {
       inputData.samples.forEach(function(s) {
