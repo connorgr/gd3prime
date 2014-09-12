@@ -159,8 +159,8 @@ function mutmtxChart(style) {
         firstGroupColumns.selectAll('rect')
             .data(function(colId){
               var activeRows = data.matrix.columnIdToActiveRows[colId];
-              return activeRows.map(function(row){
-                return {row:row, type:data.columnsToTypes[d.key]}
+              return activeRows.map(function(rowId){
+                return {row:row, cell:data.matrix.cells[[rowId, colId].join()]}
               });
             })
             .enter()

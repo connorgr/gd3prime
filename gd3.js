@@ -531,10 +531,10 @@
           var colWidth = wholeVisX(1) - wholeVisX(0);
           firstGroupColumns.selectAll("rect").data(function(colId) {
             var activeRows = data.matrix.columnIdToActiveRows[colId];
-            return activeRows.map(function(row) {
+            return activeRows.map(function(rowId) {
               return {
                 row: row,
-                type: data.columnsToTypes[d.key]
+                cell: data.matrix.cells[[ rowId, colId ].join()]
               };
             });
           }).enter().append("rect").attr("x", 0).attr("y", function(d) {
