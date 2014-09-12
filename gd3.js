@@ -501,6 +501,7 @@
         }).attr("y2", function(d, i) {
           return style.rowHeight * rowNames.indexOf(d) + style.rowHeight;
         }).style("stroke-width", ".5px").style("stroke", "#ddd");
+        data.reorderColumns();
         var wholeVisX = d3.scale.linear().domain([ 0, data.get("labels").columns.length ]).range([ style.labelWidth, width ]);
         var firstGroup = matrix.append("g").attr("class", ".mutmtxFirstGroup");
         var firstGroupColumns = firstGroup.selectAll("g").data(data.get("ids").columns).enter().append("g").attr("class", "mutmtxColumn").attr("id", function(d) {

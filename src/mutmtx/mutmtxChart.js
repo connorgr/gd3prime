@@ -81,7 +81,7 @@ function mutmtxChart(style) {
                     .style('stroke', '#ddd');
 
 
-      //data.reorderColumns();
+      data.reorderColumns();
 
       var wholeVisX = d3.scale.linear()
           .domain([0, data.get('labels').columns.length])
