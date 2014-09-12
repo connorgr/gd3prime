@@ -419,7 +419,11 @@
         columnIdToLabel: {},
         rowIdToLabel: {}
       },
-      matrix: {}
+      matrix: {
+        cells: {},
+        columnIdToActiveRows: {},
+        rowIdToActiveColumns: {}
+      }
     };
     data.get = function(attr) {
       if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "ids") return data.ids; else if (attr === "labels") return data.labels;
@@ -440,9 +444,6 @@
         setOfDatasets[inputData.sampleToTypes[colId]] = null;
       });
       data.datasets = Object.keys(setOfDatasets);
-      data.matrix.cells = {};
-      data.matrix.columnIdToActiveRows = {};
-      data.matrix.rowIdToActiveColumns = {};
       Object.keys(inputData.M).forEach(function(rowLabel, rowId) {
         var columns = Object.keys(inputData.M[rowLabel]);
         data.matrix.rowIdToActiveColumns[rowId] = columns;
@@ -528,9 +529,9 @@
         }
         function renderMutationMatrix() {
           var colWidth = wholeVisX(1) - wholeVisX(0);
-          firstGroupColumns.selectAll("rect").data(function(d) {
-            console.log(d);
-            return d.value.activeRows.map(function(row) {
+          firstGroupColumns.selectAll("rect").data(function(colId) {
+            var activeRows = data.matrix.columnIdToActiveRows[colId];
+            return activeRows.map(function(row) {
               return {
                 row: row,
                 type: data.columnsToTypes[d.key]

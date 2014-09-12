@@ -15,8 +15,8 @@ function mutmtxData(inputData) {
     },
     matrix: {
       cells : {},
-      columnIdToActiveRows = {},
-      rowIdToActiveColumns = {}
+      columnIdToActiveRows : {},
+      rowIdToActiveColumns : {}
     }, // constructed below
   };
 
