@@ -1,6 +1,10 @@
 function mutmtxData(inputData) {
   var data = {
     datasets: [],
+    ids: {
+      columns: [],
+      rows: []
+    },
     labels: {
       columns: [],
       rows: []
@@ -9,37 +13,35 @@ function mutmtxData(inputData) {
       columnIdToLabel: {},
       rowIdToLabel: {}
     },
-    matrix: {}
+    matrix: {}, // constructed below
   };
 
   data.get = function(attr) {
     if (!attr) return null;
     else if (attr === 'datasets') return data.datasets;
     else if (attr === 'labels') return data.labels;
-    else if (attr === 'matrix') return data.matrix;
   }
 
   function parseMagi() {
     // Adds dataset information to matrix and creates a dataset set
     function parseDatasets() {
-      var matrix = data.matrix,
+      var matrix = inputData.M,
           datasetList = {};
-      for (var rowKey in matrix) {
-        if (matrix.hasOwnProperty(rowKey)) {
-          for (var colKey in matrix[rowKey]) {
-            if (matrix[rowKey].hasOwnProperty(colKey)) {
-              dataset = inputData.sampleToTypes[colKey];
+
+      matrix.forEach(function (row) {
+        row.forEach(function (column) {
+          dataset = inputData.sampleToTypes[colKey];
+          // Add dataset to matrix
               matrix[rowKey][colKey].dataset = dataset;
               datasetList[dataset] = null;
-            }
-          }
-        }
-      }
+        });
+      });
       data.datasets = Object.keys(datasetList);
     } // end addDatasetsToMatrix()
 
 
-    data.matrix = inputData.M;
+    //data.matrix = inputData.M;
+    console.log(inputData.M);
 
     // Scrape labels from the matrix
     inputData.samples.forEach(function(s) {
@@ -50,6 +52,8 @@ function mutmtxData(inputData) {
       data.maps.rowIdToLabel[i] = k;
       data.labels.rows.push(k);
     });
+    data.ids.columns = Object.keys(data.maps.columnIdToLabel);
+    data.ids.rows = Object.keys(data.maps.rows);
 
     parseDatasets();
   }
