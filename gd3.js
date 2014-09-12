@@ -451,7 +451,7 @@
       data.matrix.columnIdToActiveRows = {};
       data.matrix.rowIdToActiveColumns = {};
       Object.keys(inputData.M).forEach(function(rowLabel, rowId) {
-        var columns = Object.keys(inputData.M[rowId]);
+        var columns = Object.keys(inputData.M[rowLabel]);
         data.matrix.rowIdToActiveColumns[rowId] = columns;
         columns.forEach(function(colId) {
           if (!data.matrix.columnIdToActiveRows[colId]) {
