@@ -103,14 +103,9 @@ function mutmtxData(inputData) {
         // Track which datasets have been added
       });
     }); // end matrix mapping
-    console.log(data.matrix);
-    console.log('----');
   }
 
   parseMagi();
-
-  console.log(inputData);
-  console.log(data);
 
   return data;
 }

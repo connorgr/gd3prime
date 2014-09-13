@@ -20,6 +20,7 @@ function transcriptData(data) {
         };
 
     var proteinDomainDB = cdata.proteinDomainDB || '';
+    console.log(cdata);
     var d = {
       geneName: cdata.gene,
       inactivatingMutations: cdata.inactivatingMutations || defaultInactivatingMutations,

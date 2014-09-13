@@ -488,12 +488,8 @@
           };
         });
       });
-      console.log(data.matrix);
-      console.log("----");
     }
     parseMagi();
-    console.log(inputData);
-    console.log(data);
     return data;
   }
   function mutmtxChart(style) {
@@ -665,6 +661,7 @@
         In_Frame_Ins: 4
       };
       var proteinDomainDB = cdata.proteinDomainDB || "";
+      console.log(cdata);
       var d = {
         geneName: cdata.gene,
         inactivatingMutations: cdata.inactivatingMutations || defaultInactivatingMutations,
