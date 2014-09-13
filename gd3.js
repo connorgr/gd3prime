@@ -683,8 +683,8 @@
         d.mutationCategories = gd3.arrayToSet(cdata.mutations.map(function(m) {
           return m.dataset;
         }));
-        console.log(d.mutationCategories);
       }
+      console.log(d.mutationCategories);
       d.get = function(str) {
         if (str == "length") return d.length; else if (str == "mutationCategories") return d.mutationCategories; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else if (str == "proteinDomains") return d.proteinDomains; else return null;
       };
