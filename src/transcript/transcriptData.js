@@ -32,6 +32,10 @@ function transcriptData(data) {
       proteinDomains: cdata.domains[proteinDomainDB]
     };
 
+    if ( d.mutationCategories == [] ){
+      d.mutationCategories = gd3.arrayToSet(cdata.mutations.map(function(m) { return m.dataset; }));
+    }
+
     // for (var mutation in d.mutations) {
     //   var m = d.mutations[mutation];
 

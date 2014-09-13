@@ -11,5 +11,11 @@ var gd3_util = {
           if (a[i] !== b[i]) return false;
         }
         return true;
-      }
+      },
+  arrayToSet: function(a) {
+    var seen = {};
+    return a.filter(function(item) {
+      return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+    });
+  }
 }

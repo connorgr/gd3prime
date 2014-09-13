@@ -204,6 +204,12 @@
         if (a[i] !== b[i]) return false;
       }
       return true;
+    },
+    arrayToSet: function(a) {
+      var seen = {};
+      return a.filter(function(item) {
+        return seen.hasOwnProperty(item) ? false : seen[item] = true;
+      });
     }
   };
   function cnaData(data) {
@@ -672,6 +678,11 @@
         proteinDomainDB: proteinDomainDB,
         proteinDomains: cdata.domains[proteinDomainDB]
       };
+      if (d.mutationCategories == []) {
+        d.mutationCategories = gd3.arrayToSet(cdata.mutations.map(function(m) {
+          return m.dataset;
+        }));
+      }
       d.get = function(str) {
         if (str == "length") return d.length; else if (str == "mutationCategories") return d.mutationCategories; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else if (str == "proteinDomains") return d.proteinDomains; else return null;
       };
