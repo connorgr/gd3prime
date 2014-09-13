@@ -678,7 +678,7 @@
         proteinDomainDB: proteinDomainDB,
         proteinDomains: cdata.domains[proteinDomainDB]
       };
-      if (d.mutationCategories == []) {
+      if (d.mutationCategories.length == 0) {
         console.log("hi");
         d.mutationCategories = gd3.arrayToSet(cdata.mutations.map(function(m) {
           return m.dataset;
