@@ -34,7 +34,7 @@ function transcriptData(data) {
 
     if (d.mutationCategories.length == 0){
       console.log('hi');
-      d.mutationCategories = gd3.arrayToSet(cdata.mutations.map(function(m) { return m.dataset; }));
+      d.mutationCategories = gd3_util.arrayToSet(cdata.mutations.map(function(m) { return m.dataset; }));
     }
     console.log(d.mutationCategories);
 
