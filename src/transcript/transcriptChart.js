@@ -76,7 +76,7 @@ function transcriptChart(style) {
                 return d3.svg.symbolTypes[data.get('mutationTypesToSymbols')[d.ty]];
               })
               .size(style.symbolWidth))
-            .style('fill', function(d, i) { return sampleTypeToColor[d.dataset]; })
+            .style('fill', function(d, i) { console.log(d, sampleTypeToColor);return sampleTypeToColor[d.dataset]; })
             .style('stroke', function(d, i) { return sampleTypeToColor[d.dataset]; })
             .style('stroke-width', 2);
 

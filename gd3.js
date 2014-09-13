@@ -710,6 +710,7 @@
         var mutations = mutationsG.selectAll(".symbols").data(data.get("mutations")).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
         }).size(style.symbolWidth)).style("fill", function(d, i) {
+          console.log(d, sampleTypeToColor);
           return sampleTypeToColor[d.dataset];
         }).style("stroke", function(d, i) {
           return sampleTypeToColor[d.dataset];
