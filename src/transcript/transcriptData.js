@@ -20,7 +20,7 @@ function transcriptData(data) {
         };
 
     var proteinDomainDB = cdata.proteinDomainDB || '';
-    console.log(cdata);
+
     var d = {
       geneName: cdata.gene,
       inactivatingMutations: cdata.inactivatingMutations || defaultInactivatingMutations,
@@ -33,10 +33,8 @@ function transcriptData(data) {
     };
 
     if (d.mutationCategories.length == 0){
-      console.log('hi');
       d.mutationCategories = gd3_util.arrayToSet(cdata.mutations.map(function(m) { return m.dataset; }));
     }
-    console.log(d.mutationCategories);
 
     // for (var mutation in d.mutations) {
     //   var m = d.mutations[mutation];
