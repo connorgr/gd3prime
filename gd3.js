@@ -65,6 +65,8 @@
             });
           } else if (d.type === "vote") {
             appendVote(d3.select(this), d);
+          } else if (d.type === "link") {
+            appendLink(d3.select(this), d);
           }
         });
       }
