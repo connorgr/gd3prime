@@ -667,7 +667,6 @@
         In_Frame_Ins: 4
       };
       var proteinDomainDB = cdata.proteinDomainDB || "";
-      console.log(cdata);
       var d = {
         geneName: cdata.gene,
         inactivatingMutations: cdata.inactivatingMutations || defaultInactivatingMutations,
@@ -679,12 +678,30 @@
         proteinDomains: cdata.domains[proteinDomainDB]
       };
       if (d.mutationCategories.length == 0) {
-        console.log("hi");
         d.mutationCategories = gd3_util.arrayToSet(cdata.mutations.map(function(m) {
           return m.dataset;
         }));
       }
-      console.log(d.mutationCategories);
+      for (var mutation in d.mutations) {
+        var m = d.mutations[mutation];
+        if (m.annotation == undefined) {
+          m.annotation = [ {
+            type: "text",
+            title: "Sample",
+            text: m.sample
+          }, {
+            type: "text",
+            title: "Test",
+            text: "is working"
+          }, {
+            type: "table",
+            header: [ "Cancer", "PMIDs", "Votes" ],
+            data: [ [ "1", "2", "3" ], [ "4", "5", "6" ] ]
+          } ];
+        } else {
+          console.log("defined annotation");
+        }
+      }
       d.get = function(str) {
         if (str == "length") return d.length; else if (str == "mutationCategories") return d.mutationCategories; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else if (str == "proteinDomains") return d.proteinDomains; else return null;
       };
@@ -720,7 +737,6 @@
         var mutations = mutationsG.selectAll(".symbols").data(data.get("mutations")).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
         }).size(style.symbolWidth)).style("fill", function(d, i) {
-          console.log(d, sampleTypeToColor);
           return sampleTypeToColor[d.dataset];
         }).style("stroke", function(d, i) {
           return sampleTypeToColor[d.dataset];

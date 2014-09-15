@@ -36,36 +36,36 @@ function transcriptData(data) {
       d.mutationCategories = gd3_util.arrayToSet(cdata.mutations.map(function(m) { return m.dataset; }));
     }
 
-    // for (var mutation in d.mutations) {
-    //   var m = d.mutations[mutation];
+    for (var mutation in d.mutations) {
+      var m = d.mutations[mutation];
 
-    //   // create simulated annotation data if it does not exist.
-    //   if (m.annotation == undefined) {
-    //     m.annotation = [
-    //       {
-    //         type: 'text',
-    //         title: 'Sample',
-    //         text: m.sample
-    //       },
-    //       {
-    //         type: 'text',
-    //         title: 'Test',
-    //         text: 'is working'
-    //       },
-    //       {
-    //         type: 'table',
-    //         header: ['Cancer', 'PMIDs', 'Votes'],
-    //         data: [
-    //           ['1', '2', '3'],
-    //           ['4', '5', '6']
-    //         ]
-    //       }
-    //     ];
-    //   } // end simulated m.annotation
-    //   else {
-    //     console.log('defined annotation');
-    //   }
-    // }
+      // create simulated annotation data if it does not exist.
+      if (m.annotation == undefined) {
+        m.annotation = [
+          {
+            type: 'text',
+            title: 'Sample',
+            text: m.sample
+          },
+          {
+            type: 'text',
+            title: 'Test',
+            text: 'is working'
+          },
+          {
+            type: 'table',
+            header: ['Cancer', 'PMIDs', 'Votes'],
+            data: [
+              ['1', '2', '3'],
+              ['4', '5', '6']
+            ]
+          }
+        ];
+      } // end simulated m.annotation
+      else {
+        console.log('defined annotation');
+      }
+    }
 
     d.get = function(str) {
       if (str == 'length') return d.length;
