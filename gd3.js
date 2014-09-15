@@ -689,6 +689,11 @@
             type: "vote",
             score: 100
           };
+          var link = {
+            type: "link",
+            href: "http://www.cs.brown.edu",
+            text: "BrownCS"
+          };
           m.annotation = [ {
             type: "text",
             title: "Sample",
@@ -696,7 +701,7 @@
           }, {
             type: "table",
             header: [ "Cancer", "PMIDs", "Votes" ],
-            data: [ [ "1", "2", vote ], [ "4", "5", vote ] ]
+            data: [ [ "1", link, vote ], [ "4", link, vote ] ]
           } ];
         } else {
           console.log("defined annotation");
