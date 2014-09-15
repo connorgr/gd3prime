@@ -41,6 +41,10 @@ function transcriptData(data) {
 
       // create simulated annotation data if it does not exist.
       if (m.annotation == undefined) {
+        var vote = {
+          type: 'vote',
+          score: 100
+        }
         m.annotation = [
           {
             type: 'text',
@@ -48,19 +52,34 @@ function transcriptData(data) {
             text: m.sample
           },
           {
-            type: 'text',
-            title: 'Test',
-            text: 'is working'
-          },
-          {
             type: 'table',
             header: ['Cancer', 'PMIDs', 'Votes'],
             data: [
-              ['1', '2', '3'],
-              ['4', '5', '6']
+              ['1', '2', vote],
+              ['4', '5', vote]
             ]
           }
         ];
+        // m.annotation = [
+        //   {
+        //     type: 'text',
+        //     title: 'Sample',
+        //     text: m.sample
+        //   },
+        //   {
+        //     type: 'text',
+        //     title: 'Test',
+        //     text: 'is working'
+        //   },
+        //   {
+        //     type: 'table',
+        //     header: ['Cancer', 'PMIDs', 'Votes'],
+        //     data: [
+        //       ['1', '2', '3'],
+        //       ['4', '5', '6']
+        //     ]
+        //   }
+        // ];
       } // end simulated m.annotation
       else {
         console.log('defined annotation');

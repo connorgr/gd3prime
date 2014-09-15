@@ -685,18 +685,18 @@
       for (var mutation in d.mutations) {
         var m = d.mutations[mutation];
         if (m.annotation == undefined) {
+          var vote = {
+            type: "vote",
+            score: 100
+          };
           m.annotation = [ {
             type: "text",
             title: "Sample",
             text: m.sample
           }, {
-            type: "text",
-            title: "Test",
-            text: "is working"
-          }, {
             type: "table",
             header: [ "Cancer", "PMIDs", "Votes" ],
-            data: [ [ "1", "2", "3" ], [ "4", "5", "6" ] ]
+            data: [ [ "1", "2", vote ], [ "4", "5", vote ] ]
           } ];
         } else {
           console.log("defined annotation");
