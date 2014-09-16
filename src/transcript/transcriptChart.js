@@ -313,6 +313,7 @@ function transcriptChart(style) {
             var activeG = d.loc == 'top' ? activatingG : inactivatingG,
                 activeM = d.loc == 'top' ? activatingMutations : inactivatingMutations;
                 adjust = -1*(d3.event.y - d.min);
+            console.log(adjust);
             activeM.attr('transform', function() {
               var parts = d3.select(this).attr('transform').split(','),
                   translateY = parseFloat(parts[1].split(')')[0]) + adjust,
