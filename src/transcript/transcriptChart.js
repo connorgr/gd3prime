@@ -46,14 +46,18 @@ function transcriptChart(style) {
       var tG = svg.append('g');
 
       if (showScrollers) {
-        console.log('test');
+        // Make room for the sliders
         tG.attr('transform', 'translate(20,0)');
+
+        // Add a background for the slider area
         svg.append('rect')
             .attr('x', 0)
             .attr('y', 0)
             .attr('width', 15)
             .attr('height', style.height)
             .style('fill', '#fff');
+
+        // Add slider tracks
         svg.append('line')
             .attr('x1', 6)
             .attr('y1', 10)
@@ -61,6 +65,14 @@ function transcriptChart(style) {
             .attr('y2', style.height/2 - style.transcriptBarHeight/2 + 10)
             .style('stroke', '#ccc')
             .style('stroke-width', 1);
+        svg.append('line')
+            .attr('x1', 6)
+            .attr('y1', style.height/2 + style.transcriptBarHeight/2 - 10)
+            .attr('x2', 6)
+            .attr('y2', style.height - 10)
+            .style('stroke', '#ccc')
+            .style('stroke-width', 1);
+
         svg.append('circle')
             .attr('cx', 6)
             .attr('cy', 10)
