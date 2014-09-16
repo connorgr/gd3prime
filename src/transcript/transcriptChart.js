@@ -359,7 +359,7 @@ function transcriptChart(style) {
             .data(sliderBounds)
             .enter()
             .append('circle')
-            .attr('r', 6)
+            .attr('r', 5)
             .attr('cx', 6)
             .attr('cy', function(d) { return d.min; })
             .style( {
