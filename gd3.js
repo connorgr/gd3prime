@@ -765,6 +765,7 @@
     return tData;
   }
   function transcriptChart(style) {
+    var showScrollers = true;
     function chart(selection) {
       selection.each(function(data) {
         data = transcriptData(data);
@@ -778,7 +779,11 @@
         var start = 0, stop = data.get("length");
         var x = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(style.numXTicks).tickSize(0).tickPadding(style.xTickPadding);
-        var tG = svg.append("g").attr("transform", "translate(15,0)");
+        var tG = svg.append("g");
+        if (showScrollers) {
+          tG.attr("transform", "translate(15,0)");
+          svg.append("line").attr("x0", 6).attr("y0", 0).attr("x1", 6).attr("y1", 25);
+        }
         var transcriptAxis = tG.append("g").attr("class", "xaxis").attr("transform", "translate(0," + (style.height / 2 + style.transcriptBarHeight + 6) + ")").style("font-family", style.fontFamily).style("font-size", "12px").style("fill", "#000").call(xAxis);
         var transcriptBar = tG.append("rect").attr("height", style.transcriptBarHeight).attr("width", x(stop) - x(start)).attr("x", x(start)).attr("y", height / 2).style("fill", "#ccc");
         var zoom = d3.behavior.zoom().x(x).scaleExtent([ 1, 100 ]).on("zoom", function() {
@@ -857,6 +862,9 @@
           });
         }
       });
+    }
+    function showScrollers(val) {
+      showScrollers = val;
     }
     return chart;
   }

@@ -1,6 +1,7 @@
 import "transcriptData";
 
 function transcriptChart(style) {
+  var showScrollers = true;
   function chart(selection) {
     selection.each(function(data) {
       data = transcriptData(data);
@@ -41,8 +42,16 @@ function transcriptChart(style) {
               .tickPadding(style.xTickPadding);
 
       // Group for all transcript visualization components other than sliders to live in
-      var tG = svg.append('g')
-              .attr('transform', 'translate(15,0)');
+      var tG = svg.append('g');
+
+      if (showScrollers) {
+        tG.attr('transform', 'translate(15,0)');
+        svg.append('line')
+            .attr('x0', 6)
+            .attr('y0', 0)
+            .attr('x1', 6)
+            .attr('y1', 25);
+      }
 
       // Append the axis to the canvas
       var transcriptAxis = tG.append('g')
@@ -202,6 +211,10 @@ function transcriptChart(style) {
         });
       } // end updateTranscript()
     });
+  }
+
+  function showScrollers(val) {
+    showScrollers = val;
   }
 
   return chart;
