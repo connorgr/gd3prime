@@ -158,6 +158,7 @@
         container.style("left", offsetLeft.toString() + "px").style("top", offsetTop.toString() + "px");
         var xoutLeft = (node.offsetWidth - 10).toString() + "px";
         container.append("span").text("☓").on("click", function() {
+          sticky = false;
           d3.selectAll(".gd3AnnotationViewDiv").remove();
         }).style({
           color: "#000",
@@ -172,10 +173,12 @@
           top: "-10px",
           width: "10px"
         });
-        container.on("mouseout", function() {
-          d3.select(this).on("mouseout", null);
-          document.body.removeChild(this);
-        });
+        if (!sticky) {
+          container.on("mouseout", function() {
+            d3.select(this).on("mouseout", null);
+            document.body.removeChild(this);
+          });
+        }
       }
       var sticky = false;
       selection.on("mouseover", activate);
