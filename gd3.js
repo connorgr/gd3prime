@@ -929,6 +929,7 @@
               var scrollDomain = lower - higher, scrollNow = d3.event.y - higher, scrollPercent = d.loc == "top" ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
               if (d.loc == "top") {
                 adjust = maxInactivatingOffset * scrollPercent;
+                console.log(adjust);
               }
               activeG.attr("transform", "translate(0," + adjust + ")");
               activeM.each(function() {
