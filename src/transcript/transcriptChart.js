@@ -41,7 +41,8 @@ function transcriptChart(style) {
               .tickPadding(style.xTickPadding);
 
       // Group for all transcript visualization components other than sliders to live in
-      var tG = svg.append('g');
+      var tG = svg.append('g')
+              .attr('transform', 'translate(15,0)');
 
       // Append the axis to the canvas
       var transcriptAxis = tG.append('g')
