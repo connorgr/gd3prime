@@ -75,12 +75,31 @@ function transcriptChart(style) {
 
 
       console.log(data.get('mutations'));
-      console.log(data.get('mutations').filter(function(d) { return data.isMutationInactivating(d.ty) }));
 
       // Add mutations to the transcript
-      var mutationsG = tG.append('g').attr('class','transcriptMutations');
-      var mutations = mutationsG.selectAll('.symbols')
-          .data(data.get('mutations'))
+      var mutationsG = tG.append('g').attr('class','transcriptMutations'),
+          inactivatingG = mutationsG.append('g'),
+          activatingG = mutationsG.append('g');
+
+      var inactivatingData = data.get('mutations').filter(function(d) { return data.isMutationInactivating(d.ty) }),
+          activatingData = data.get('mutations').filter(function(d) { return !data.isMutationInactivating(d.ty) });
+
+      var inactivatingMutations = inactivatingG.selectAll('.symbols')
+          .data(inactivatingData)
+          .enter()
+          .append('path')
+            .attr('class', 'symbols')
+            .attr('d', d3.svg.symbol()
+              .type(function(d, i) {
+                return d3.svg.symbolTypes[data.get('mutationTypesToSymbols')[d.ty]];
+              })
+              .size(style.symbolWidth))
+            .style('fill', function(d, i) { return sampleTypeToColor[d.dataset]; })
+            .style('stroke', function(d, i) { return sampleTypeToColor[d.dataset]; })
+            .style('stroke-width', 2);
+
+      var activatingMutations = inactivatingG.selectAll('.symbols')
+          .data(activatingData)
           .enter()
           .append('path')
             .attr('class', 'symbols')
