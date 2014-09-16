@@ -53,8 +53,13 @@ function transcriptChart(style) {
             .attr('y1', 10)
             .attr('x2', 6)
             .attr('y2', style.height/2 - style.transcriptBarHeight/2 + 10)
-            .style('stroke', '#000')
-            .style('stroke-width', 2);
+            .style('stroke', '#ccc')
+            .style('stroke-width', 1);
+        svg.append('circle')
+            .attr('cx', 6)
+            .attr('cy', 10)
+            .attr('r', 6)
+            .attr('fill', '#aaa');
       }
 
       // Append the axis to the canvas
