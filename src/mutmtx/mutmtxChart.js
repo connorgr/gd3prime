@@ -174,7 +174,7 @@ function mutmtxChart(style) {
               .style('fill', function(d) { return colTypeToColor[d.cell.dataset]; })
               .call(function(d) {
                 console.log('calling gd3 annotation for mutmtx');
-                console.log('d');
+                console.log(d);
                 gd3.annotation()
               });
 
