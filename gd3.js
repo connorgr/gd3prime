@@ -36,7 +36,6 @@
       return bbox;
     }
     function view(selection) {
-      console.log(selection);
       function appendText(selection, data) {
         var title = data.title ? data.title + ": " : "", text = data.text ? data.text : "";
         selection.append("p").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(title + text);
@@ -123,7 +122,6 @@
         }
       }
       function activate(d) {
-        console.log("activate", d);
         if (d.annotation == undefined && d.cell.annotation == undefined) {
           return;
         }
@@ -174,7 +172,6 @@
           top: "-10px",
           width: "10px"
         });
-        console.log(container.node().offsetWidth);
       }
       selection.on("mouseover", activate);
     }

@@ -63,7 +63,6 @@ function annotationView(style, votingFns) {
 
 
   function view(selection) {
-    console.log(selection);
     // Append text to the annotation view
     function appendText(selection, data) {
       var title = data.title ? data.title+': ' : '',
@@ -223,7 +222,6 @@ function annotationView(style, votingFns) {
 
   // This function gets called whenever an element gets mouseovered
   function activate (d) {
-    console.log('activate',d);
     // Do nothing if no annotation data exists
     if (d.annotation == undefined && d.cell.annotation == undefined) {
       return;
@@ -318,8 +316,6 @@ function annotationView(style, votingFns) {
           // left: 0;
           // text-align: center;
         });
-
-    console.log(container.node().offsetWidth);
 
     // node.on('mouseout', function() {
     //   d3.select(this).on('mouseout', null); // patch for mouseout behavior
