@@ -122,7 +122,6 @@
         }
       }
       function activate(d) {
-        console.log(d);
         if (d.annotation == undefined) {
           return;
         }
@@ -597,10 +596,7 @@
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.cell.dataset];
           });
-          firstGroupColumns.selectAll("rect").call(function() {
-            console.log("call");
-            gd3.annotation();
-          });
+          firstGroupColumns.selectAll("rect").call(gd3.annotation());
         }
         if (options.showSummary == true) {
           var summaryArea = selection.append("div");
@@ -821,10 +817,7 @@
             return sampleTypeToColor[d.dataset];
           }).style("fill-opacity", 1).style("stroke", function(d) {
             return sampleTypeToColor[d.dataset];
-          }).style("stroke-opacity", 1).call(function() {
-            console.log("t-call");
-            gd3.annotation();
-          });
+          }).style("stroke-opacity", 1).call(gd3.annotation());
           transcriptAxis.call(xAxis);
           transcriptBar.attr("x", x(start)).attr("width", x(stop) - x(start));
           domainGroups.attr("transform", function(d, i) {

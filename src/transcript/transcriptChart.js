@@ -176,10 +176,7 @@ function transcriptChart(style) {
             .style('fill-opacity', 1)
             .style('stroke', function(d) { return sampleTypeToColor[d.dataset]; })
             .style('stroke-opacity', 1)
-            .call(function() {
-              console.log('t-call');
-              gd3.annotation()
-            });
+            .call(gd3.annotation());
 
         // update the axis
         transcriptAxis.call(xAxis);
