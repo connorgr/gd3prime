@@ -82,7 +82,7 @@ function transcriptChart(style) {
         function dragStart(d) {
           d3.event.sourceEvent.stopPropagation();
           var thisEl = d3.select(this);
-          thisEl.style('fill', '#333333');
+          thisEl.style('fill', '#888888');
         }
         function dragMove(d) {
           var thisEl = d3.select(this),
@@ -99,6 +99,7 @@ function transcriptChart(style) {
         }
         function dragEnd(d) {
           var thisEl = d3.select(this);
+          thisEl.style('fill', 'url(#gradient)')
         }
 
         // Add a background for the slider area
