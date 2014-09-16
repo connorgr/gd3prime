@@ -81,6 +81,7 @@ function transcriptChart(style) {
             .style('stroke-width', 2);
 
       // Draw domain data with labels with mouse over
+      console.log(data);
       var domainGroupsData = data.get('proteinDomains');
       var domainGroups = svg.selectAll('.domains')
           .data(domainGroupsData ? data.get('proteinDomains').slice() : [])

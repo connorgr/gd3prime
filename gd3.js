@@ -790,6 +790,7 @@
         }).style("stroke", function(d, i) {
           return sampleTypeToColor[d.dataset];
         }).style("stroke-width", 2);
+        console.log(data);
         var domainGroupsData = data.get("proteinDomains");
         var domainGroups = svg.selectAll(".domains").data(domainGroupsData ? data.get("proteinDomains").slice() : []).enter().append("g").attr("class", "domains");
         var domains = domainGroups.append("rect").attr("id", function(d, i) {
