@@ -49,12 +49,15 @@ function transcriptChart(style) {
         // Make room for the sliders
         tG.attr('transform', 'translate(20,0)');
 
+        // Add a group for sliders
+        var sG = svg.append('g');
+
         // Create drag event handlers for sliders
         var dragSlider = d3.behavior.drag()
                     .on('drag', dragMove)
                     .on('dragend', dragEnd);
         function dragMove(d) {
-          var thisEl = d3.select(this).style('cursor','grabbing');
+          var thisEl = d3.select(this);
           console.log(d3.event);
           thisEl.attr('cy', d3.event.y);
         }
@@ -64,7 +67,7 @@ function transcriptChart(style) {
 
 
         // Add a background for the slider area
-        svg.append('rect')
+        sG.append('rect')
             .attr('x', 0)
             .attr('y', 0)
             .attr('width', 15)
@@ -72,14 +75,14 @@ function transcriptChart(style) {
             .style('fill', '#fff');
 
         // Add slider tracks
-        svg.append('line')
+        sG.append('line')
             .attr('x1', 6)
             .attr('y1', 10)
             .attr('x2', 6)
             .attr('y2', style.height/2 - style.transcriptBarHeight/2 + 10)
             .style('stroke', '#ccc')
             .style('stroke-width', 1);
-        svg.append('line')
+        sG.append('line')
             .attr('x1', 6)
             .attr('y1', style.height/2 + style.transcriptBarHeight/2 + 10)
             .attr('x2', 6)
@@ -88,25 +91,44 @@ function transcriptChart(style) {
             .style('stroke-width', 1);
 
         // Set up drag circles
-        svg.append('circle')
-            .attr('cx', 6)
-            .attr('cy', style.height/2 - style.transcriptBarHeight/2 + 4)
+        var sliderBounds = [
+          {min: style.height/2 - style.transcriptBarHeight/2 + 4,
+            max: 6},
+          {min: style.height/2 + style.transcriptBarHeight/2 + 4,
+            max: style.height - 6}
+        ];
+        sG.selectAll('circle')
+            .data(sliderBounds)
+            .enter()
+            .append('circle')
             .attr('r', 6)
-            .style('fill', '#aaa')
-            .style('stroke', '#666')
-            .style('stroke-width', 1)
-            .style('cursor', 'grabbing')
+            .attr('cx', 6)
+            .attr('cy', function(d) { return d.min; })
+            .style( {
+              fill: '#aaa',
+              stroke: '#666',
+              'stroke-width': 1
+            })
             .call(dragSlider);
-        svg.append('circle')
-            .attr('cx', 6)
-            .attr('cy', style.height/2 + style.transcriptBarHeight/2 + 4)
-            .attr('r', 6)
-            .style('fill', '#aaa')
-            .style('stroke', '#666')
-            .style('stroke-width', 1)
-            .on('drag', function() {
-              console.log('draggggggg');
-            });
+
+        // svg.append('circle')
+        //     .attr('cx', 6)
+        //     .attr('cy', style.height/2 - style.transcriptBarHeight/2 + 4)
+        //     .attr('r', 6)
+        //     .style('fill', '#aaa')
+        //     .style('stroke', '#666')
+        //     .style('stroke-width', 1)
+        //     .call(dragSlider);
+        // svg.append('circle')
+        //     .attr('cx', 6)
+        //     .attr('cy', style.height/2 + style.transcriptBarHeight/2 + 4)
+        //     .attr('r', 6)
+        //     .style('fill', '#aaa')
+        //     .style('stroke', '#666')
+        //     .style('stroke-width', 1)
+        //     .on('drag', function() {
+        //       console.log('draggggggg');
+        //     });
       }
 
       // Append the axis to the canvas
