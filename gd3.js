@@ -663,6 +663,7 @@
     return chart;
   }
   function mutmtxStyle(style) {
+    console.log(style);
     return {
       animationSpeed: style.animationSpeed || 300,
       bgColor: style.bgColor || "#F6F6F6",
