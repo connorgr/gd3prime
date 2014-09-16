@@ -306,8 +306,9 @@ function annotationView(style, votingFns) {
       document.body.removeChild(this);
     });
   }
-
+    var sticky = false;
     selection.on('mouseover', activate);
+    selection.on('click', function() { sticky = true; });
   }
 
   return view;
