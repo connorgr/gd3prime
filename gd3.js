@@ -790,7 +790,7 @@
           function dragStart(d) {
             d3.event.sourceEvent.stopPropagation();
             var thisEl = d3.select(this);
-            thisEl.style("fill", "url(#gradient)");
+            thisEl.style("fill", "#333333");
           }
           function dragMove(d) {
             var thisEl = d3.select(this), higher = d.max < d.min ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
@@ -818,7 +818,7 @@
           sG.selectAll("circle").data(sliderBounds).enter().append("circle").attr("r", 6).attr("cx", 6).attr("cy", function(d) {
             return d.min;
           }).style({
-            fill: "#aaa",
+            fill: "url(#gradient)",
             stroke: "#666",
             "stroke-width": 1
           }).call(dragSlider);
