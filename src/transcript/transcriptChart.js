@@ -338,7 +338,7 @@ function transcriptChart(style) {
                 scrollPercent = d.loc == 'top' ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
 
             // Calculate scroll adjustment if top or bottom
-            var offset = d.loc == 'top' ? maxActivatingOffset : maxInactivatingOffset,
+            var offset = d.loc == 'top' ? maxActivatingOffset : -1*maxInactivatingOffset,
                 adjust = offset * scrollPercent;
 
             activeG.attr('transform', 'translate(0,'+adjust+')');

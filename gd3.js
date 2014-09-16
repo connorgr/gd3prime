@@ -925,7 +925,7 @@
               thisEl.attr("cy", d3.event.y);
               var activeG = d.loc == "top" ? activatingG : inactivatingG, activeM = d.loc == "top" ? activatingMutations : inactivatingMutations;
               var scrollDomain = lower - higher, scrollNow = d3.event.y - higher, scrollPercent = d.loc == "top" ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
-              var offset = d.loc == "top" ? maxActivatingOffset : maxInactivatingOffset, adjust = offset * scrollPercent;
+              var offset = d.loc == "top" ? maxActivatingOffset : -1 * maxInactivatingOffset, adjust = offset * scrollPercent;
               activeG.attr("transform", "translate(0," + adjust + ")");
               activeM.each(function() {
                 var thisEl = d3.select(this), transform = thisEl.attr("transform");
