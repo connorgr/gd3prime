@@ -893,7 +893,7 @@
         function renderScrollers() {
           tG.attr("transform", "translate(20,0)");
           var sG = svg.append("g");
-          var transforms = activeM.attr("transform");
+          var transforms = activatingMutations.attr("transform");
           console.log(transforms);
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
           gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
