@@ -910,8 +910,8 @@
               thisEl.attr("cy", higher);
             } else {
               thisEl.attr("cy", d3.event.y);
-              var adjust = d3.event.y - d.min;
-              mutationsG.attr("transform", "translate(0," + adjust + ")");
+              var adjust = d3.event.y - d.min, activeG = d.loc == "top" ? activatingG : inactivatingG;
+              activeG.attr("transform", "translate(0," + adjust + ")");
             }
           }
           function dragEnd(d) {
