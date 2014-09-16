@@ -122,6 +122,7 @@
         }
       }
       function activate(d) {
+        console.log(d);
         if (d.annotation == undefined) {
           return;
         }

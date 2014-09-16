@@ -223,7 +223,7 @@ function annotationView(style, votingFns) {
 
   // This function gets called whenever an element gets mouseovered
   function activate (d) {
-
+    console.log(d);
     // Do nothing if no annotation data exists
     if (d.annotation == undefined) {
       return;
