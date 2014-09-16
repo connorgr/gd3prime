@@ -172,8 +172,9 @@ function mutmtxChart(style) {
               .attr('height', style.rowHeight)
               .attr('width', colWidth)
               .style('fill', function(d) { return colTypeToColor[d.cell.dataset]; })
-              .call(function() {
-                console.log('calling gd3 annotation for mutmtx')
+              .call(function(d) {
+                console.log('calling gd3 annotation for mutmtx');
+                console.log('d');
                 gd3.annotation()
               });
 
