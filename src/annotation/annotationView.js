@@ -299,28 +299,12 @@ function annotationView(style, votingFns) {
           'text-align': 'right',
           top: '-10px',
           width: '10px'
-
-
-          //           display: inline;
-          // font-size: 10px;
-          // width: 100%;
-          // line-height: 1;
-          // color: rgba(0, 0, 0, 0.8);
-          // position: absolute;
-          // pointer-events: none;
-
-
-          // content: "\25B2";
-          // margin: 0 0 1px 0;
-          // top: -8px;
-          // left: 0;
-          // text-align: center;
         });
 
-    // node.on('mouseout', function() {
-    //   d3.select(this).on('mouseout', null); // patch for mouseout behavior
-    //   document.body.removeChild(this);
-    // });
+    node.on('mouseout', function() {
+      d3.select(this).on('mouseout', null); // patch for mouseout behavior
+      document.body.removeChild(this);
+    });
   }
 
     selection.on('mouseover', activate);
