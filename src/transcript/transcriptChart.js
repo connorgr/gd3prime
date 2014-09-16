@@ -52,7 +52,9 @@ function transcriptChart(style) {
             .attr('x0', 6)
             .attr('y0', 0)
             .attr('x1', 6)
-            .attr('y1', 25);
+            .attr('y1', 25)
+            .style('stroke', '#000')
+            .style('stroke-width', 2);
       }
 
       // Append the axis to the canvas
