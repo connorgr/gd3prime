@@ -67,7 +67,7 @@ function transcriptChart(style) {
             .style('stroke-width', 1);
         svg.append('line')
             .attr('x1', 6)
-            .attr('y1', style.height/2 + style.transcriptBarHeight/2 - 10)
+            .attr('y1', style.height/2 + style.transcriptBarHeight/2 + 10)
             .attr('x2', 6)
             .attr('y2', style.height - 10)
             .style('stroke', '#ccc')
