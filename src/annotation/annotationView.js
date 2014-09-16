@@ -285,7 +285,6 @@ function annotationView(style, votingFns) {
     container.append('span')
         .text('☓')
         .on('click', function() {
-          sticky = false;
           d3.selectAll('.gd3AnnotationViewDiv').remove();
         })
         .style({
@@ -302,16 +301,13 @@ function annotationView(style, votingFns) {
           width: '10px'
         });
 
-    if(!sticky) {
-      container.on('mouseout', function() {
-        d3.select(this).on('mouseout', null); // patch for mouseout behavior
-        document.body.removeChild(this);
-      });
-    }
+    // container.on('mouseout', function() {
+    //   d3.select(this).on('mouseout', null); // patch for mouseout behavior
+    //   document.body.removeChild(this);
+    // });
   }
-    var sticky = false;
+
     selection.on('mouseover', activate);
-    selection.on('click', function() { sticky = true; });
   }
 
   return view;
