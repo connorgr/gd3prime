@@ -596,7 +596,10 @@
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.cell.dataset];
           });
-          firstGroupColumns.selectAll("rect").call(gd3.annotation());
+          firstGroupColumns.selectAll("rect").call(function() {
+            console.log("call");
+            gd3.annotation();
+          });
         }
         if (options.showSummary == true) {
           var summaryArea = selection.append("div");

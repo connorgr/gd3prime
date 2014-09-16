@@ -173,7 +173,10 @@ function mutmtxChart(style) {
               .attr('width', colWidth)
               .style('fill', function(d) { return colTypeToColor[d.cell.dataset]; });
 
-        firstGroupColumns.selectAll('rect').call(gd3.annotation());
+        firstGroupColumns.selectAll('rect').call(function () {
+          console.log('call');
+          gd3.annotation();
+        });
 
         // summaryGroupsColumns.selectAll('rect')
         //   .data(function(d){ return d.value.activeRows.map(function(row){return {row:row, type:data.columnsToTypes[d.key]}});})
