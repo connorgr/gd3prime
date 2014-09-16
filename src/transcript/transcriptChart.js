@@ -50,7 +50,7 @@ function transcriptChart(style) {
         tG.attr('transform', 'translate(15,0)');
         svg.append('line')
             .attr('x1', 6)
-            .attr('y1', 0)
+            .attr('y1', 10)
             .attr('x2', 6)
             .attr('y2', style.height/2 - style.transcriptBarHeight/2)
             .style('stroke', '#000')
