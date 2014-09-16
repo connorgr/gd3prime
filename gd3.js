@@ -124,7 +124,7 @@
       }
       function activate(d) {
         console.log("activate", d);
-        if (d.annotation == undefined) {
+        if (d.annotation == undefined && d.cell.annotation == undefined) {
           return;
         }
         target = target || d3.event.target;
@@ -134,7 +134,7 @@
         } else {
           point = d3.select(svg).select("SVGPoint").node();
         }
-        var aData = d.annotation, bbox = getScreenBBox();
+        var aData = d.annotation || d.cell.annotation, bbox = getScreenBBox();
         d3.selectAll(".gd3AnnotationViewDiv").remove();
         var container = d3.select(document.createElement("div"));
         container.attr("class", "gd3AnnotationViewDiv");

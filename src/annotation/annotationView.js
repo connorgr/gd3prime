@@ -225,7 +225,7 @@ function annotationView(style, votingFns) {
   function activate (d) {
     console.log('activate',d);
     // Do nothing if no annotation data exists
-    if (d.annotation == undefined) {
+    if (d.annotation == undefined && d.cell.annotation == undefined) {
       return;
     }
 
@@ -239,7 +239,7 @@ function annotationView(style, votingFns) {
     }
 
 
-    var aData = d.annotation,
+    var aData = d.annotation || d.cell.annotation,
         bbox = getScreenBBox();
 
     // Remove any lingering tooltips that might exist
