@@ -341,7 +341,7 @@ function transcriptChart(style) {
 
             if(d.loc == 'top') {
               adjust = maxInactivatingOffset * scrollPercent;
-              console.log(adjust);
+              console.log(adjust, maxInactivatingOffset, maxActivatingOffset);
             }
 
             activeG.attr('transform', 'translate(0,'+adjust+')');
