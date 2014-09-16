@@ -905,7 +905,7 @@
           }
           activatingMutations.each(getYs(activatingYs));
           inactivatingMutations.each(getYs(inactivatingYs));
-          var minActivatingY = Math.min(activatingYs), maxInactivatingY = Math.max(inactivatingYs);
+          var minActivatingY = d3.min(activatingYs), maxInactivatingY = d3.max(inactivatingYs);
           console.log(activatingYs, inactivatingYs);
           console.log(minActivatingY, maxInactivatingY);
           console.log("--");
