@@ -69,9 +69,6 @@ function transcriptChart(style) {
         .on('zoom', function() { updateTranscript() });
       svg.call(zoom);
 
-
-      console.log(data.get('mutations'));
-
       // Add mutations to the transcript
       var mutationsG = tG.append('g').attr('class','transcriptMutations'),
           inactivatingG = mutationsG.append('g'),

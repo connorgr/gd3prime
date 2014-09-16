@@ -786,7 +786,6 @@
           updateTranscript();
         });
         svg.call(zoom);
-        console.log(data.get("mutations"));
         var mutationsG = tG.append("g").attr("class", "transcriptMutations"), inactivatingG = mutationsG.append("g"), activatingG = mutationsG.append("g");
         var inactivatingData = data.get("mutations").filter(function(d) {
           return data.isMutationInactivating(d.ty);
