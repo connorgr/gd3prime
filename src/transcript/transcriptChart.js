@@ -57,6 +57,7 @@ function transcriptChart(style) {
                     .on('drag', dragMove)
                     .on('dragend', dragEnd);
         function dragMove(d) {
+          d3.event.sourceEvent.stopPropagation();
           var thisEl = d3.select(this),
               higher = d.max < d.min ? d.max : d.min, // lesser/upper canvas y bound value
               lower = higher == d.max ? d.min : d.max;
