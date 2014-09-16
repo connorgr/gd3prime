@@ -2,6 +2,7 @@ import "transcriptData";
 
 function transcriptChart(style) {
   var showScrollers = true;
+
   function chart(selection) {
     selection.each(function(data) {
       data = transcriptData(data);
@@ -45,6 +46,7 @@ function transcriptChart(style) {
       var tG = svg.append('g');
 
       if (showScrollers) {
+        console.log('test');
         tG.attr('transform', 'translate(15,0)');
         svg.append('line')
             .attr('x0', 6)

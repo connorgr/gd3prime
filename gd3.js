@@ -781,6 +781,7 @@
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(style.numXTicks).tickSize(0).tickPadding(style.xTickPadding);
         var tG = svg.append("g");
         if (showScrollers) {
+          console.log("test");
           tG.attr("transform", "translate(15,0)");
           svg.append("line").attr("x0", 6).attr("y0", 0).attr("x1", 6).attr("y1", 25);
         }
