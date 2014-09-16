@@ -274,7 +274,7 @@ function annotationView(style, votingFns) {
         nodeL =  bbox.s.x - node.offsetWidth / 2,
         nodeT = bbox.s.y;
 
-    var offsetTop = nodeT + scrollTop + 1,
+    var offsetTop = nodeT + scrollTop + 2,
         offsetLeft = nodeL + scrollLeft;
 
     container.style('left', offsetLeft.toString() + 'px')
