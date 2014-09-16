@@ -592,7 +592,6 @@
               };
             });
           }).enter().append("rect").attr("x", 0).attr("y", function(d) {
-            console.log(d);
             return style.rowHeight * data.ids.rows.indexOf(d.row);
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.cell.dataset];
