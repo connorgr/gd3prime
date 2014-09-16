@@ -339,7 +339,9 @@ function transcriptChart(style) {
                 scrollNow = d3.event.y - higher,
                 scrollPercent = d.loc == 'top' ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
 
-            console.log(scrollPercent);
+            if(d.loc == 'top') {
+              adjust = maxInactivatingOffset * scrollPercent;
+            }
 
             activeG.attr('transform', 'translate(0,'+adjust+')');
             activeM.each(function() {
