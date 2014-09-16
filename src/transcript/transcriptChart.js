@@ -47,7 +47,7 @@ function transcriptChart(style) {
 
       if (showScrollers) {
         console.log('test');
-        tG.attr('transform', 'translate(15,0)');
+        tG.attr('transform', 'translate(20,0)');
         svg.append('rect')
             .attr('x', 0)
             .attr('y', 0)

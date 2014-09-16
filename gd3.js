@@ -782,7 +782,7 @@
         var tG = svg.append("g");
         if (showScrollers) {
           console.log("test");
-          tG.attr("transform", "translate(15,0)");
+          tG.attr("transform", "translate(20,0)");
           svg.append("rect").attr("x", 0).attr("y", 0).attr("width", 15).attr("height", style.height).style("fill", "#fff");
           svg.append("line").attr("x1", 6).attr("y1", 10).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2 + 10).style("stroke", "#ccc").style("stroke-width", 1);
           svg.append("circle").attr("cx", 6).attr("cy", 10).attr("r", 6).attr("fill", "#aaa");
