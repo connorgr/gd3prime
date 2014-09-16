@@ -905,7 +905,7 @@
           activatingMutations.each(getYs(activatingYs));
           inactivatingMutations.each(getYs(inactivatingYs));
           var minActivatingY = d3.min(activatingYs), maxInactivatingY = d3.max(inactivatingYs);
-          var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) + style.symbolWidth : 0, maxInactivatingOffset = maxInactivatingY > style.height ? 0 : 0;
+          var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) + style.symbolWidth : 0, maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY + style.symbolWidth : 0;
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
           gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
           gradient.append("svg:stop").attr("offset", "100%").attr("stop-color", "#666666").attr("stop-opacity", 1);

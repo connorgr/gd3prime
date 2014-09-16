@@ -283,7 +283,7 @@ function transcriptChart(style) {
 
         // Determine scrolling max offset for both activating and inactivating mutations
         var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY)+style.symbolWidth : 0,
-            maxInactivatingOffset = maxInactivatingY > style.height ? 0 : 0;
+            maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY+style.symbolWidth : 0;
 
         // create drag slider gradient
         // Define the gradient
