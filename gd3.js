@@ -913,7 +913,12 @@
           function dragStart(d) {
             d3.event.sourceEvent.stopPropagation();
             var thisEl = d3.select(this);
-            thisEl.style("fill", "#888888");
+            thisEl.style({
+              fill: "#888888",
+              cursor: "grabbing",
+              cursor: "-webkit-grabbing",
+              cursor: "-moz-grabbing"
+            });
           }
           function dragMove(d) {
             var thisEl = d3.select(this), higher = d.loc == "top" ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
@@ -942,7 +947,12 @@
           }
           function dragEnd(d) {
             var thisEl = d3.select(this);
-            thisEl.style("fill", "url(#gradient)");
+            thisEl.style({
+              fill: "url(#gradient)",
+              cursor: "grab",
+              cursor: "-webkit-grab",
+              cursor: "-moz-grab"
+            });
           }
           sG.append("rect").attr("x", 0).attr("y", 0).attr("width", 15).attr("height", style.height).style("fill", "#fff");
           sG.append("line").attr("x1", 6).attr("y1", 10).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2 + 10).style("stroke", "#ccc").style("stroke-width", 1);
@@ -962,6 +972,7 @@
             "box-shadow": "0px 0px 5px 0px rgba(0,0,0,0.75)",
             cursor: "grab",
             cursor: "-webkit-grab",
+            cursor: "-moz-grab",
             fill: "url(#gradient)",
             stroke: "#666",
             "stroke-width": 1

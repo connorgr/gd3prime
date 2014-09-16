@@ -315,7 +315,12 @@ function transcriptChart(style) {
         function dragStart(d) {
           d3.event.sourceEvent.stopPropagation();
           var thisEl = d3.select(this);
-          thisEl.style('fill', '#888888');
+          thisEl.style({
+            fill: '#888888',
+            cursor: 'grabbing',
+            cursor: '-webkit-grabbing',
+            cursor: '-moz-grabbing',
+            });
         }
         function dragMove(d) {
           var thisEl = d3.select(this),
@@ -360,7 +365,12 @@ function transcriptChart(style) {
         }
         function dragEnd(d) {
           var thisEl = d3.select(this);
-          thisEl.style('fill', 'url(#gradient)')
+          thisEl.style({
+            fill: 'url(#gradient)',
+            cursor: 'grab',
+            cursor: '-webkit-grab',
+            cursor: '-moz-grab',
+          });
         }
 
         // Add a background for the slider area
@@ -409,6 +419,7 @@ function transcriptChart(style) {
               'box-shadow': '0px 0px 5px 0px rgba(0,0,0,0.75)',
               cursor: 'grab',
               cursor: '-webkit-grab',
+              cursor: '-moz-grab',
               fill: 'url(#gradient)',
               stroke: '#666',
               'stroke-width': 1
