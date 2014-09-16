@@ -320,7 +320,11 @@ function transcriptChart(style) {
                   transform = thisEl.attr('transform');
               if (transform) {
                 var y = parseFloat(transform.split(',')[1].split(')')[0]);
-                thisEl.style('opacity', y+adjust > lower ? 0 : 1);
+                if(d.loc =='top') {
+                  thisEl.style('opacity', y+adjust > lower ? 0 : 1);
+                } else {
+                  thisEl.style('opacity', y+adjust < lower ? 0 : 1);
+                }
               }
 
             });
