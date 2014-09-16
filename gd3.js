@@ -912,10 +912,9 @@
               thisEl.attr("cy", d3.event.y);
               var activeG = d.loc == "top" ? activatingG : inactivatingG, activeM = d.loc == "top" ? activatingMutations : inactivatingMutations;
               adjust = -1 * (d3.event.y - d.min);
-              activeM.attr("transform", "translate(0," + adjust + ")");
-              activeM.each(function(d) {
-                var thisEl = d3.select(this);
-                thisEl.style("fill", "#f00");
+              activeM.attr("transform", function() {
+                console.log(d3.select(this).attr("transform"));
+                return d3.select(this).attr("transform");
               });
             }
           }
