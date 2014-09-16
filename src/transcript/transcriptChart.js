@@ -49,10 +49,10 @@ function transcriptChart(style) {
         console.log('test');
         tG.attr('transform', 'translate(15,0)');
         svg.append('line')
-            .attr('x0', 6)
-            .attr('y0', 0)
             .attr('x1', 6)
-            .attr('y1', 25)
+            .attr('y1', 0)
+            .attr('x2', 6)
+            .attr('y2', 25)
             .style('stroke', '#000')
             .style('stroke-width', 2);
       }
