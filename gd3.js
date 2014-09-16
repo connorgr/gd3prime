@@ -783,9 +783,15 @@
         if (showScrollers) {
           tG.attr("transform", "translate(20,0)");
           var sG = svg.append("g");
-          var dragSlider = d3.behavior.drag().on("dragstart", function() {
+          var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
+          gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#a00000").attr("stop-opacity", 1);
+          gradient.append("svg:stop").attr("offset", "100%").attr("stop-color", "#aaaa00").attr("stop-opacity", 1);
+          var dragSlider = d3.behavior.drag().on("dragstart", dragStart).on("drag", dragMove).on("dragend", dragEnd);
+          function dragStart(d) {
             d3.event.sourceEvent.stopPropagation();
-          }).on("drag", dragMove).on("dragend", dragEnd);
+            var thisEl = d3.select(this);
+            thisEl.style("fill", "#f00");
+          }
           function dragMove(d) {
             var thisEl = d3.select(this), higher = d.max < d.min ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
             if (d3.event.y > lower) {

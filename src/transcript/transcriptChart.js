@@ -52,11 +52,38 @@ function transcriptChart(style) {
         // Add a group for sliders
         var sG = svg.append('g');
 
+        // create drag slider gradient
+        // Define the gradient
+        var gradient = svg.append("svg:defs")
+          .append("svg:linearGradient")
+          .attr("id", "gradient")
+          .attr("x1", "0%")
+          .attr("y1", "0%")
+          .attr("x2", "100%")
+          .attr("y2", "100%")
+          .attr("spreadMethod", "pad");
+
+        // Define the gradient colors
+        gradient.append("svg:stop")
+          .attr("offset", "0%")
+          .attr("stop-color", "#a00000")
+          .attr("stop-opacity", 1);
+
+        gradient.append("svg:stop")
+          .attr("offset", "100%")
+          .attr("stop-color", "#aaaa00")
+          .attr("stop-opacity", 1);
+
         // Create drag event handlers for sliders
         var dragSlider = d3.behavior.drag()
-                    .on('dragstart', function() { d3.event.sourceEvent.stopPropagation(); })
+                    .on('dragstart', dragStart)
                     .on('drag', dragMove)
                     .on('dragend', dragEnd);
+        function dragStart(d) {
+          d3.event.sourceEvent.stopPropagation();
+          var thisEl = d3.select(this);
+          thisEl.style('fill', '#f00');
+        }
         function dragMove(d) {
           var thisEl = d3.select(this),
               higher = d.max < d.min ? d.max : d.min, // lesser/upper canvas y bound value
@@ -73,7 +100,6 @@ function transcriptChart(style) {
         function dragEnd(d) {
           var thisEl = d3.select(this);
         }
-
 
         // Add a background for the slider area
         sG.append('rect')
@@ -119,26 +145,7 @@ function transcriptChart(style) {
               'stroke-width': 1
             })
             .call(dragSlider);
-
-        // svg.append('circle')
-        //     .attr('cx', 6)
-        //     .attr('cy', style.height/2 - style.transcriptBarHeight/2 + 4)
-        //     .attr('r', 6)
-        //     .style('fill', '#aaa')
-        //     .style('stroke', '#666')
-        //     .style('stroke-width', 1)
-        //     .call(dragSlider);
-        // svg.append('circle')
-        //     .attr('cx', 6)
-        //     .attr('cy', style.height/2 + style.transcriptBarHeight/2 + 4)
-        //     .attr('r', 6)
-        //     .style('fill', '#aaa')
-        //     .style('stroke', '#666')
-        //     .style('stroke-width', 1)
-        //     .on('drag', function() {
-        //       console.log('draggggggg');
-        //     });
-      }
+      } // end slider behavior code
 
       // Append the axis to the canvas
       var transcriptAxis = tG.append('g')
