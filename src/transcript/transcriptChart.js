@@ -49,6 +49,20 @@ function transcriptChart(style) {
         // Make room for the sliders
         tG.attr('transform', 'translate(20,0)');
 
+        // Create drag event handlers for sliders
+        var dragSlider = d3.behavior.drag()
+                    .origin(Object)
+                    .on('drag', dragMove)
+                    .on('dragend', dragEnd);
+        function dragMove(d) {
+          var thisEl = d3.select(this);
+          thisEl.attr('cy', d3.event.y);
+        }
+        function dragEnd(d) {
+          var thisEl = d3.select(this);
+        }
+
+
         // Add a background for the slider area
         svg.append('rect')
             .attr('x', 0)
@@ -81,9 +95,7 @@ function transcriptChart(style) {
             .attr('fill', '#aaa')
             .attr('stroke', '#666')
             .attr('stroke-width', 1)
-            .on('drag', function() {
-              console.log('draggggggg');
-            });
+            .call(dragSlider);
         svg.append('circle')
             .attr('cx', 6)
             .attr('cy', style.height/2 + style.transcriptBarHeight/2 + 4)

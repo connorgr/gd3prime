@@ -782,12 +782,18 @@
         var tG = svg.append("g");
         if (showScrollers) {
           tG.attr("transform", "translate(20,0)");
+          var dragSlider = d3.behavior.drag().origin(Object).on("drag", dragMove).on("dragend", dragEnd);
+          function dragMove(d) {
+            var thisEl = d3.select(this);
+            thisEl.attr("cy", d3.event.y);
+          }
+          function dragEnd(d) {
+            var thisEl = d3.select(this);
+          }
           svg.append("rect").attr("x", 0).attr("y", 0).attr("width", 15).attr("height", style.height).style("fill", "#fff");
           svg.append("line").attr("x1", 6).attr("y1", 10).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2 + 10).style("stroke", "#ccc").style("stroke-width", 1);
           svg.append("line").attr("x1", 6).attr("y1", style.height / 2 + style.transcriptBarHeight / 2 + 10).attr("x2", 6).attr("y2", style.height - 10).style("stroke", "#ccc").style("stroke-width", 1);
-          svg.append("circle").attr("cx", 6).attr("cy", style.height / 2 - style.transcriptBarHeight / 2 + 4).attr("r", 6).attr("fill", "#aaa").attr("stroke", "#666").attr("stroke-width", 1).on("drag", function() {
-            console.log("draggggggg");
-          });
+          svg.append("circle").attr("cx", 6).attr("cy", style.height / 2 - style.transcriptBarHeight / 2 + 4).attr("r", 6).attr("fill", "#aaa").attr("stroke", "#666").attr("stroke-width", 1).call(dragSlider);
           svg.append("circle").attr("cx", 6).attr("cy", style.height / 2 + style.transcriptBarHeight / 2 + 4).attr("r", 6).attr("fill", "#aaa").attr("stroke", "#666").attr("stroke-width", 1).on("drag", function() {
             console.log("draggggggg");
           });
