@@ -880,6 +880,7 @@
               thisEl.attr("cy", higher);
             } else {
               thisEl.attr("cy", d3.event.y);
+              mutationsG.attr("transform", "translate(0," + d3.event.y + ")");
             }
           }
           function dragEnd(d) {
