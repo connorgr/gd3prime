@@ -66,12 +66,12 @@ function transcriptChart(style) {
         // Define the gradient colors
         gradient.append("svg:stop")
           .attr("offset", "0%")
-          .attr("stop-color", "#a00000")
+          .attr("stop-color", "#eeeeee")
           .attr("stop-opacity", 1);
 
         gradient.append("svg:stop")
           .attr("offset", "100%")
-          .attr("stop-color", "#aaaa00")
+          .attr("stop-color", "#333333")
           .attr("stop-opacity", 1);
 
         // Create drag event handlers for sliders
