@@ -914,8 +914,13 @@
               adjust = -1 * (d3.event.y - d.min);
               activeG.attr("transform", "translate(0," + adjust + ")");
               activeM.each(function() {
-                var thisEl = d3.select(this);
-                console.log(this);
+                var thisEl = d3.select(this), transform = thisEl.attr("transform");
+                if (transform) {
+                  var y = parseFloat(transform.split(",")[1].split(")")[0]);
+                  if (y + adjust > 50) {
+                    thisEl.style("opacity", 0);
+                  }
+                }
               });
             }
           }
