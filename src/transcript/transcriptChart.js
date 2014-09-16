@@ -45,10 +45,6 @@ function transcriptChart(style) {
       // Group for all transcript visualization components other than sliders to live in
       var tG = svg.append('g');
 
-      if (showScrollers) {
-        renderScrollers();
-      } // end slider behavior code
-
       // Append the axis to the canvas
       var transcriptAxis = tG.append('g')
               .attr('class', 'xaxis')
@@ -148,6 +144,10 @@ function transcriptChart(style) {
 
 
       updateTranscript();
+
+      if (showScrollers) {
+        renderScrollers();
+      } // end slider behavior code
 
       function updateTranscript() {
         var t = zoom.translate(),
