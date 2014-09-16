@@ -819,6 +819,7 @@
           sG.selectAll("circle").data(sliderBounds).enter().append("circle").attr("r", 6).attr("cx", 6).attr("cy", function(d) {
             return d.min;
           }).style({
+            "box-shadow": "0px 0px 5px 0px rgba(0,0,0,0.75)",
             fill: "url(#gradient)",
             stroke: "#666",
             "stroke-width": 1
