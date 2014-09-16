@@ -180,7 +180,36 @@ function transcriptChart(style) {
         }
 
         // render mutation glpyhs and move/color them
-        mutations.attr('transform', function(d, i) {
+        activatingMutations.attr('transform', function(d, i) {
+                var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex,
+                    curIndex = Math.round(d.locus/curRes),
+                    px = x(curIndex*curRes),
+                    py;
+
+                // catch mutations that fall out of scope
+                if (indexDict[curIndex] == undefined) indexDict[curIndex] = 0;
+
+
+                if ( data.isMutationInactivating(d.ty) ) {
+                  py = height/2 + (style.transcriptBarHeight + indexDict[curIndex] * (style.symbolWidth/2) + 21);
+                } else {
+                  py = height/2 - (indexDict[curIndex] * (style.symbolWidth/2) + 11);
+                }
+
+                indexDict[curIndex]++;
+
+                // Store the x and y values
+                pX[i] = px;
+                pY[i] = py;
+
+                return 'translate(' + px + ', ' + py + ')';
+            })// end symbols.attr('transform')
+            .style('fill', function(d) { return sampleTypeToColor[d.dataset]; })
+            .style('fill-opacity', 1)
+            .style('stroke', function(d) { return sampleTypeToColor[d.dataset]; })
+            .style('stroke-opacity', 1)
+            .call(gd3.annotation());
+        inactivatingMutations.attr('transform', function(d, i) {
                 var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex,
                     curIndex = Math.round(d.locus/curRes),
                     px = x(curIndex*curRes),
