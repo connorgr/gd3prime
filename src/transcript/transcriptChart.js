@@ -280,8 +280,10 @@ function transcriptChart(style) {
         }
         activatingMutations.each(getYs(activatingYs));
         inactivatingMutations.each(getYs(inactivatingYs));
-        //var minActivating = d3.min(activatingYs);
+        var minActivatingY = Math.min(activatingYs),
+            maxInactivatingY = Math.max(inactivatingYs);
         console.log(activatingYs.length, inactivatingYs.length);
+        console.log(minActivatingY, maxInactivatingY);
         console.log('--');
 
         // create drag slider gradient

@@ -905,7 +905,9 @@
           }
           activatingMutations.each(getYs(activatingYs));
           inactivatingMutations.each(getYs(inactivatingYs));
+          var minActivatingY = Math.min(activatingYs), maxInactivatingY = Math.max(inactivatingYs);
           console.log(activatingYs.length, inactivatingYs.length);
+          console.log(minActivatingY, maxInactivatingY);
           console.log("--");
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
           gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
