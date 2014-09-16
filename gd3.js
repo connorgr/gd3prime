@@ -595,7 +595,10 @@
             return style.rowHeight * data.ids.rows.indexOf(d.row);
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.cell.dataset];
-          }).call(gd3.annotation());
+          }).call(function() {
+            console.log("calling gd3 annotation for mutmtx");
+            gd3.annotation();
+          });
         }
         if (options.showSummary == true) {
           var summaryArea = selection.append("div");
