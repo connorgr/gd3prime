@@ -926,7 +926,7 @@
               thisEl.attr("cy", d3.event.y);
               var activeG = d.loc == "top" ? activatingG : inactivatingG, activeM = d.loc == "top" ? activatingMutations : inactivatingMutations;
               adjust = -1 * (d3.event.y - d.min);
-              var scrollDomain = lower - higher, scrollNow = d3.event.y - higher, scrollPercent = scrolLNow / scrollDomain;
+              var scrollDomain = lower - higher, scrollNow = d3.event.y - higher, scrollPercent = scrollNow / scrollDomain;
               console.log(scrollPercent);
               activeG.attr("transform", "translate(0," + adjust + ")");
               activeM.each(function() {
