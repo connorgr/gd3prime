@@ -282,7 +282,7 @@ function transcriptChart(style) {
         inactivatingMutations.each(getYs(inactivatingYs));
         var minActivatingY = Math.min(activatingYs),
             maxInactivatingY = Math.max(inactivatingYs);
-        console.log(activatingYs.length, inactivatingYs.length);
+        console.log(activatingYs, inactivatingYs);
         console.log(minActivatingY, maxInactivatingY);
         console.log('--');
 
