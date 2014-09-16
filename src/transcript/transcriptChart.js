@@ -59,7 +59,13 @@ function transcriptChart(style) {
         function dragMove(d) {
           var thisEl = d3.select(this);
           console.log(d3.event);
-          thisEl.attr('cy', d3.event.y);
+          if(d3.event.y > d.max) {
+            thisEl.attr('cy', d.max);
+          } else if (d3.event.y < d.min) {
+            thisEl.attr('cy', d.min);
+          } else {
+            thisEl.attr('cy', d3.event.y);
+          }
         }
         function dragEnd(d) {
           var thisEl = d3.select(this);
