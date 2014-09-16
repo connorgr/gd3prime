@@ -340,7 +340,7 @@ function transcriptChart(style) {
                 scrollPercent = d.loc == 'top' ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
 
             if(d.loc == 'top') {
-              adjust = maxInactivatingOffset * scrollPercent;
+              adjust = maxActivatingOffset * scrollPercent;
               console.log(adjust, maxInactivatingOffset, maxActivatingOffset);
             }
 
