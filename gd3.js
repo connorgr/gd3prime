@@ -873,7 +873,7 @@
             thisEl.style("fill", "#888888");
           }
           function dragMove(d) {
-            var thisEl = d3.select(this), higher = d.max < d.min ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
+            var thisEl = d3.select(this), higher = d.loc == "top" ? d.min : d.max, lower = higher == d.max ? d.max : d.min;
             if (d3.event.y > lower) {
               thisEl.attr("cy", lower);
             } else if (d3.event.y < higher) {
@@ -891,10 +891,12 @@
           sG.append("line").attr("x1", 6).attr("y1", style.height / 2 + style.transcriptBarHeight / 2 + 10).attr("x2", 6).attr("y2", style.height - 10).style("stroke", "#ccc").style("stroke-width", 1);
           var sliderBounds = [ {
             min: style.height / 2 - style.transcriptBarHeight / 2 + 4,
-            max: 6
+            max: 6,
+            loc: "top"
           }, {
             min: style.height / 2 + style.transcriptBarHeight / 2 + 4,
-            max: style.height - 6
+            max: style.height - 6,
+            loc: "bottom"
           } ];
           sG.selectAll("circle").data(sliderBounds).enter().append("circle").attr("r", 6).attr("cx", 6).attr("cy", function(d) {
             return d.min;

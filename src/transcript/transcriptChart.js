@@ -249,8 +249,8 @@ function transcriptChart(style) {
         }
         function dragMove(d) {
           var thisEl = d3.select(this),
-              higher = d.max < d.min ? d.max : d.min, // lesser/upper canvas y bound value
-              lower = higher == d.max ? d.min : d.max;
+              higher = d.loc == 'top' ? d.min : d.max, // lesser/upper canvas y bound value
+              lower = higher == d.max ? d.max : d.min;
 
           if(d3.event.y > lower) {
             thisEl.attr('cy', lower);
@@ -291,10 +291,14 @@ function transcriptChart(style) {
 
         // Set up drag circles
         var sliderBounds = [
-          {min: style.height/2 - style.transcriptBarHeight/2 + 4,
-            max: 6},
-          {min: style.height/2 + style.transcriptBarHeight/2 + 4,
-            max: style.height - 6}
+          { min: style.height/2 - style.transcriptBarHeight/2 + 4,
+            max: 6,
+            loc: 'top'
+          },
+          { min: style.height/2 + style.transcriptBarHeight/2 + 4,
+            max: style.height - 6,
+            loc: 'bottom'
+          }
         ];
         sG.selectAll('circle')
             .data(sliderBounds)
