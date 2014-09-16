@@ -67,7 +67,10 @@ function transcriptChart(style) {
             .attr('r', 6)
             .attr('fill', '#aaa')
             .attr('stroke', '#666')
-            .attr('stroke-width', 1);
+            .attr('stroke-width', 1)
+            .on('drag', function() {
+              console.log('draggggggg');
+            });
       }
 
       // Append the axis to the canvas
