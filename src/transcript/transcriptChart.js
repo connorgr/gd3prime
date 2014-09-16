@@ -310,8 +310,8 @@ function transcriptChart(style) {
             thisEl.attr('cy', higher);
           } else {
             thisEl.attr('cy', d3.event.y);
-            var adjust = d3.event.y - d.min,
-                activeG = d.loc == 'top' ? activatingG : inactivatingG;
+            var activeG = d.loc == 'top' ? activatingG : inactivatingG,
+                adjust = d.loc == 'top' ? -1*(d3.event.y - d.min) : d3.event.y - d.min;
             activeG.attr('transform', 'translate(0,'+adjust+')');
           }
         }
