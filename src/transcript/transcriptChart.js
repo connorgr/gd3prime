@@ -269,7 +269,11 @@ function transcriptChart(style) {
 
         var transforms = [];
         activatingMutations.each(function() {
-          transforms.push(d3.select(this).attr('transform'));
+          var transform = d3.select(this).attr('transform');
+          if (transform) {
+            var y = parseFloat(transform.split(',')[1].split(')')[0]);
+            transforms.push(y);
+          }
         });
         console.log(transforms);
 
