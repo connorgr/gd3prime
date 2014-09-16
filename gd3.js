@@ -785,6 +785,7 @@
           var dragSlider = d3.behavior.drag().origin(Object).on("drag", dragMove).on("dragend", dragEnd);
           function dragMove(d) {
             var thisEl = d3.select(this);
+            console.log(d3.event);
             thisEl.attr("cy", d3.event.y);
           }
           function dragEnd(d) {
