@@ -52,7 +52,7 @@ function transcriptChart(style) {
             .attr('x1', 6)
             .attr('y1', 10)
             .attr('x2', 6)
-            .attr('y2', style.height/2 - style.transcriptBarHeight/2)
+            .attr('y2', style.height/2 - style.transcriptBarHeight/2 + 10)
             .style('stroke', '#000')
             .style('stroke-width', 2);
       }
