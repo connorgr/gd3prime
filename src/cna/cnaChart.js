@@ -147,6 +147,8 @@ function cnaChart(style) {
           .attr('height', style.horizontalBarHeight)
           .attr('id', function (d, i) { return "interval-" + i; });
 
+      segments.call(gd3.annotation());
+
       // Add a vertical bar that spans the target gene
       var verticalBar = svg.selectAll('.vert-bar')
           .data(data.get('genes').filter(function(d){ return d.selected; })).enter()

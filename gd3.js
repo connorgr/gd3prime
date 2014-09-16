@@ -230,7 +230,26 @@
         samplelst.push(d.sample);
         var dSegments = d.segments;
         dSegments.forEach(function(s) {
+          var vote = {
+            type: "vote",
+            score: 100
+          };
+          var link = {
+            type: "link",
+            href: "http://www.cs.brown.edu",
+            text: "BrownCS"
+          };
+          var testAnnotation = [ {
+            type: "text",
+            title: "Sample",
+            text: d.sample
+          }, {
+            type: "table",
+            header: [ "Cancer", "PMIDs", "Votes" ],
+            data: [ [ "1", link, vote ], [ "4", link, vote ] ]
+          } ];
           segJSON.push({
+            annotation: testAnnotation,
             gene: gene,
             start: s.start,
             end: s.end,
@@ -332,6 +351,7 @@
         }).attr("height", style.horizontalBarHeight).attr("id", function(d, i) {
           return "interval-" + i;
         });
+        segments.call(gd3.annotation());
         var verticalBar = svg.selectAll(".vert-bar").data(data.get("genes").filter(function(d) {
           return d.selected;
         })).enter().append("rect").attr("y", style.geneHeight).attr("width", function(d) {
