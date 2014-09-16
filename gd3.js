@@ -785,12 +785,11 @@
           var sG = svg.append("g");
           var dragSlider = d3.behavior.drag().on("drag", dragMove).on("dragend", dragEnd);
           function dragMove(d) {
-            var thisEl = d3.select(this);
-            console.log(d3.event);
-            if (d3.event.y > d.max) {
-              thisEl.attr("cy", d.max);
-            } else if (d3.event.y < d.min) {
-              thisEl.attr("cy", d.min);
+            var thisEl = d3.select(this), higher = d.max < d.min ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
+            if (d3.event.y > lower) {
+              thisEl.attr("cy", lower);
+            } else if (d3.event.y < higher) {
+              thisEl.attr("cy", higher);
             } else {
               thisEl.attr("cy", d3.event.y);
             }
