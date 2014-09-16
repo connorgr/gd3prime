@@ -123,6 +123,7 @@
         }
       }
       function activate(d) {
+        console.log("activate", d);
         if (d.annotation == undefined) {
           return;
         }
