@@ -258,7 +258,8 @@ function transcriptChart(style) {
             thisEl.attr('cy', higher);
           } else {
             thisEl.attr('cy', d3.event.y);
-            mutationsG.attr('transform', 'translate(0,'+d3.event.y+')');
+            var adjust = d3.event.y - d.min;
+            mutationsG.attr('transform', 'translate(0,'+adjust+')');
           }
         }
         function dragEnd(d) {
