@@ -48,6 +48,12 @@ function transcriptChart(style) {
       if (showScrollers) {
         console.log('test');
         tG.attr('transform', 'translate(15,0)');
+        svg.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', 15)
+            .attr('height', style.height)
+            .style('fill', '#fff');
         svg.append('line')
             .attr('x1', 6)
             .attr('y1', 10)
