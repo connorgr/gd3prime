@@ -267,15 +267,20 @@ function transcriptChart(style) {
         // Add a group for sliders
         var sG = svg.append('g');
 
-        var transforms = [];
-        activatingMutations.each(function() {
+        var activatingYs = [],
+            inactivatingYs = [];
+        function getYs (transforms) {
           var transform = d3.select(this).attr('transform');
           if (transform) {
             var y = parseFloat(transform.split(',')[1].split(')')[0]);
             transforms.push(y);
           }
-        });
-        console.log(transforms);
+        }
+        activatingMutations.each(getYs(activatingYs));
+        inactivatingMutations.each(getYs(inactivatingYs));
+        var minActivating = d3.min(activatingYs);
+        console.log(activatingYs.length, inactivatingYs.length);
+        console.log('--');
 
         // create drag slider gradient
         // Define the gradient

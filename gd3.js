@@ -893,15 +893,19 @@
         function renderScrollers() {
           tG.attr("transform", "translate(20,0)");
           var sG = svg.append("g");
-          var transforms = [];
-          activatingMutations.each(function() {
+          var activatingYs = [], inactivatingYs = [];
+          function getYs(transforms) {
             var transform = d3.select(this).attr("transform");
             if (transform) {
               var y = parseFloat(transform.split(",")[1].split(")")[0]);
               transforms.push(y);
             }
-          });
-          console.log(transforms);
+          }
+          activatingMutations.each(getYs(activatingYs));
+          inactivatingMutations.each(getYs(inactivatingYs));
+          var minActivating = d3.min(activatingYs);
+          console.log(activatingYs.length, inactivatingYs.length);
+          console.log("--");
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
           gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
           gradient.append("svg:stop").attr("offset", "100%").attr("stop-color", "#666666").attr("stop-opacity", 1);
