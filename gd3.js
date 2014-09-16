@@ -873,7 +873,7 @@
             thisEl.style("fill", "#888888");
           }
           function dragMove(d) {
-            var thisEl = d3.select(this), higher = d.loc == "top" ? d.min : d.max, lower = higher == d.max ? d.max : d.min;
+            var thisEl = d3.select(this), higher = d.loc == "top" ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
             if (d3.event.y > lower) {
               thisEl.attr("cy", lower);
             } else if (d3.event.y < higher) {

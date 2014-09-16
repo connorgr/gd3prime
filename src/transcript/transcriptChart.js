@@ -249,8 +249,8 @@ function transcriptChart(style) {
         }
         function dragMove(d) {
           var thisEl = d3.select(this),
-              higher = d.loc == 'top' ? d.min : d.max, // lesser/upper canvas y bound value
-              lower = higher == d.max ? d.max : d.min;
+              higher = d.loc == 'top' ? d.max : d.min, // lesser/upper canvas y bound value
+              lower = higher == d.max ? d.min : d.max;
 
           if(d3.event.y > lower) {
             thisEl.attr('cy', lower);
