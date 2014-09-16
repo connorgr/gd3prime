@@ -710,7 +710,7 @@
         In_Frame_Del: 4,
         In_Frame_Ins: 4
       };
-      var proteinDomainDB = cdata.proteinDomainDB || "";
+      var proteinDomainDB = cdata.proteinDomainDB || Object.keys(cdata.domains)[0] || "";
       console.log(cdata);
       console.log(proteinDomainDB);
       var d = {
