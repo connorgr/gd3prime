@@ -325,11 +325,6 @@ function transcriptChart(style) {
               higher = d.loc == 'top' ? d.max : d.min, // lesser/upper canvas y bound value
               lower = higher == d.max ? d.min : d.max;
 
-          var scrollDomain = lower - higher,
-              scrollNow = d3.event.y - higher;
-
-          console.log(scrollNow, scrollDomain, scrollNow/scrollDomain);
-
           if(d3.event.y > lower) {
             thisEl.attr('cy', lower);
           } else if (d3.event.y < higher) {
@@ -339,6 +334,9 @@ function transcriptChart(style) {
             var activeG = d.loc == 'top' ? activatingG : inactivatingG,
                 activeM = d.loc == 'top' ? activatingMutations : inactivatingMutations;
                 adjust = -1*(d3.event.y - d.min);
+
+            var scrollDomain = lower - higher,
+                scrollNow = d3.event.y - higher;
 
             activeG.attr('transform', 'translate(0,'+adjust+')');
             activeM.each(function() {
