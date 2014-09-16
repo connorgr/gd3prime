@@ -711,6 +711,8 @@
         In_Frame_Ins: 4
       };
       var proteinDomainDB = cdata.proteinDomainDB || "";
+      console.log(cdata);
+      console.log(proteinDomainDB);
       var d = {
         geneName: cdata.gene,
         inactivatingMutations: cdata.inactivatingMutations || defaultInactivatingMutations,

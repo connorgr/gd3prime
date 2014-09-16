@@ -21,6 +21,9 @@ function transcriptData(data) {
 
     var proteinDomainDB = cdata.proteinDomainDB || '';
 
+    console.log(cdata);
+    console.log(proteinDomainDB);
+
     var d = {
       geneName: cdata.gene,
       inactivatingMutations: cdata.inactivatingMutations || defaultInactivatingMutations,
