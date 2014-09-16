@@ -167,7 +167,6 @@ function annotationView(style, votingFns) {
 
         scoreDatum.score = parseInt(score.text());
         score.datum(scoreDatum);
-        console.log(scoreDatum);
       } // end abstractVote()
 
 
@@ -256,8 +255,6 @@ function annotationView(style, votingFns) {
       position: 'absolute'
     });
 
-    console.log(bbox);
-
     for (var i in aData) {
       var aPart = aData[i],
           type = aPart.type;
@@ -287,7 +284,6 @@ function annotationView(style, votingFns) {
 
     // Add an "x-out" button for the annotation
     var xoutLeft = (node.offsetWidth - 10).toString() + 'px';
-    console.log(xoutLeft, 'xoutLeft');
     container.append('span')
         .text('☓')
         .on('click', function() {

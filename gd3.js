@@ -91,7 +91,6 @@
           }
           scoreDatum.score = parseInt(score.text());
           score.datum(scoreDatum);
-          console.log(scoreDatum);
         }
         function downVote(d) {
           abstractVote(down, up);
@@ -143,7 +142,6 @@
           padding: "5px",
           position: "absolute"
         });
-        console.log(bbox);
         for (var i in aData) {
           var aPart = aData[i], type = aPart.type;
           if (type == "link") {
@@ -159,7 +157,6 @@
         var offsetTop = nodeT + scrollTop, offsetLeft = nodeL + scrollLeft;
         container.style("left", offsetLeft.toString() + "px").style("top", offsetTop.toString() + "px");
         var xoutLeft = (node.offsetWidth - 10).toString() + "px";
-        console.log(xoutLeft, "xoutLeft");
         container.append("span").text("☓").on("click", function() {
           d3.selectAll(".gd3AnnotationViewDiv").remove();
         }).style({
