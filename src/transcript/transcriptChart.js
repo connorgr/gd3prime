@@ -311,8 +311,14 @@ function transcriptChart(style) {
           } else {
             thisEl.attr('cy', d3.event.y);
             var activeG = d.loc == 'top' ? activatingG : inactivatingG,
+                activeM = d.loc == 'top' ? activatingMutations : inactivatingMutations;
                 adjust = -1*(d3.event.y - d.min);
-            activeG.attr('transform', 'translate(0,'+adjust+')');
+            activeM.attr('transform', 'translate(0,'+adjust+')');
+
+            activeM.each(function(d) {
+              var thisEl = d3.select(this);
+              thisEl.style('fill', '#f00');
+            });
           }
         }
         function dragEnd(d) {
