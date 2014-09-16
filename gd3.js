@@ -906,9 +906,7 @@
           activatingMutations.each(getYs(activatingYs));
           inactivatingMutations.each(getYs(inactivatingYs));
           var minActivatingY = d3.min(activatingYs), maxInactivatingY = d3.max(inactivatingYs);
-          console.log(activatingYs, inactivatingYs);
-          console.log(minActivatingY, maxInactivatingY);
-          console.log("--");
+          var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) : 0, maxInactivatingOffset = maxInactivatingY > style.height ? 0 : 0;
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
           gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
           gradient.append("svg:stop").attr("offset", "100%").attr("stop-color", "#666666").attr("stop-opacity", 1);
@@ -920,6 +918,8 @@
           }
           function dragMove(d) {
             var thisEl = d3.select(this), higher = d.loc == "top" ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
+            var scrollDomain = lower - higher, scrollNow = d3.event.y - higher;
+            console.log(scrollNow, scrollDomain, scrollNow / scrollDomain);
             if (d3.event.y > lower) {
               thisEl.attr("cy", lower);
             } else if (d3.event.y < higher) {

@@ -267,6 +267,7 @@ function transcriptChart(style) {
         // Add a group for sliders
         var sG = svg.append('g');
 
+        // calculate offsets for scrolling
         var activatingYs = [],
             inactivatingYs = [];
         function getYs (transforms) {
@@ -282,9 +283,10 @@ function transcriptChart(style) {
         inactivatingMutations.each(getYs(inactivatingYs));
         var minActivatingY = d3.min(activatingYs),
             maxInactivatingY = d3.max(inactivatingYs);
-        console.log(activatingYs, inactivatingYs);
-        console.log(minActivatingY, maxInactivatingY);
-        console.log('--');
+
+        // Determine scrolling max offset for both activating and inactivating mutations
+        var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) : 0,
+            maxInactivatingOffset = maxInactivatingY > style.height ? 0 : 0;
 
         // create drag slider gradient
         // Define the gradient
@@ -322,6 +324,11 @@ function transcriptChart(style) {
           var thisEl = d3.select(this),
               higher = d.loc == 'top' ? d.max : d.min, // lesser/upper canvas y bound value
               lower = higher == d.max ? d.min : d.max;
+
+          var scrollDomain = lower - higher,
+              scrollNow = d3.event.y - higher;
+
+          console.log(scrollNow, scrollDomain, scrollNow/scrollDomain);
 
           if(d3.event.y > lower) {
             thisEl.attr('cy', lower);
