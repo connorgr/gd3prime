@@ -301,7 +301,7 @@ function annotationView(style, votingFns) {
           width: '10px'
         });
 
-    node.on('mouseout', function() {
+    container.on('mouseout', function() {
       d3.select(this).on('mouseout', null); // patch for mouseout behavior
       document.body.removeChild(this);
     });
