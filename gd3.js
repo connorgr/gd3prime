@@ -783,7 +783,7 @@
         if (showScrollers) {
           console.log("test");
           tG.attr("transform", "translate(15,0)");
-          svg.append("line").attr("x1", 6).attr("y1", 0).attr("x2", 6).attr("y2", 25).style("stroke", "#000").style("stroke-width", 2);
+          svg.append("line").attr("x1", 6).attr("y1", 0).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2).style("stroke", "#000").style("stroke-width", 2);
         }
         var transcriptAxis = tG.append("g").attr("class", "xaxis").attr("transform", "translate(0," + (style.height / 2 + style.transcriptBarHeight + 6) + ")").style("font-family", style.fontFamily).style("font-size", "12px").style("fill", "#000").call(xAxis);
         var transcriptBar = tG.append("rect").attr("height", style.transcriptBarHeight).attr("width", x(stop) - x(start)).attr("x", x(start)).attr("y", height / 2).style("fill", "#ccc");
