@@ -317,7 +317,7 @@ function transcriptChart(style) {
               var parts = d3.select(this).attr('transform').split(','),
                   translateY = parseFloat(parts[1].split(')')[0]) + adjust,
                   newTranslate = parts[0]+','+translateY+')';
-              console.log(parts);
+              console.log(newTranslate);
               return d3.select(this).attr('transform', newTranslate);
             });
 
