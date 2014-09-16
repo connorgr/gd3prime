@@ -156,7 +156,7 @@ function mutmtxChart(style) {
       function renderMutationMatrix() {
         var colWidth = wholeVisX(1)-wholeVisX(0);
 
-        firstGroupColumns.selectAll('rect')
+        var rects = firstGroupColumns.selectAll('rect')
             .data(function(colId){
               var activeRows = data.matrix.columnIdToActiveRows[colId];
               return activeRows.map(function(rowId){
@@ -171,12 +171,9 @@ function mutmtxChart(style) {
               })
               .attr('height', style.rowHeight)
               .attr('width', colWidth)
-              .style('fill', function(d) { return colTypeToColor[d.cell.dataset]; })
-              .each(function(d) {
-                console.log('calling gd3 annotation for mutmtx');
-                console.log(d);
-                gd3.annotation()
-              });
+              .style('fill', function(d) { return colTypeToColor[d.cell.dataset]; });
+
+        rects.call(gd3.annotation());
 
         // summaryGroupsColumns.selectAll('rect')
         //   .data(function(d){ return d.value.activeRows.map(function(row){return {row:row, type:data.columnsToTypes[d.key]}});})

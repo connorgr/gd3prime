@@ -583,7 +583,7 @@
         }
         function renderMutationMatrix() {
           var colWidth = wholeVisX(1) - wholeVisX(0);
-          firstGroupColumns.selectAll("rect").data(function(colId) {
+          var rects = firstGroupColumns.selectAll("rect").data(function(colId) {
             var activeRows = data.matrix.columnIdToActiveRows[colId];
             return activeRows.map(function(rowId) {
               return {
@@ -595,11 +595,8 @@
             return style.rowHeight * data.ids.rows.indexOf(d.row);
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.cell.dataset];
-          }).each(function(d) {
-            console.log("calling gd3 annotation for mutmtx");
-            console.log(d);
-            gd3.annotation();
           });
+          rects.call(gd3.annotation());
         }
         if (options.showSummary == true) {
           var summaryArea = selection.append("div");
