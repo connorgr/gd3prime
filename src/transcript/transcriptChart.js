@@ -315,6 +315,10 @@ function transcriptChart(style) {
                 adjust = -1*(d3.event.y - d.min);
 
             activeG.attr('transform', 'translate(0,'+adjust+')');
+            activeM.each(function() {
+              var thisEl = d3.select(this);
+              console.log(this);
+            });
 
           }
         }
