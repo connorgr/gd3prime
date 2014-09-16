@@ -65,7 +65,9 @@ function transcriptChart(style) {
             .attr('cx', 6)
             .attr('cy', 10)
             .attr('r', 6)
-            .attr('fill', '#aaa');
+            .attr('fill', '#aaa')
+            .attr('stroke', '#666')
+            .attr('stroke-width', 1);
       }
 
       // Append the axis to the canvas

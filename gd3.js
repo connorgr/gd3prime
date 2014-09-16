@@ -785,7 +785,7 @@
           tG.attr("transform", "translate(20,0)");
           svg.append("rect").attr("x", 0).attr("y", 0).attr("width", 15).attr("height", style.height).style("fill", "#fff");
           svg.append("line").attr("x1", 6).attr("y1", 10).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2 + 10).style("stroke", "#ccc").style("stroke-width", 1);
-          svg.append("circle").attr("cx", 6).attr("cy", 10).attr("r", 6).attr("fill", "#aaa");
+          svg.append("circle").attr("cx", 6).attr("cy", 10).attr("r", 6).attr("fill", "#aaa").attr("stroke", "#666").attr("stroke-width", 1);
         }
         var transcriptAxis = tG.append("g").attr("class", "xaxis").attr("transform", "translate(0," + (style.height / 2 + style.transcriptBarHeight + 6) + ")").style("font-family", style.fontFamily).style("font-size", "12px").style("fill", "#000").call(xAxis);
         var transcriptBar = tG.append("rect").attr("height", style.transcriptBarHeight).attr("width", x(stop) - x(start)).attr("x", x(start)).attr("y", height / 2).style("fill", "#ccc");
