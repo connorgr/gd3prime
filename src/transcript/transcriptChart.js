@@ -40,16 +40,19 @@ function transcriptChart(style) {
               .tickSize(0)
               .tickPadding(style.xTickPadding);
 
+      // Group for all transcript visualization components other than sliders to live in
+      var tG = svg.append('g');
+
       // Append the axis to the canvas
-      var transcriptAxis = svg.append('g')
+      var transcriptAxis = tG.append('g')
               .attr('class', 'xaxis')
-              .attr('transform', 'translate(5,' + ( style.height/2 +  style.transcriptBarHeight+6) +')')
+              .attr('transform', 'translate(0,' + ( style.height/2 +  style.transcriptBarHeight+6) +')')
               .style('font-family', style.fontFamily)
               .style('font-size', '12px')
               .style('fill', '#000')
               .call(xAxis);
 
-      var transcriptBar = svg.append('rect')
+      var transcriptBar = tG.append('rect')
               .attr('height', style.transcriptBarHeight)
               .attr('width', x(stop) - x(start))
               .attr('x', x(start))
@@ -65,7 +68,7 @@ function transcriptChart(style) {
       svg.call(zoom);
 
       // Add mutations to the transcript
-      var mutationsG = svg.append('g').attr('class','transcriptMutations');
+      var mutationsG = tG.append('g').attr('class','transcriptMutations');
       var mutations = mutationsG.selectAll('.symbols')
           .data(data.get('mutations'))
           .enter()
@@ -81,9 +84,8 @@ function transcriptChart(style) {
             .style('stroke-width', 2);
 
       // Draw domain data with labels with mouse over
-      console.log(data);
       var domainGroupsData = data.get('proteinDomains');
-      var domainGroups = svg.selectAll('.domains')
+      var domainGroups = tG.selectAll('.domains')
           .data(domainGroupsData ? data.get('proteinDomains').slice() : [])
           .enter()
           .append('g')
