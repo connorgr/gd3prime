@@ -278,7 +278,7 @@ function transcriptChart(style) {
         }
         activatingMutations.each(getYs(activatingYs));
         inactivatingMutations.each(getYs(inactivatingYs));
-        var minActivating = d3.min(activatingYs);
+        //var minActivating = d3.min(activatingYs);
         console.log(activatingYs.length, inactivatingYs.length);
         console.log('--');
 

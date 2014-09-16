@@ -903,7 +903,6 @@
           }
           activatingMutations.each(getYs(activatingYs));
           inactivatingMutations.each(getYs(inactivatingYs));
-          var minActivating = d3.min(activatingYs);
           console.log(activatingYs.length, inactivatingYs.length);
           console.log("--");
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
