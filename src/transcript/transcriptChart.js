@@ -82,7 +82,7 @@ function transcriptChart(style) {
         function dragStart(d) {
           d3.event.sourceEvent.stopPropagation();
           var thisEl = d3.select(this);
-          thisEl.style('fill', '#f00');
+          thisEl.style('fill', 'url(#gradient)');
         }
         function dragMove(d) {
           var thisEl = d3.select(this),
