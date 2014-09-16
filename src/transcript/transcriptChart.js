@@ -51,7 +51,6 @@ function transcriptChart(style) {
 
         // Create drag event handlers for sliders
         var dragSlider = d3.behavior.drag()
-                    .origin(Object)
                     .on('drag', dragMove)
                     .on('dragend', dragEnd);
         function dragMove(d) {

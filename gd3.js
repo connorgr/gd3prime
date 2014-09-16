@@ -782,7 +782,7 @@
         var tG = svg.append("g");
         if (showScrollers) {
           tG.attr("transform", "translate(20,0)");
-          var dragSlider = d3.behavior.drag().origin(Object).on("drag", dragMove).on("dragend", dragEnd);
+          var dragSlider = d3.behavior.drag().on("drag", dragMove).on("dragend", dragEnd);
           function dragMove(d) {
             var thisEl = d3.select(this);
             console.log(d3.event);
