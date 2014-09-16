@@ -54,10 +54,10 @@ function transcriptChart(style) {
 
         // Create drag event handlers for sliders
         var dragSlider = d3.behavior.drag()
+                    .on('dragstart', function() { d3.event.sourceEvent.stopPropagation(); })
                     .on('drag', dragMove)
                     .on('dragend', dragEnd);
         function dragMove(d) {
-          d3.event.sourceEvent.stopPropagation();
           var thisEl = d3.select(this),
               higher = d.max < d.min ? d.max : d.min, // lesser/upper canvas y bound value
               lower = higher == d.max ? d.min : d.max;

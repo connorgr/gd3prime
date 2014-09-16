@@ -783,9 +783,10 @@
         if (showScrollers) {
           tG.attr("transform", "translate(20,0)");
           var sG = svg.append("g");
-          var dragSlider = d3.behavior.drag().on("drag", dragMove).on("dragend", dragEnd);
-          function dragMove(d) {
+          var dragSlider = d3.behavior.drag().on("dragstart", function() {
             d3.event.sourceEvent.stopPropagation();
+          }).on("drag", dragMove).on("dragend", dragEnd);
+          function dragMove(d) {
             var thisEl = d3.select(this), higher = d.max < d.min ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
             if (d3.event.y > lower) {
               thisEl.attr("cy", lower);
