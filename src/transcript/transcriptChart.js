@@ -54,7 +54,7 @@ function transcriptChart(style) {
                     .on('drag', dragMove)
                     .on('dragend', dragEnd);
         function dragMove(d) {
-          var thisEl = d3.select(this);
+          var thisEl = d3.select(this).style('cursor','grabbing');
           console.log(d3.event);
           thisEl.attr('cy', d3.event.y);
         }
