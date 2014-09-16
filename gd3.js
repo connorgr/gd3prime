@@ -925,12 +925,8 @@
             } else {
               thisEl.attr("cy", d3.event.y);
               var activeG = d.loc == "top" ? activatingG : inactivatingG, activeM = d.loc == "top" ? activatingMutations : inactivatingMutations;
-              adjust = -1 * (d3.event.y - d.min);
               var scrollDomain = lower - higher, scrollNow = d3.event.y - higher, scrollPercent = d.loc == "top" ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
-              if (d.loc == "top") {
-                adjust = maxActivatingOffset * scrollPercent;
-                console.log(adjust, maxInactivatingOffset, maxActivatingOffset);
-              }
+              var offset = d.loc == "top" ? maxActivatingOffset : maxInactivatingOffset, adjust = offset * scrollPercent;
               activeG.attr("transform", "translate(0," + adjust + ")");
               activeM.each(function() {
                 var thisEl = d3.select(this), transform = thisEl.attr("transform");

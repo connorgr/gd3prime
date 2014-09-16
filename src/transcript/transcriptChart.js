@@ -325,6 +325,7 @@ function transcriptChart(style) {
               higher = d.loc == 'top' ? d.max : d.min, // lesser/upper canvas y bound value
               lower = higher == d.max ? d.min : d.max;
 
+          // Scroll only if the dragger is within the bounds of the track
           if(d3.event.y > lower) {
             thisEl.attr('cy', lower);
           } else if (d3.event.y < higher) {
@@ -333,16 +334,15 @@ function transcriptChart(style) {
             thisEl.attr('cy', d3.event.y);
             var activeG = d.loc == 'top' ? activatingG : inactivatingG,
                 activeM = d.loc == 'top' ? activatingMutations : inactivatingMutations;
-                adjust = -1*(d3.event.y - d.min);
 
+            // Decide scroll amount
             var scrollDomain = lower - higher,
                 scrollNow = d3.event.y - higher,
                 scrollPercent = d.loc == 'top' ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
 
-            if(d.loc == 'top') {
-              adjust = maxActivatingOffset * scrollPercent;
-              console.log(adjust, maxInactivatingOffset, maxActivatingOffset);
-            }
+            // Calculate scroll adjustment if top or bottom
+            var offset = d.loc == 'top' ? maxActivatingOffset : maxInactivatingOffset,
+                adjust = offset * scrollPercent;
 
             activeG.attr('transform', 'translate(0,'+adjust+')');
             activeM.each(function() {
