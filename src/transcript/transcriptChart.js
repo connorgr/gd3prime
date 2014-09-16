@@ -267,7 +267,10 @@ function transcriptChart(style) {
         // Add a group for sliders
         var sG = svg.append('g');
 
-        var transforms = activatingMutations.attr('transform');
+        var transforms = [];
+        activatingMutations.each(function() {
+          transforms.push(d3.select(this).attr('transform'));
+        });
         console.log(transforms);
 
         // create drag slider gradient
