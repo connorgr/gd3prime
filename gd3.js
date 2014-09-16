@@ -498,6 +498,28 @@
       });
     }
     parseMagi();
+    Object.keys(data.matrix.cells).forEach(function(key) {
+      if (data.matrix.cells[key].annotation == undefined) {
+        var vote = {
+          type: "vote",
+          score: 100
+        };
+        var link = {
+          type: "link",
+          href: "http://www.cs.brown.edu",
+          text: "BrownCS"
+        };
+        data.matrix.cells[key].annotation = [ {
+          type: "text",
+          title: "Sample",
+          text: m.sample
+        }, {
+          type: "table",
+          header: [ "Cancer", "PMIDs", "Votes" ],
+          data: [ [ "1", link, vote ], [ "4", link, vote ] ]
+        } ];
+      }
+    });
     return data;
   }
   function mutmtxChart(style) {
@@ -573,6 +595,7 @@
               };
             });
           }).enter().append("rect").attr("x", 0).attr("y", function(d) {
+            console.log(d);
             return style.rowHeight * data.ids.rows.indexOf(d.row);
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.cell.dataset];

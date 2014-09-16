@@ -65,26 +65,6 @@ function transcriptData(data) {
             ]
           }
         ];
-        // m.annotation = [
-        //   {
-        //     type: 'text',
-        //     title: 'Sample',
-        //     text: m.sample
-        //   },
-        //   {
-        //     type: 'text',
-        //     title: 'Test',
-        //     text: 'is working'
-        //   },
-        //   {
-        //     type: 'table',
-        //     header: ['Cancer', 'PMIDs', 'Votes'],
-        //     data: [
-        //       ['1', '2', '3'],
-        //       ['4', '5', '6']
-        //     ]
-        //   }
-        // ];
       } // end simulated m.annotation
       else {
         console.log('defined annotation');

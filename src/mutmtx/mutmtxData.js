@@ -107,5 +107,35 @@ function mutmtxData(inputData) {
 
   parseMagi();
 
+  // create simulated annotation data if it does not exist.
+  Object.keys(data.matrix.cells).forEach(function(key) {
+    if (data.matrix.cells[key].annotation == undefined) {
+      var vote = {
+        type: 'vote',
+        score: 100
+      }
+      var link = {
+        type: 'link',
+        href: 'http://www.cs.brown.edu',
+        text: 'BrownCS'
+      }
+      data.matrix.cells[key].annotation = [
+        {
+          type: 'text',
+          title: 'Sample',
+          text: m.sample
+        },
+        {
+          type: 'table',
+          header: ['Cancer', 'PMIDs', 'Votes'],
+          data: [
+            ['1', link, vote],
+            ['4', link, vote]
+          ]
+        }
+      ];
+    }
+  }); // end simulated annotation data
+
   return data;
 }
