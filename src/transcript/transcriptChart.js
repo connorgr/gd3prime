@@ -267,6 +267,9 @@ function transcriptChart(style) {
         // Add a group for sliders
         var sG = svg.append('g');
 
+        var transforms = activeM.attr('transform');
+        console.log(transforms);
+
         // create drag slider gradient
         // Define the gradient
         var gradient = svg.append("svg:defs")
