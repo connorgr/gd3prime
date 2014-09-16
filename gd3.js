@@ -789,6 +789,10 @@
           updateTranscript();
         });
         svg.call(zoom);
+        console.log(data.get("mutations"));
+        console.log(data.get("mutations").filter(function(d) {
+          return data.isMutationInactivating(d.ty);
+        }));
         var mutationsG = tG.append("g").attr("class", "transcriptMutations");
         var mutations = mutationsG.selectAll(".symbols").data(data.get("mutations")).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];

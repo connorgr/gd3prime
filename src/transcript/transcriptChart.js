@@ -73,6 +73,10 @@ function transcriptChart(style) {
         .on('zoom', function() { updateTranscript() });
       svg.call(zoom);
 
+
+      console.log(data.get('mutations'));
+      console.log(data.get('mutations').filter(function(d) { return data.isMutationInactivating(d.ty) }));
+
       // Add mutations to the transcript
       var mutationsG = tG.append('g').attr('class','transcriptMutations');
       var mutations = mutationsG.selectAll('.symbols')
