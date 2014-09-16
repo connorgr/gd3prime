@@ -895,11 +895,13 @@
           var sG = svg.append("g");
           var activatingYs = [], inactivatingYs = [];
           function getYs(transforms) {
-            var transform = d3.select(this).attr("transform");
-            if (transform) {
-              var y = parseFloat(transform.split(",")[1].split(")")[0]);
-              transforms.push(y);
-            }
+            return function() {
+              var transform = d3.select(this).attr("transform");
+              if (transform) {
+                var y = parseFloat(transform.split(",")[1].split(")")[0]);
+                transforms.push(y);
+              }
+            };
           }
           activatingMutations.each(getYs(activatingYs));
           inactivatingMutations.each(getYs(inactivatingYs));
