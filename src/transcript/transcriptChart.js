@@ -337,7 +337,7 @@ function transcriptChart(style) {
 
             var scrollDomain = lower - higher,
                 scrollNow = d3.event.y - higher,
-                scrollPercent = scrollNow / scrollDomain;
+                scrollPercent = d3.loc == 'top' ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
 
             console.log(scrollPercent);
 
