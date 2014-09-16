@@ -781,49 +781,7 @@
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(style.numXTicks).tickSize(0).tickPadding(style.xTickPadding);
         var tG = svg.append("g");
         if (showScrollers) {
-          tG.attr("transform", "translate(20,0)");
-          var sG = svg.append("g");
-          var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
-          gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
-          gradient.append("svg:stop").attr("offset", "100%").attr("stop-color", "#666666").attr("stop-opacity", 1);
-          var dragSlider = d3.behavior.drag().on("dragstart", dragStart).on("drag", dragMove).on("dragend", dragEnd);
-          function dragStart(d) {
-            d3.event.sourceEvent.stopPropagation();
-            var thisEl = d3.select(this);
-            thisEl.style("fill", "#888888");
-          }
-          function dragMove(d) {
-            var thisEl = d3.select(this), higher = d.max < d.min ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
-            if (d3.event.y > lower) {
-              thisEl.attr("cy", lower);
-            } else if (d3.event.y < higher) {
-              thisEl.attr("cy", higher);
-            } else {
-              thisEl.attr("cy", d3.event.y);
-            }
-          }
-          function dragEnd(d) {
-            var thisEl = d3.select(this);
-            thisEl.style("fill", "url(#gradient)");
-          }
-          sG.append("rect").attr("x", 0).attr("y", 0).attr("width", 15).attr("height", style.height).style("fill", "#fff");
-          sG.append("line").attr("x1", 6).attr("y1", 10).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2 + 10).style("stroke", "#ccc").style("stroke-width", 1);
-          sG.append("line").attr("x1", 6).attr("y1", style.height / 2 + style.transcriptBarHeight / 2 + 10).attr("x2", 6).attr("y2", style.height - 10).style("stroke", "#ccc").style("stroke-width", 1);
-          var sliderBounds = [ {
-            min: style.height / 2 - style.transcriptBarHeight / 2 + 4,
-            max: 6
-          }, {
-            min: style.height / 2 + style.transcriptBarHeight / 2 + 4,
-            max: style.height - 6
-          } ];
-          sG.selectAll("circle").data(sliderBounds).enter().append("circle").attr("r", 6).attr("cx", 6).attr("cy", function(d) {
-            return d.min;
-          }).style({
-            "box-shadow": "0px 0px 5px 0px rgba(0,0,0,0.75)",
-            fill: "url(#gradient)",
-            stroke: "#666",
-            "stroke-width": 1
-          }).call(dragSlider);
+          renderScrollers();
         }
         var transcriptAxis = tG.append("g").attr("class", "xaxis").attr("transform", "translate(0," + (style.height / 2 + style.transcriptBarHeight + 6) + ")").style("font-family", style.fontFamily).style("font-size", "12px").style("fill", "#000").call(xAxis);
         var transcriptBar = tG.append("rect").attr("height", style.transcriptBarHeight).attr("width", x(stop) - x(start)).attr("x", x(start)).attr("y", height / 2).style("fill", "#ccc");
@@ -901,6 +859,51 @@
             var w = d3.select(this.parentNode).select("rect").attr("width");
             return w / 2;
           });
+        }
+        function renderScrollers() {
+          tG.attr("transform", "translate(20,0)");
+          var sG = svg.append("g");
+          var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
+          gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
+          gradient.append("svg:stop").attr("offset", "100%").attr("stop-color", "#666666").attr("stop-opacity", 1);
+          var dragSlider = d3.behavior.drag().on("dragstart", dragStart).on("drag", dragMove).on("dragend", dragEnd);
+          function dragStart(d) {
+            d3.event.sourceEvent.stopPropagation();
+            var thisEl = d3.select(this);
+            thisEl.style("fill", "#888888");
+          }
+          function dragMove(d) {
+            var thisEl = d3.select(this), higher = d.max < d.min ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
+            if (d3.event.y > lower) {
+              thisEl.attr("cy", lower);
+            } else if (d3.event.y < higher) {
+              thisEl.attr("cy", higher);
+            } else {
+              thisEl.attr("cy", d3.event.y);
+            }
+          }
+          function dragEnd(d) {
+            var thisEl = d3.select(this);
+            thisEl.style("fill", "url(#gradient)");
+          }
+          sG.append("rect").attr("x", 0).attr("y", 0).attr("width", 15).attr("height", style.height).style("fill", "#fff");
+          sG.append("line").attr("x1", 6).attr("y1", 10).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2 + 10).style("stroke", "#ccc").style("stroke-width", 1);
+          sG.append("line").attr("x1", 6).attr("y1", style.height / 2 + style.transcriptBarHeight / 2 + 10).attr("x2", 6).attr("y2", style.height - 10).style("stroke", "#ccc").style("stroke-width", 1);
+          var sliderBounds = [ {
+            min: style.height / 2 - style.transcriptBarHeight / 2 + 4,
+            max: 6
+          }, {
+            min: style.height / 2 + style.transcriptBarHeight / 2 + 4,
+            max: style.height - 6
+          } ];
+          sG.selectAll("circle").data(sliderBounds).enter().append("circle").attr("r", 6).attr("cx", 6).attr("cy", function(d) {
+            return d.min;
+          }).style({
+            "box-shadow": "0px 0px 5px 0px rgba(0,0,0,0.75)",
+            fill: "url(#gradient)",
+            stroke: "#666",
+            "stroke-width": 1
+          }).call(dragSlider);
         }
       });
     }

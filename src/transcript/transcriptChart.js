@@ -46,107 +46,7 @@ function transcriptChart(style) {
       var tG = svg.append('g');
 
       if (showScrollers) {
-        // Make room for the sliders
-        tG.attr('transform', 'translate(20,0)');
-
-        // Add a group for sliders
-        var sG = svg.append('g');
-
-        // create drag slider gradient
-        // Define the gradient
-        var gradient = svg.append("svg:defs")
-          .append("svg:linearGradient")
-          .attr("id", "gradient")
-          .attr("x1", "0%")
-          .attr("y1", "0%")
-          .attr("x2", "100%")
-          .attr("y2", "100%")
-          .attr("spreadMethod", "pad");
-
-        // Define the gradient colors
-        gradient.append("svg:stop")
-          .attr("offset", "0%")
-          .attr("stop-color", "#eeeeee")
-          .attr("stop-opacity", 1);
-
-        gradient.append("svg:stop")
-          .attr("offset", "100%")
-          .attr("stop-color", "#666666")
-          .attr("stop-opacity", 1);
-
-        // Create drag event handlers for sliders
-        var dragSlider = d3.behavior.drag()
-                    .on('dragstart', dragStart)
-                    .on('drag', dragMove)
-                    .on('dragend', dragEnd);
-        function dragStart(d) {
-          d3.event.sourceEvent.stopPropagation();
-          var thisEl = d3.select(this);
-          thisEl.style('fill', '#888888');
-        }
-        function dragMove(d) {
-          var thisEl = d3.select(this),
-              higher = d.max < d.min ? d.max : d.min, // lesser/upper canvas y bound value
-              lower = higher == d.max ? d.min : d.max;
-
-          if(d3.event.y > lower) {
-            thisEl.attr('cy', lower);
-          } else if (d3.event.y < higher) {
-            thisEl.attr('cy', higher);
-          } else {
-            thisEl.attr('cy', d3.event.y);
-          }
-        }
-        function dragEnd(d) {
-          var thisEl = d3.select(this);
-          thisEl.style('fill', 'url(#gradient)')
-        }
-
-        // Add a background for the slider area
-        sG.append('rect')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('width', 15)
-            .attr('height', style.height)
-            .style('fill', '#fff');
-
-        // Add slider tracks
-        sG.append('line')
-            .attr('x1', 6)
-            .attr('y1', 10)
-            .attr('x2', 6)
-            .attr('y2', style.height/2 - style.transcriptBarHeight/2 + 10)
-            .style('stroke', '#ccc')
-            .style('stroke-width', 1);
-        sG.append('line')
-            .attr('x1', 6)
-            .attr('y1', style.height/2 + style.transcriptBarHeight/2 + 10)
-            .attr('x2', 6)
-            .attr('y2', style.height - 10)
-            .style('stroke', '#ccc')
-            .style('stroke-width', 1);
-
-        // Set up drag circles
-        var sliderBounds = [
-          {min: style.height/2 - style.transcriptBarHeight/2 + 4,
-            max: 6},
-          {min: style.height/2 + style.transcriptBarHeight/2 + 4,
-            max: style.height - 6}
-        ];
-        sG.selectAll('circle')
-            .data(sliderBounds)
-            .enter()
-            .append('circle')
-            .attr('r', 6)
-            .attr('cx', 6)
-            .attr('cy', function(d) { return d.min; })
-            .style( {
-              'box-shadow': '0px 0px 5px 0px rgba(0,0,0,0.75)',
-              fill: 'url(#gradient)',
-              stroke: '#666',
-              'stroke-width': 1
-            })
-            .call(dragSlider);
+        renderScrollers();
       } // end slider behavior code
 
       // Append the axis to the canvas
@@ -306,7 +206,113 @@ function transcriptChart(style) {
           return w/2;
         });
       } // end updateTranscript()
-    });
+
+
+      function renderScrollers () {
+        // Make room for the sliders
+        tG.attr('transform', 'translate(20,0)');
+
+        // Add a group for sliders
+        var sG = svg.append('g');
+
+        // create drag slider gradient
+        // Define the gradient
+        var gradient = svg.append("svg:defs")
+          .append("svg:linearGradient")
+          .attr("id", "gradient")
+          .attr("x1", "0%")
+          .attr("y1", "0%")
+          .attr("x2", "100%")
+          .attr("y2", "100%")
+          .attr("spreadMethod", "pad");
+
+        // Define the gradient colors
+        gradient.append("svg:stop")
+          .attr("offset", "0%")
+          .attr("stop-color", "#eeeeee")
+          .attr("stop-opacity", 1);
+
+        gradient.append("svg:stop")
+          .attr("offset", "100%")
+          .attr("stop-color", "#666666")
+          .attr("stop-opacity", 1);
+
+        // Create drag event handlers for sliders
+        var dragSlider = d3.behavior.drag()
+                    .on('dragstart', dragStart)
+                    .on('drag', dragMove)
+                    .on('dragend', dragEnd);
+        function dragStart(d) {
+          d3.event.sourceEvent.stopPropagation();
+          var thisEl = d3.select(this);
+          thisEl.style('fill', '#888888');
+        }
+        function dragMove(d) {
+          var thisEl = d3.select(this),
+              higher = d.max < d.min ? d.max : d.min, // lesser/upper canvas y bound value
+              lower = higher == d.max ? d.min : d.max;
+
+          if(d3.event.y > lower) {
+            thisEl.attr('cy', lower);
+          } else if (d3.event.y < higher) {
+            thisEl.attr('cy', higher);
+          } else {
+            thisEl.attr('cy', d3.event.y);
+          }
+        }
+        function dragEnd(d) {
+          var thisEl = d3.select(this);
+          thisEl.style('fill', 'url(#gradient)')
+        }
+
+        // Add a background for the slider area
+        sG.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', 15)
+            .attr('height', style.height)
+            .style('fill', '#fff');
+
+        // Add slider tracks
+        sG.append('line')
+            .attr('x1', 6)
+            .attr('y1', 10)
+            .attr('x2', 6)
+            .attr('y2', style.height/2 - style.transcriptBarHeight/2 + 10)
+            .style('stroke', '#ccc')
+            .style('stroke-width', 1);
+        sG.append('line')
+            .attr('x1', 6)
+            .attr('y1', style.height/2 + style.transcriptBarHeight/2 + 10)
+            .attr('x2', 6)
+            .attr('y2', style.height - 10)
+            .style('stroke', '#ccc')
+            .style('stroke-width', 1);
+
+        // Set up drag circles
+        var sliderBounds = [
+          {min: style.height/2 - style.transcriptBarHeight/2 + 4,
+            max: 6},
+          {min: style.height/2 + style.transcriptBarHeight/2 + 4,
+            max: style.height - 6}
+        ];
+        sG.selectAll('circle')
+            .data(sliderBounds)
+            .enter()
+            .append('circle')
+            .attr('r', 6)
+            .attr('cx', 6)
+            .attr('cy', function(d) { return d.min; })
+            .style( {
+              'box-shadow': '0px 0px 5px 0px rgba(0,0,0,0.75)',
+              fill: 'url(#gradient)',
+              stroke: '#666',
+              'stroke-width': 1
+            })
+            .call(dragSlider);
+      } // end renderScrollers()
+
+    }); // End selection
   }
 
   function showScrollers(val) {
