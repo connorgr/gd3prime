@@ -63,7 +63,7 @@ function annotationView(style, votingFns) {
 
 
   function view(selection) {
-
+    console.log(selection);
     // Append text to the annotation view
     function appendText(selection, data) {
       var title = data.title ? data.title+': ' : '',
