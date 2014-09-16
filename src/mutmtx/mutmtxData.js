@@ -123,7 +123,7 @@ function mutmtxData(inputData) {
         {
           type: 'text',
           title: 'Sample',
-          text: data.matrix.cells[key].sample
+          text: key
         },
         {
           type: 'table',

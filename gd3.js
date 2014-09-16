@@ -509,7 +509,7 @@
         data.matrix.cells[key].annotation = [ {
           type: "text",
           title: "Sample",
-          text: data.matrix.cells[key].sample
+          text: key
         }, {
           type: "table",
           header: [ "Cancer", "PMIDs", "Votes" ],
