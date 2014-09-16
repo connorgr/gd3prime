@@ -311,7 +311,7 @@ function transcriptChart(style) {
           } else {
             thisEl.attr('cy', d3.event.y);
             var activeG = d.loc == 'top' ? activatingG : inactivatingG,
-                adjust = d.loc == 'top' ? -1*(d3.event.y - d.min) : d3.event.y - d.min;
+                adjust = -1*(d3.event.y - d.min);
             activeG.attr('transform', 'translate(0,'+adjust+')');
           }
         }
