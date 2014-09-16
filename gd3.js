@@ -803,7 +803,7 @@
         }).style("stroke", function(d, i) {
           return sampleTypeToColor[d.dataset];
         }).style("stroke-width", 2);
-        var activatingMutations = inactivatingG.selectAll(".symbols").data(activatingData).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
+        var activatingMutations = activatingMutations.selectAll(".symbols").data(activatingData).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
         }).size(style.symbolWidth)).style("fill", function(d, i) {
           return sampleTypeToColor[d.dataset];

@@ -98,7 +98,7 @@ function transcriptChart(style) {
             .style('stroke', function(d, i) { return sampleTypeToColor[d.dataset]; })
             .style('stroke-width', 2);
 
-      var activatingMutations = inactivatingG.selectAll('.symbols')
+      var activatingMutations = activatingMutations.selectAll('.symbols')
           .data(activatingData)
           .enter()
           .append('path')
