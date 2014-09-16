@@ -920,7 +920,7 @@
                   if (d.loc == "top") {
                     thisEl.style("opacity", y + adjust > lower ? 0 : 1);
                   } else {
-                    thisEl.style("opacity", y + adjust < lower ? 0 : 1);
+                    thisEl.style("opacity", y + adjust < higher ? 0 : 1);
                   }
                 }
               });
