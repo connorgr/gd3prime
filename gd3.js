@@ -913,9 +913,9 @@
               var activeG = d.loc == "top" ? activatingG : inactivatingG, activeM = d.loc == "top" ? activatingMutations : inactivatingMutations;
               adjust = -1 * (d3.event.y - d.min);
               activeM.attr("transform", function() {
-                var parts = d3.select(this).attr("transform").split(",");
+                var parts = d3.select(this).attr("transform").split(","), translateY = parseFloat(parts[1].split(")")[0]) + adjust, newTranslate = parts[0] + "," + translateY + ")";
                 console.log(parts);
-                return d3.select(this).attr("transform");
+                return d3.select(this).attr("transform", newTranslate);
               });
             }
           }
