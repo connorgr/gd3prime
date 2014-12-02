@@ -17,11 +17,15 @@
     d3.json('testData/example2-transcript.json', function(data) {
 
       var styling = {
+        height: 100,
+        width: 345
       };
 
       var sampleTypes = {},
           params = {},
           vizData = [];
+
+      params.style=styling;
 
       var categories = ['BLCA', 'BRCA', 'COADREAD', 'GBM', 'HNSC', 'LUAD', 'LUSC', 'OV', 'SCNAH'];
 
@@ -50,7 +54,7 @@
 
       d3.select('#test')
           .datum(vizData[1])
-          .call(gd3.transcript());
+          .call(gd3.transcript(params));
 
       // for(v in vizData) {
       //   d3.select('#test')

@@ -37,7 +37,7 @@ function mutmtxData(inputData) {
     function sortByFirstActiveRow(c1, c2) {
       var c1First = data.matrix.columnIdToActiveRows[c1][0],
           c2First = data.matrix.columnIdToActiveRows[c2][0];
-      return d3.descending(c1First,c2First);
+      return d3.ascending(c1First,c2First);
     }
     function sortByName(c1,c2) {
       return d3.ascending(data.labels.columns[c1],data.labels.columns[c2]);
@@ -67,7 +67,8 @@ function mutmtxData(inputData) {
     });
     Object.keys(inputData.M).forEach(function(k, i) {
       data.maps.rowIdToLabel[i.toString()] = k;
-      data.labels.rows.push(k);
+      var numSamples = Object.keys(inputData.M[k]).length;
+      data.labels.rows.push(k + ' ('+numSamples+')');
     });
     data.ids.columns = Object.keys(data.maps.columnIdToLabel);
     data.ids.rows = Object.keys(data.maps.rowIdToLabel);
@@ -106,36 +107,42 @@ function mutmtxData(inputData) {
   }
 
   parseMagi();
+  console.log(data);
+
+  // sample annotation data processing, if present
+  if(inputData.annotations) {
+    data.annotations = inputData.annotations;
+  }
 
   // create simulated annotation data if it does not exist.
-  Object.keys(data.matrix.cells).forEach(function(key) {
-    if (data.matrix.cells[key].annotation == undefined) {
-      var vote = {
-        type: 'vote',
-        score: 100
-      }
-      var link = {
-        type: 'link',
-        href: 'http://www.cs.brown.edu',
-        text: 'BrownCS'
-      }
-      data.matrix.cells[key].annotation = [
-        {
-          type: 'text',
-          title: 'Sample',
-          text: key
-        },
-        {
-          type: 'table',
-          header: ['Cancer', 'PMIDs', 'Votes'],
-          data: [
-            ['1', link, vote],
-            ['4', link, vote]
-          ]
-        }
-      ];
-    }
-  }); // end simulated annotation data
+  // Object.keys(data.matrix.cells).forEach(function(key) {
+  //   if (data.matrix.cells[key].annotation == undefined) {
+  //     var vote = {
+  //       type: 'vote',
+  //       score: 100
+  //     }
+  //     var link = {
+  //       type: 'link',
+  //       href: 'http://www.cs.brown.edu',
+  //       text: 'BrownCS'
+  //     }
+  //     data.matrix.cells[key].annotation = [
+  //       {
+  //         type: 'text',
+  //         title: 'Sample',
+  //         text: key
+  //       },
+  //       {
+  //         type: 'table',
+  //         header: ['Cancer', 'PMIDs', 'Votes'],
+  //         data: [
+  //           ['1', link, vote],
+  //           ['4', link, vote]
+  //         ]
+  //       }
+  //     ];
+  //   }
+  // }); // end simulated annotation data
 
   return data;
 }

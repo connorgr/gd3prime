@@ -460,7 +460,7 @@
       }
       function sortByFirstActiveRow(c1, c2) {
         var c1First = data.matrix.columnIdToActiveRows[c1][0], c2First = data.matrix.columnIdToActiveRows[c2][0];
-        return d3.descending(c1First, c2First);
+        return d3.ascending(c1First, c2First);
       }
       function sortByName(c1, c2) {
         return d3.ascending(data.labels.columns[c1], data.labels.columns[c2]);
@@ -487,7 +487,8 @@
       });
       Object.keys(inputData.M).forEach(function(k, i) {
         data.maps.rowIdToLabel[i.toString()] = k;
-        data.labels.rows.push(k);
+        var numSamples = Object.keys(inputData.M[k]).length;
+        data.labels.rows.push(k + " (" + numSamples + ")");
       });
       data.ids.columns = Object.keys(data.maps.columnIdToLabel);
       data.ids.rows = Object.keys(data.maps.rowIdToLabel);
@@ -514,28 +515,10 @@
       });
     }
     parseMagi();
-    Object.keys(data.matrix.cells).forEach(function(key) {
-      if (data.matrix.cells[key].annotation == undefined) {
-        var vote = {
-          type: "vote",
-          score: 100
-        };
-        var link = {
-          type: "link",
-          href: "http://www.cs.brown.edu",
-          text: "BrownCS"
-        };
-        data.matrix.cells[key].annotation = [ {
-          type: "text",
-          title: "Sample",
-          text: key
-        }, {
-          type: "table",
-          header: [ "Cancer", "PMIDs", "Votes" ],
-          data: [ [ "1", link, vote ], [ "4", link, vote ] ]
-        } ];
-      }
-    });
+    console.log(data);
+    if (inputData.annotations) {
+      data.annotations = inputData.annotations;
+    }
     return data;
   }
   function mutmtxChart(style) {
@@ -580,15 +563,63 @@
         }).attr("transform", function(d, i) {
           return "translate(" + wholeVisX(i) + ",0)";
         });
+        svg.attr("height", function(d) {
+          return Math.ceil(rowLabelsG.node().getBBox().height + 10);
+        });
+        if (data.annotations) {
+          var names = Object.keys(data.annotations.sampleToAnnotations), categories = data.annotations.categories;
+          var annRowLabelsG = svg.append("g").attr("class", "mutmtx-annRowLabels").attr("transform", "translate(0," + rowLabelsG.node().getBBox().height + ")"), annRowLabelsBG = annRowLabelsG.append("rect").style("fill", "#fff");
+          var annRowLabels = annRowLabelsG.selectAll("text").data(categories).enter().append("text").attr("text-anchor", "end").attr("x", style.labelWidth - 5).attr("y", function(d, i) {
+            return (i + 1) * style.annotationRowHeight + (i + 1) * style.annotationRowSpacing;
+          }).style("font-family", style.fontFamily).style("font-size", style.annotationRowHeight).text(function(d) {
+            return d;
+          });
+          annRowLabelsBG.attr("height", annRowLabelsG.node().getBBox().height + style.annotationRowSpacing).attr("width", annRowLabelsG.node().getBBox().width);
+          var annColoring = data.annotations.annotationToColor;
+          Object.keys(annColoring).forEach(function(d, i) {
+            var coloring = annColoring[d];
+            if (Object.keys(coloring).length == 0) {
+              var names = Object.keys(data.annotations.sampleToAnnotations), max = d3.max(names, function(name) {
+                return data.annotations.sampleToAnnotations[name][i];
+              }), min = d3.min(names, function(name) {
+                return data.annotations.sampleToAnnotations[name][i];
+              });
+              annColoring[d] = {
+                scale: d3.scale.linear().domain([ min, max ]).range(style.annotationContinuousScale).interpolate(d3.interpolateLab),
+                typeOfScale: "continuous"
+              };
+            }
+          });
+          var maxTextHeight = 0;
+          firstGroupColumns.each(function(annKey) {
+            var annotationKey = names.reduce(function(prev, cur, i, array) {
+              if (annKey.indexOf(cur) > -1) return cur; else return prev;
+            }, null);
+            if (annotationKey == null) return;
+            var annData = data.annotations.sampleToAnnotations[annotationKey];
+            var mtxOffset = style.rowHeight * data.ids.rows.length;
+            var aGroup = d3.select(this).append("g").attr("id", "annotation-" + annKey);
+            aGroup.selectAll("rect").data(annData).enter().append("rect").attr("height", style.annotationRowHeight).attr("x", 0).attr("y", function(d, i) {
+              var spacing = style.annotationRowSpacing * (i + 1);
+              return mtxOffset + spacing + style.annotationRowHeight * i;
+            }).attr("width", 20).style("fill", function(d, i) {
+              var coloring = annColoring[categories[i]];
+              if (coloring.typeOfScale == "continuous") return coloring.scale(d); else if (Object.keys(coloring).length > 0) return coloring[d]; else return "#000";
+            });
+            var annTextOffset = annData.length * (style.annotationRowHeight + style.annotationRowSpacing) + style.annotationRowSpacing + mtxOffset;
+            var annText = aGroup.append("text").attr("x", annTextOffset).attr("text-anchor", "start").attr("transform", "rotate(90)").style("font-family", style.fontFamily).style("font-size", style.annotationFontSize).text(annotationKey);
+            var annTextHeight = annText.node().getBBox().width + style.annotationRowSpacing;
+            maxTextHeight = annTextHeight > maxTextHeight ? annTextHeight : maxTextHeight;
+          });
+          var svgHeight = svg.attr("height"), numAnnotations = data.annotations.sampleToAnnotations[names[0]].length, svgHeight = parseInt(svgHeight) + numAnnotations * (style.annotationRowHeight + 2);
+          svg.attr("height", svgHeight + maxTextHeight);
+        }
         var zoom = d3.behavior.zoom().x(wholeVisX).scaleExtent([ 1, 14 ]).on("zoom", function() {
           rerenderMutationMatrix();
         });
         svg.call(zoom);
         renderMutationMatrix();
         rerenderMutationMatrix();
-        svg.attr("height", function(d) {
-          return Math.ceil(rowLabelsG.node().getBBox().height + 10);
-        });
         function rerenderMutationMatrix() {
           var t = zoom.translate(), tx = t[0], ty = t[1], scale = zoom.scale();
           tx = Math.min(tx, 0);
@@ -602,7 +633,7 @@
         }
         function renderMutationMatrix() {
           var colWidth = wholeVisX(1) - wholeVisX(0);
-          var rects = firstGroupColumns.selectAll("rect").data(function(colId) {
+          var rects = firstGroupColumns.append("g").attr("class", "mutmtx-sampleMutationRects").selectAll("rect").data(function(colId) {
             var activeRows = data.matrix.columnIdToActiveRows[colId];
             return activeRows.map(function(rowId) {
               return {
@@ -615,6 +646,7 @@
           }).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function(d) {
             return colTypeToColor[d.cell.dataset];
           });
+          console.log(firstGroupColumns.selectAll("rect"));
           firstGroupColumns.selectAll("rect").each(function() {
             d3.select(this).call(gd3.annotation());
           });
@@ -666,6 +698,10 @@
     console.log(style);
     return {
       animationSpeed: style.animationSpeed || 300,
+      annotationContinuousScale: style.annotationContinuousScale || [ "#fcc5c0", "#49006a" ],
+      annotationFontSize: style.annotationFontSize || 10,
+      annotationRowHeight: style.annotationRowHeight || 10,
+      annotationRowSpacing: style.annotationRowSpacing || 5,
       bgColor: style.bgColor || "#F6F6F6",
       blockColorMedium: style.blockColorMedium || "#95A5A6",
       blockColorStrongest: style.blockColorStrongest || "#2C3E50",
@@ -674,7 +710,7 @@
       coocurringColor: style.coocurringColor || "orange",
       exclusiveColor: style.exclusiveColor || "blue",
       fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-      fullWidth: style.width || 500,
+      fullWidth: style.width || 600,
       fullHeight: style.height || 300,
       rowHeight: style.rowHeight || 20,
       labelHeight: style.labelHeight || 40,
@@ -711,8 +747,6 @@
         In_Frame_Ins: 4
       };
       var proteinDomainDB = cdata.proteinDomainDB || Object.keys(cdata.domains)[0] || "";
-      console.log(cdata);
-      console.log(proteinDomainDB);
       var d = {
         geneName: cdata.gene,
         inactivatingMutations: cdata.inactivatingMutations || defaultInactivatingMutations,
@@ -723,36 +757,14 @@
         proteinDomainDB: proteinDomainDB,
         proteinDomains: cdata.domains[proteinDomainDB]
       };
-      if (d.mutationCategories.length == 0) {
-        d.mutationCategories = gd3_util.arrayToSet(cdata.mutations.map(function(m) {
-          return m.dataset;
-        }));
-      }
-      for (var mutation in d.mutations) {
-        var m = d.mutations[mutation];
-        if (m.annotation == undefined) {
-          var vote = {
-            type: "vote",
-            score: 100
-          };
-          var link = {
-            type: "link",
-            href: "http://www.cs.brown.edu",
-            text: "BrownCS"
-          };
-          m.annotation = [ {
-            type: "text",
-            title: "Sample",
-            text: m.sample
-          }, {
-            type: "table",
-            header: [ "Cancer", "PMIDs", "Votes" ],
-            data: [ [ "1", link, vote ], [ "4", link, vote ] ]
-          } ];
-        } else {
-          console.log("defined annotation");
-        }
-      }
+      var datasetNames = cdata.mutations.map(function(m) {
+        return m.dataset;
+      });
+      tmpMutationCategories = {};
+      datasetNames.forEach(function(d) {
+        tmpMutationCategories[d] = null;
+      });
+      d.mutationCategories = Object.keys(tmpMutationCategories);
       d.get = function(str) {
         if (str == "length") return d.length; else if (str == "mutationCategories") return d.mutationCategories; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else if (str == "proteinDomains") return d.proteinDomains; else return null;
       };
@@ -905,7 +917,7 @@
           activatingMutations.each(getYs(activatingYs));
           inactivatingMutations.each(getYs(inactivatingYs));
           var minActivatingY = d3.min(activatingYs), maxInactivatingY = d3.max(inactivatingYs);
-          var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) + style.symbolWidth : 0, maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY + style.symbolWidth : 0;
+          var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) + 1.1 * style.symbolWidth : 0, maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY - style.symbolWidth : 0;
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
           gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
           gradient.append("svg:stop").attr("offset", "100%").attr("stop-color", "#666666").attr("stop-opacity", 1);
@@ -934,6 +946,7 @@
                   if (d.loc == "top") {
                     thisEl.style("opacity", y + adjust > lower ? 0 : 1);
                   } else {
+                    console.log(d.min);
                     thisEl.style("opacity", y + adjust < higher ? 0 : 1);
                   }
                 }
@@ -952,7 +965,7 @@
             max: 6,
             loc: "top"
           }, {
-            min: style.height / 2 + style.transcriptBarHeight / 2 + 4,
+            min: style.height / 2 + style.transcriptBarHeight + 4,
             max: style.height - 6,
             loc: "bottom"
           } ];

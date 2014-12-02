@@ -282,8 +282,8 @@ function transcriptChart(style) {
             maxInactivatingY = d3.max(inactivatingYs);
 
         // Determine scrolling max offset for both activating and inactivating mutations
-        var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY)+style.symbolWidth : 0,
-            maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY+style.symbolWidth : 0;
+        var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY)+1.1*style.symbolWidth : 0,
+            maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY-style.symbolWidth : 0;
 
         // create drag slider gradient
         // Define the gradient
@@ -350,6 +350,7 @@ function transcriptChart(style) {
                 if(d.loc =='top') {
                   thisEl.style('opacity', y+adjust > lower ? 0 : 1);
                 } else {
+                  console.log(d.min)
                   thisEl.style('opacity', y+adjust < higher ? 0 : 1);
                 }
               }
@@ -393,7 +394,7 @@ function transcriptChart(style) {
             max: 6,
             loc: 'top'
           },
-          { min: style.height/2 + style.transcriptBarHeight/2 + 4,
+          { min: style.height/2 + style.transcriptBarHeight + 4,
             max: style.height - 6,
             loc: 'bottom'
           }

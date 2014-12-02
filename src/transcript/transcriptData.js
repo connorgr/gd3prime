@@ -21,9 +21,6 @@ function transcriptData(data) {
 
     var proteinDomainDB = cdata.proteinDomainDB || Object.keys(cdata.domains)[0] || '';
 
-    console.log(cdata);
-    console.log(proteinDomainDB);
-
     var d = {
       geneName: cdata.gene,
       inactivatingMutations: cdata.inactivatingMutations || defaultInactivatingMutations,
@@ -35,44 +32,46 @@ function transcriptData(data) {
       proteinDomains: cdata.domains[proteinDomainDB]
     };
 
-    if (d.mutationCategories.length == 0){
-      d.mutationCategories = gd3_util.arrayToSet(cdata.mutations.map(function(m) { return m.dataset; }));
-    }
+    var datasetNames = cdata.mutations.map(function(m) { return m.dataset; });
+        tmpMutationCategories = {};
+    datasetNames.forEach(function(d){ tmpMutationCategories[d] = null; });
+    d.mutationCategories = Object.keys(tmpMutationCategories);
 
-    for (var mutation in d.mutations) {
-      var m = d.mutations[mutation];
 
-      // create simulated annotation data if it does not exist.
-      if (m.annotation == undefined) {
-        var vote = {
-          type: 'vote',
-          score: 100
-        }
-        var link = {
-          type: 'link',
-          href: 'http://www.cs.brown.edu',
-          text: 'BrownCS'
-        }
-        m.annotation = [
-          {
-            type: 'text',
-            title: 'Sample',
-            text: m.sample
-          },
-          {
-            type: 'table',
-            header: ['Cancer', 'PMIDs', 'Votes'],
-            data: [
-              ['1', link, vote],
-              ['4', link, vote]
-            ]
-          }
-        ];
-      } // end simulated m.annotation
-      else {
-        console.log('defined annotation');
-      }
-    }
+    // for (var mutation in d.mutations) {
+    //   var m = d.mutations[mutation];
+
+    //   // create simulated annotation data if it does not exist.
+    //   if (m.annotation == undefined) {
+    //     var vote = {
+    //       type: 'vote',
+    //       score: 100
+    //     }
+    //     var link = {
+    //       type: 'link',
+    //       href: 'http://www.cs.brown.edu',
+    //       text: 'BrownCS'
+    //     }
+    //     m.annotation = [
+    //       {
+    //         type: 'text',
+    //         title: 'Sample',
+    //         text: m.sample
+    //       },
+    //       {
+    //         type: 'table',
+    //         header: ['Cancer', 'PMIDs', 'Votes'],
+    //         data: [
+    //           ['1', link, vote],
+    //           ['4', link, vote]
+    //         ]
+    //       }
+    //     ];
+    //   } // end simulated m.annotation
+    //   else {
+    //     console.log('defined annotation');
+    //   }
+    // }
 
     d.get = function(str) {
       if (str == 'length') return d.length;

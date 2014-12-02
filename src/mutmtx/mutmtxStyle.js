@@ -2,6 +2,10 @@ function mutmtxStyle(style) {
   console.log(style);
   return {
       animationSpeed : style.animationSpeed || 300,
+      annotationContinuousScale : style.annotationContinuousScale || ['#fcc5c0','#49006a'],
+      annotationFontSize : style.annotationFontSize || 10,
+      annotationRowHeight : style.annotationRowHeight || 10,
+      annotationRowSpacing : style.annotationRowSpacing || 5,
       bgColor : style.bgColor || '#F6F6F6',
       blockColorMedium : style.blockColorMedium || '#95A5A6',
       blockColorStrongest : style.blockColorStrongest || '#2C3E50',
@@ -10,7 +14,7 @@ function mutmtxStyle(style) {
       coocurringColor : style.coocurringColor || 'orange',
       exclusiveColor : style.exclusiveColor || 'blue',
       fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-      fullWidth : style.width || 500,
+      fullWidth : style.width || 600,
       fullHeight : style.height || 300,
       rowHeight : style.rowHeight || 20,
       labelHeight : style.labelHeight || 40,

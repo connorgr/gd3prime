@@ -15,10 +15,12 @@
     console.log(gd3);
 
     d3.json('testData/example2-mutation-matrix.json', function(data) {
-      console.log(data);
-      d3.select('#test')
-        .datum(data)
-        .call(gd3.mutationMatrix().addSummaryToggle());
+      d3.json('testData/exampleAnnotations.json', function(annData) {
+        data.annotations = annData;
+        d3.select('#test')
+          .datum(data)
+          .call(gd3.mutationMatrix().addSummaryToggle());
+      });
     });
     </script>
   </body>

@@ -99,17 +99,123 @@ function mutmtxChart(style) {
                   return 'translate('+wholeVisX(i)+',0)';
                 });
 
-      // var summaryGroups = matrix.selectAll('.mutmtxSummaryGroup')
-      //         .data(data.getVizData().slice(1,data.getVizData().length))
-      //         .enter()
-      //         .append('g')
-      //           .attr('class', 'mutmtxSummaryGroup');
-      // var summaryGroupsColumns = summaryGroups.selectAll('g')
-      //         .data(function(d){ return d; })
-      //         .enter()
-      //         .append('g')
-      //           .attr('class', 'mutmtxColumn')
-      //           .attr('id', function(d) { return d.key; });
+      // adjust height based on column height
+      svg.attr('height', function(d) {
+        return Math.ceil(rowLabelsG.node().getBBox().height + 10);
+      });
+
+
+      // Render sample annotations should they exist
+      if(data.annotations) {
+        var names = Object.keys(data.annotations.sampleToAnnotations),
+            categories = data.annotations.categories;
+
+        var annRowLabelsG = svg.append('g').attr('class', 'mutmtx-annRowLabels')
+                .attr('transform', 'translate(0,'+rowLabelsG.node().getBBox().height+')'),
+            annRowLabelsBG = annRowLabelsG.append('rect').style('fill', '#fff');
+
+        var annRowLabels = annRowLabelsG.selectAll('text')
+            .data(categories)
+            .enter()
+            .append('text')
+                .attr('text-anchor', 'end')
+                .attr('x', style.labelWidth - 5)
+                .attr('y', function(d,i) {
+                    return (i+1)*style.annotationRowHeight + (i+1)*style.annotationRowSpacing;
+                })
+                .style('font-family', style.fontFamily)
+                .style('font-size', style.annotationRowHeight)
+                .text(function(d) { return d; });
+
+        annRowLabelsBG.attr('height', annRowLabelsG.node().getBBox().height + style.annotationRowSpacing)
+            .attr('width', annRowLabelsG.node().getBBox().width);
+
+        var annColoring = data.annotations.annotationToColor;
+
+        // For each coloring see if there is a predefined categorical set,
+        // otherwise assume that it is continuous and create a scale
+        Object.keys(annColoring).forEach(function(d,i) {
+          var coloring = annColoring[d];
+          if(Object.keys(coloring).length == 0) {
+            // Find the maximum and minimum values for the category
+            var names = Object.keys(data.annotations.sampleToAnnotations),
+                max = d3.max(names, function(name) {
+                  return data.annotations.sampleToAnnotations[name][i];
+                }),
+                min = d3.min(names, function(name) {
+                  return data.annotations.sampleToAnnotations[name][i];
+                });
+
+            annColoring[d] = {
+                scale: d3.scale.linear()
+                    .domain([min,max])
+                    .range(style.annotationContinuousScale)
+                    .interpolate(d3.interpolateLab),
+                typeOfScale: 'continuous'
+            };
+          }
+        });
+
+        // track the size of each text annotation for svg rescale
+        var maxTextHeight = 0;
+
+        // add annotation data for each sample in the matrix
+        firstGroupColumns.each(function(annKey) {
+          var annotationKey = names.reduce(function(prev,cur,i,array) {
+            if(annKey.indexOf(cur) > -1) return cur;
+            else return prev;
+          }, null);
+
+          if (annotationKey == null) return;
+          var annData = data.annotations.sampleToAnnotations[annotationKey];
+
+          // Get the offset caused by the matrix cells
+          var mtxOffset = style.rowHeight * data.ids.rows.length;
+
+          // render annotation data;
+          var aGroup = d3.select(this).append('g').attr('id','annotation-'+annKey);
+          aGroup.selectAll('rect').data(annData).enter()
+              .append('rect')
+                  .attr('height',style.annotationRowHeight)
+                  .attr('x', 0)
+                  .attr('y', function(d,i) {
+                    var spacing = style.annotationRowSpacing*(i+1);
+                    return mtxOffset + spacing + style.annotationRowHeight*i;
+                  })
+                  .attr('width', 20)
+                  .style('fill', function(d,i) {
+                    var coloring = annColoring[ categories[i] ];
+
+                    if(coloring.typeOfScale == 'continuous') return coloring.scale(d);
+                    else if(Object.keys(coloring).length > 0) return coloring[d];
+                    else return '#000';
+                  });
+
+          var annTextOffset = annData.length
+              * (style.annotationRowHeight + style.annotationRowSpacing)
+              + style.annotationRowSpacing
+              + mtxOffset;
+
+          var annText = aGroup.append('text')
+              .attr('x', annTextOffset)
+              .attr('text-anchor', 'start')
+              .attr('transform', 'rotate(90)')
+              .style('font-family', style.fontFamily)
+              .style('font-size', style.annotationFontSize)
+              .text(annotationKey);
+
+          // width because of rotation
+          var annTextHeight = annText.node().getBBox().width + style.annotationRowSpacing;
+          maxTextHeight =  annTextHeight > maxTextHeight ? annTextHeight : maxTextHeight;
+        });
+
+        // Modify the SVG height based on the sample annotations
+        var svgHeight = svg.attr('height'),
+            numAnnotations = data.annotations.sampleToAnnotations[names[0]].length,
+            svgHeight = parseInt(svgHeight) + numAnnotations*(style.annotationRowHeight+2);
+
+        svg.attr('height', svgHeight + maxTextHeight);
+      }
 
       // Zoom behavior
 
@@ -123,11 +229,6 @@ function mutmtxChart(style) {
 
       renderMutationMatrix();
       rerenderMutationMatrix();
-
-      svg.attr('height', function(d) {
-        return Math.ceil(rowLabelsG.node().getBBox().height + 10);
-      })
-
 
       function rerenderMutationMatrix() {
         var t = zoom.translate(),
@@ -156,7 +257,9 @@ function mutmtxChart(style) {
       function renderMutationMatrix() {
         var colWidth = wholeVisX(1)-wholeVisX(0);
 
-        var rects = firstGroupColumns.selectAll('rect')
+        var rects = firstGroupColumns.append('g')
+            .attr('class', 'mutmtx-sampleMutationRects')
+            .selectAll('rect')
             .data(function(colId){
               var activeRows = data.matrix.columnIdToActiveRows[colId];
               return activeRows.map(function(rowId){
@@ -172,6 +275,8 @@ function mutmtxChart(style) {
               .attr('height', style.rowHeight)
               .attr('width', colWidth)
               .style('fill', function(d) { return colTypeToColor[d.cell.dataset]; });
+
+        console.log(firstGroupColumns.selectAll('rect'));
 
         firstGroupColumns.selectAll('rect').each(function() {
           d3.select(this).call(gd3.annotation())
