@@ -223,17 +223,23 @@ function heatmapChart(style) {
       }
 
       function renderLegendFn() {
-        var xOffset = +heatmap.attr('transform').replace(')','').replace('translate(','').split(',')[0];
+        var xOffset = +heatmap.attr('transform').replace(')','').replace('translate(','').split(',')[0],
+            yOffset = heatmap.node().getBBox().height+style.annotationCategorySpacing;
 
-        legendG.attr('transform', 'translate('+xOffset+','+heatmap.node().getBBox().height+')');
+        legendG.attr('transform', 'translate('+xOffset+','+yOffset+')');
 
         var colorScaleRect = legendG.append('rect')
             .attr('height', style.colorScaleHeight)
             .attr('width', style.colorScaleWidth);
 
+        // Create a unique ID for the color map gradient in case multiple heatmaps are made
+        var now = Date.now(),
+            gradientId = 'gd3heatmapGradient'+now;
+
+        // Configure the gradient to be mapped on to the legend
         var gradient = legendG.append('svg:defs')
               .append('svg:linearGradient')
-                .attr('id', 'gradient')
+                .attr('id', gradientId)
                 .attr('x1', '0%')
                 .attr('y1', '0%')
                 .attr('x2', '100%')
@@ -244,10 +250,25 @@ function heatmapChart(style) {
               .attr('offset', i*1./style.colorScale.length)
               .attr('stop-color', c)
               .attr('stop-opacity', 1);
-        })
+        });
 
-        colorScaleRect.style('fill', 'url(#gradient)');
+        colorScaleRect.style('fill', 'url(#'+gradientId+')');
 
+        // append the minimum value text
+        legendG.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('x', 0)
+            .attr('y', style.colorScaleHeight + style.fontSize + 3)
+            .style('font-size', style.annotationLabelFontSize)
+            .text(data.minCellValue);
+
+        // append the maximum value text
+        legendG.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('x', style.colorScaleWidth)
+            .attr('y', style.colorScaleHeight + style.fontSize + 3)
+            .style('font-size', style.annotationLabelFontSize)
+            .text(data.maxCellValue);
       }
 
       function renderXLabelsFn() {

@@ -604,14 +604,17 @@
           });
         }
         function renderLegendFn() {
-          var xOffset = +heatmap.attr("transform").replace(")", "").replace("translate(", "").split(",")[0];
-          legendG.attr("transform", "translate(" + xOffset + "," + heatmap.node().getBBox().height + ")");
+          var xOffset = +heatmap.attr("transform").replace(")", "").replace("translate(", "").split(",")[0], yOffset = heatmap.node().getBBox().height + style.annotationCategorySpacing;
+          legendG.attr("transform", "translate(" + xOffset + "," + yOffset + ")");
           var colorScaleRect = legendG.append("rect").attr("height", style.colorScaleHeight).attr("width", style.colorScaleWidth);
-          var gradient = legendG.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
+          var now = Date.now(), gradientId = "gd3heatmapGradient" + now;
+          var gradient = legendG.append("svg:defs").append("svg:linearGradient").attr("id", gradientId).attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
           style.colorScale.forEach(function(c, i) {
             gradient.append("svg:stop").attr("offset", i * 1 / style.colorScale.length).attr("stop-color", c).attr("stop-opacity", 1);
           });
-          colorScaleRect.style("fill", "url(#gradient)");
+          colorScaleRect.style("fill", "url(#" + gradientId + ")");
+          legendG.append("text").attr("text-anchor", "middle").attr("x", 0).attr("y", style.colorScaleHeight + style.fontSize + 3).style("font-size", style.annotationLabelFontSize).text(data.minCellValue);
+          legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth).attr("y", style.colorScaleHeight + style.fontSize + 3).style("font-size", style.annotationLabelFontSize).text(data.maxCellValue);
         }
         function renderXLabelsFn() {
           var annotationXLabelsG = heatmap.append("g").attr("class", "gd3annotationXLabels");
