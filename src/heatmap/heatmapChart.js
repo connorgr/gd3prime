@@ -78,12 +78,14 @@ function heatmapChart(style) {
             x = (+thisEl.attr('x')) + xOffset,
             y = +thisEl.attr('y');
 
+        visibleHeight = +heatmap.node().getBBox().height;
+
         guidelines.each(function(d,i) {
           var line = d3.select(this);
           if(i == 0) line.attr('x1',0).attr('x2',style.width).attr('y1',y).attr('y2',y);
           if(i == 1) line.attr('x1',0).attr('x2',style.width).attr('y1',y+h).attr('y2',y+h);
-          if(i == 2) line.attr('x1',x).attr('x2',x).attr('y1',0).attr('y2',height);
-          if(i == 3) line.attr('x1',x+w).attr('x2',x+w).attr('y1',0).attr('y2',height);
+          if(i == 2) line.attr('x1',x).attr('x2',x).attr('y1',0).attr('y2',visibleHeight);
+          if(i == 3) line.attr('x1',x+w).attr('x2',x+w).attr('y1',0).attr('y2',visibleHeight);
         });
 
         thisEl.style('stroke', '#000').style('stroke-width', 1);
