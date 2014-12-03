@@ -54,6 +54,44 @@ function heatmapChart(style) {
             .join('\n');
       });
 
+      // define guide lines for mouse interaction to find cell location
+      var guidelineData = [
+        {x1: 0, y1: 0, x2: 0, y2: 0},
+        {x1: 0, y1: 0, x2: 0, y2: 0},
+        {x1: 0, y1: 0, x2: 0, y2: 0},
+        {x1: 0, y1: 0, x2: 0, y2: 0}
+      ];
+
+      var guidelinesG = svg.append('g').attr('class', 'gd3heatmapGuidlines'),
+          guidelines = guidelinesG.selectAll('line')
+              .data(guidelineData)
+              .enter()
+              .append('line')
+                  .style('stroke', '#000')
+                  .style('stroke-width', 1);
+
+      heatmapCells.on('mouseover', function() {
+        var xOffset = parseFloat(heatmap.attr('transform').replace(',','').replace('translate(',''));
+        var thisEl = d3.select(this),
+            h = +thisEl.attr('height'),
+            w = +thisEl.attr('width'),
+            x = (+thisEl.attr('x')) + xOffset,
+            y = +thisEl.attr('y');
+
+        guidelines.each(function(d,i) {
+          var line = d3.select(this);
+          if(i == 0) line.attr('x1',0).attr('x2',style.width).attr('y1',y).attr('y2',y);
+          if(i == 1) line.attr('x1',0).attr('x2',style.width).attr('y1',y+h).attr('y2',y+h);
+          if(i == 2) line.attr('x1',x).attr('x2',x).attr('y1',0).attr('y2',height);
+          if(i == 3) line.attr('x1',x+w).attr('x2',x+w).attr('y1',0).attr('y2',height);
+        });
+
+        thisEl.style('stroke', '#000').style('stroke-width', 1);
+      }).on('mouseout', function() {
+        guidelines.attr('x1',0).attr('x2',0).attr('y1',0).attr('y2',0);
+        d3.select(this).style('stroke', 'none');
+      })
+
       var legendG = svg.append('g'),
           legendScale = legendG.append('g');
 
