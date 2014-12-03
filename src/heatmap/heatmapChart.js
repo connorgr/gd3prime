@@ -2,6 +2,7 @@ import "heatmapData";
 
 function heatmapChart(style) {
   var renderAnnotations = true,
+      renderLegend = true,
       renderXLabels = true,
       renderYLabels = true;
 
@@ -71,7 +72,7 @@ function heatmapChart(style) {
                   .style('stroke-width', 1);
 
       heatmapCells.on('mouseover', function() {
-        var xOffset = parseFloat(heatmap.attr('transform').replace(',','').replace('translate(',''));
+        var xOffset = +heatmap.attr('transform').replace(')','').replace('translate(','').split(',')[0];
         var thisEl = d3.select(this),
             h = +thisEl.attr('height'),
             w = +thisEl.attr('width'),
@@ -95,14 +96,14 @@ function heatmapChart(style) {
         d3.select(this).style('stroke', 'none');
       })
 
-      var legendG = svg.append('g'),
-          legendScale = legendG.append('g');
+      var legendG = svg.append('g');
 
       yLabelsG = svg.append('g').attr('class', 'gd3heatmapYLabels');
 
       if (renderYLabels) renderYLabelsFn();
       if (renderAnnotations) renderAnnotations();
       if (renderXLabels) renderXLabelsFn();
+      if (renderLegend) renderLegendFn();
 
       // Configure panning and zoom for the chart
       var heatmapStartX = parseFloat(heatmap.attr('transform').split('translate(')[1].split(',')[0]),
@@ -219,6 +220,34 @@ function heatmapChart(style) {
                       return annColor(value);
                   });
         });
+      }
+
+      function renderLegendFn() {
+        var xOffset = +heatmap.attr('transform').replace(')','').replace('translate(','').split(',')[0];
+
+        legendG.attr('transform', 'translate('+xOffset+','+heatmap.node().getBBox().height+')');
+
+        var colorScaleRect = legendG.append('rect')
+            .attr('height', style.colorScaleHeight)
+            .attr('width', style.colorScaleWidth);
+
+        var gradient = legendG.append('svg:defs')
+              .append('svg:linearGradient')
+                .attr('id', 'gradient')
+                .attr('x1', '0%')
+                .attr('y1', '0%')
+                .attr('x2', '100%')
+                .attr('y2', '0%');
+
+        style.colorScale.forEach(function(c, i){
+          gradient.append('svg:stop')
+              .attr('offset', i*1./style.colorScale.length)
+              .attr('stop-color', c)
+              .attr('stop-opacity', 1);
+        })
+
+        colorScaleRect.style('fill', 'url(#gradient)');
+
       }
 
       function renderXLabelsFn() {

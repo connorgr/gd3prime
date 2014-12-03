@@ -466,7 +466,7 @@
     return data;
   }
   function heatmapChart(style) {
-    var renderAnnotations = true, renderXLabels = true, renderYLabels = true;
+    var renderAnnotations = true, renderLegend = true, renderXLabels = true, renderYLabels = true;
     function chart(selection) {
       selection.each(function(data) {
         data = heatmapData(data);
@@ -508,7 +508,7 @@
         } ];
         var guidelinesG = svg.append("g").attr("class", "gd3heatmapGuidlines"), guidelines = guidelinesG.selectAll("line").data(guidelineData).enter().append("line").style("stroke", "#000").style("stroke-width", 1);
         heatmapCells.on("mouseover", function() {
-          var xOffset = parseFloat(heatmap.attr("transform").replace(",", "").replace("translate(", ""));
+          var xOffset = +heatmap.attr("transform").replace(")", "").replace("translate(", "").split(",")[0];
           var thisEl = d3.select(this), h = +thisEl.attr("height"), w = +thisEl.attr("width"), x = +thisEl.attr("x") + xOffset, y = +thisEl.attr("y");
           var visibleHeight = +heatmap.node().getBBox().height, visibleWidth = +heatmap.node().getBBox().width + xOffset;
           guidelines.each(function(d, i) {
@@ -523,11 +523,12 @@
           guidelines.attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", 0);
           d3.select(this).style("stroke", "none");
         });
-        var legendG = svg.append("g"), legendScale = legendG.append("g");
+        var legendG = svg.append("g");
         yLabelsG = svg.append("g").attr("class", "gd3heatmapYLabels");
         if (renderYLabels) renderYLabelsFn();
         if (renderAnnotations) renderAnnotations();
         if (renderXLabels) renderXLabelsFn();
+        if (renderLegend) renderLegendFn();
         var heatmapStartX = parseFloat(heatmap.attr("transform").split("translate(")[1].split(",")[0]), heatmapW = heatmap.node().getBBox().width;
         var zoom = d3.behavior.zoom().on("zoom", function() {
           var t = zoom.translate(), tx = t[0];
@@ -602,6 +603,16 @@
             });
           });
         }
+        function renderLegendFn() {
+          var xOffset = +heatmap.attr("transform").replace(")", "").replace("translate(", "").split(",")[0];
+          legendG.attr("transform", "translate(" + xOffset + "," + heatmap.node().getBBox().height + ")");
+          var colorScaleRect = legendG.append("rect").attr("height", style.colorScaleHeight).attr("width", style.colorScaleWidth);
+          var gradient = legendG.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
+          style.colorScale.forEach(function(c, i) {
+            gradient.append("svg:stop").attr("offset", i * 1 / style.colorScale.length).attr("stop-color", c).attr("stop-opacity", 1);
+          });
+          colorScaleRect.style("fill", "url(#gradient)");
+        }
         function renderXLabelsFn() {
           var annotationXLabelsG = heatmap.append("g").attr("class", "gd3annotationXLabels");
           var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
@@ -639,6 +650,8 @@
       cellHeight: style.cellHeight || 14,
       cellWidth: style.cellWidth || 14,
       colorScale: style.colorScale || [ "rgb(255,255,217)", "rgb(237,248,177)", "rgb(199,233,180)", "rgb(127,205,187)", "rgb(65,182,196)", "rgb(29,145,192)", "rgb(34,94,168)", "rgb(37,52,148)", "rgb(8,29,88)" ],
+      colorScaleHeight: style.colorScaleHeight || 14,
+      colorScaleWidth: style.colorScaleWidth || 200,
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       fontSize: style.fontSize || 12,
       height: style.height || 400,
