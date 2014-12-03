@@ -59,7 +59,7 @@ function heatmapChart(style) {
 
       yLabelsG = svg.append('g').attr('class', 'gd3heatmapYLabels');
 
-      if (renderXLabels) renderXLabels();
+      if (renderXLabels) renderXLabelsFn();
       if (renderYLabels) renderYLabelsFn();
       if (renderAnnotations) renderAnnotations();
 
