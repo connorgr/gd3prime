@@ -104,7 +104,6 @@ function heatmapChart(style) {
         var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
 
         var annotationCellsG = heatmap.append('g').attr('class', 'gd3heatmapAnnotationCells'),
-            annotationXLabelsG = heatmap.append('g').attr('class', 'gd3annotationXLabels'),
             annotationYLabelsG = svg.append('g').attr('class', 'gd3annotationYLabels');
 
         annotationYLabelsG.attr('transform', 'translate(0,'+verticalOffset+')');
@@ -183,7 +182,10 @@ function heatmapChart(style) {
                       return annColor(value);
                   });
         });
+      }
 
+      function renderXLabelsFn() {
+        var annotationXLabelsG = heatmap.append('g').attr('class', 'gd3annotationXLabels');
         // Position the x labels correctly
         var xLabelVOffset = verticalOffset+annotationYLabelsG.node().getBBox().height;
         annotationXLabelsG.attr('transform', 'translate(0,'+xLabelVOffset+')');
@@ -197,7 +199,6 @@ function heatmapChart(style) {
             .attr('transform', 'rotate(90)')
             .style('font-size', style.annotationLabelFontSize)
             .text(function(d) { return d; });
-
       }
 
       function renderYLabelsFn() {
