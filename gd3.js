@@ -508,7 +508,7 @@
         } ];
         var guidelinesG = svg.append("g").attr("class", "gd3heatmapGuidlines"), guidelines = guidelinesG.selectAll("line").data(guidelineData).enter().append("line").style("stroke", "#000").style("stroke-width", 1);
         heatmapCells.on("mouseover", function() {
-          var xOffset = +heatmap.attr("transform").replace(",", "").replace("translate(", "");
+          var xOffset = parseFloat(heatmap.attr("transform").replace(",", "").replace("translate(", ""));
           var thisEl = d3.select(this), h = +thisEl.attr("height"), w = +thisEl.attr("width"), x = +thisEl.attr("x") + xOffset, y = +thisEl.attr("y");
           var visibleHeight = +heatmap.node().getBBox().height, visibleWidth = +heatmap.node().getBBox().width + xOffset;
           guidelines.each(function(d, i) {
