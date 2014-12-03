@@ -71,14 +71,15 @@ function heatmapChart(style) {
                   .style('stroke-width', 1);
 
       heatmapCells.on('mouseover', function() {
-        var xOffset = parseFloat(heatmap.attr('transform').replace(',','').replace('translate(',''));
+        var xOffset = +heatmap.attr('transform').replace(',','').replace('translate(','');
         var thisEl = d3.select(this),
             h = +thisEl.attr('height'),
             w = +thisEl.attr('width'),
             x = (+thisEl.attr('x')) + xOffset,
             y = +thisEl.attr('y');
 
-        visibleHeight = +heatmap.node().getBBox().height;
+        var visibleHeight = +heatmap.node().getBBox().height,
+            visibleWidth = +heatmap.node().getBBox().width + xOffset;
 
         guidelines.each(function(d,i) {
           var line = d3.select(this);
