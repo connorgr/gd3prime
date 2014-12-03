@@ -59,13 +59,9 @@ function heatmapChart(style) {
 
       yLabelsG = svg.append('g').attr('class', 'gd3heatmapYLabels');
 
-      if (renderYLabels) {
-        renderYLabelsFn();
-      }
-
-      if (renderAnnotations) {
-        renderAnnotations();
-      }
+      if (renderXLabels) renderXLabels();
+      if (renderYLabels) renderYLabelsFn();
+      if (renderAnnotations) renderAnnotations();
 
       // Configure panning and zoom for the chart
       var heatmapStartX = parseFloat(heatmap.attr('transform').split('translate(')[1].split(',')[0]),
