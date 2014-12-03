@@ -428,6 +428,75 @@
     var params = params || {}, style = cnaStyle(params.style || {});
     return cnaChart(style);
   };
+  function heatmapData(inputData) {
+    var data = {
+      cells: [],
+      maxCellValue: Number.NEGATIVE_INFINITY,
+      minCellValue: Number.POSITIVE_INFINITY,
+      xs: [],
+      ys: []
+    };
+    function defaultParse() {
+      data.cells = inputData.cells;
+      data.xs = inputData.xs;
+      data.ys = inputData.ys;
+      var tmp;
+      for (var i = data.cells.length - 1; i >= 0; i--) {
+        tmp = data.cells[i].value;
+        if (tmp > data.maxCellValue) data.maxCellValue = tmp;
+        if (tmp < data.minCellValue) data.minCellValue = tmp;
+      }
+    }
+    defaultParse();
+    return data;
+  }
+  function heatmapChart(style) {
+    function chart(selection) {
+      selection.each(function(data) {
+        data = heatmapData(data);
+        var height = style.height, width = style.width;
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontFamily);
+        var cells = data.cells, xs = data.xs, ys = data.ys;
+        var colorDomain = d3.range(data.minCellValue, data.maxCellValue, (data.maxCellValue - data.minCellValue) / style.colorScale.length).concat([ data.maxCellValue ]), colorScale = d3.scale.linear().domain(colorDomain).range(style.colorScale).interpolate(d3.interpolateLab);
+        var heatmap = svg.append("g").attr("class", "heatmapGroup");
+        var heatmapCells = heatmap.selectAll(".rect").data(cells).enter().append("rect").attr("height", style.cellHeight).attr("width", style.cellWidth).attr("x", function(d, i) {
+          return data.xs.indexOf(d.x) * style.cellWidth;
+        }).attr("y", function(d, i) {
+          return data.ys.indexOf(d.y) * style.cellHeight;
+        }).style("fill", function(d) {
+          return d.value == null ? style.noCellValueColor : colorScale(d.value);
+        });
+        heatmapCells.append("title").text(function(d) {
+          var title = [ "x: " + d.x, "y: " + d.y, "value: " + (d.value === null ? "No data" : d.value) ];
+          return title.join("\n");
+        });
+        var legendG = svg.append("g"), legendScale = legendG.append("g");
+      });
+    }
+    return chart;
+  }
+  function heatmapStyle(style) {
+    return {
+      cellHeight: style.cellHeight || 14,
+      cellWidth: style.cellWidth || 14,
+      colorScale: style.colorScale || [ "rgb(255,255,217)", "rgb(237,248,177)", "rgb(199,233,180)", "rgb(127,205,187)", "rgb(65,182,196)", "rgb(29,145,192)", "rgb(34,94,168)", "rgb(37,52,148)", "rgb(8,29,88)" ],
+      fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      fontSize: style.fontSize || "10px",
+      height: style.height || 400,
+      margins: style.margins || {
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0
+      },
+      noCellValueColor: style.noCellValueColor || "#a7a7a7",
+      width: style.width || 400
+    };
+  }
+  gd3.heatmap = function(params) {
+    var params = params || {}, style = heatmapStyle(params.style || {});
+    return heatmapChart(style);
+  };
   function mutmtxData(inputData) {
     var data = {
       datasets: [],
@@ -480,7 +549,7 @@
         return sortResult;
       });
     };
-    function parseMagi() {
+    function defaultParse() {
       inputData.samples.forEach(function(s) {
         data.maps.columnIdToLabel[s._id] = s.name;
         data.labels.columns.push(s.name);
@@ -514,8 +583,7 @@
         });
       });
     }
-    parseMagi();
-    console.log(data);
+    defaultParse();
     if (inputData.annotations) {
       data.annotations = inputData.annotations;
     }
@@ -695,7 +763,6 @@
     return chart;
   }
   function mutmtxStyle(style) {
-    console.log(style);
     return {
       animationSpeed: style.animationSpeed || 300,
       annotationContinuousScale: style.annotationContinuousScale || [ "#fcc5c0", "#49006a" ],
@@ -946,7 +1013,6 @@
                   if (d.loc == "top") {
                     thisEl.style("opacity", y + adjust > lower ? 0 : 1);
                   } else {
-                    console.log(d.min);
                     thisEl.style("opacity", y + adjust < higher ? 0 : 1);
                   }
                 }

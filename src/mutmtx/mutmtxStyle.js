@@ -1,5 +1,4 @@
 function mutmtxStyle(style) {
-  console.log(style);
   return {
       animationSpeed : style.animationSpeed || 300,
       annotationContinuousScale : style.annotationContinuousScale || ['#fcc5c0','#49006a'],

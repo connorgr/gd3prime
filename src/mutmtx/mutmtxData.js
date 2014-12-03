@@ -59,7 +59,7 @@ function mutmtxData(inputData) {
     });
   } // end data.reorderColumns()
 
-  function parseMagi() {
+  function defaultParse() {
     // Scrape labels from the matrix
     inputData.samples.forEach(function(s) {
       data.maps.columnIdToLabel[s._id] = s.name;
@@ -106,8 +106,7 @@ function mutmtxData(inputData) {
     }); // end matrix mapping
   }
 
-  parseMagi();
-  console.log(data);
+  defaultParse();
 
   // sample annotation data processing, if present
   if(inputData.annotations) {

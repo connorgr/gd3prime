@@ -350,7 +350,6 @@ function transcriptChart(style) {
                 if(d.loc =='top') {
                   thisEl.style('opacity', y+adjust > lower ? 0 : 1);
                 } else {
-                  console.log(d.min)
                   thisEl.style('opacity', y+adjust < higher ? 0 : 1);
                 }
               }
