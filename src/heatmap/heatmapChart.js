@@ -2,6 +2,7 @@ import "heatmapData";
 
 function heatmapChart(style) {
   var renderAnnotations = true,
+      renderXLabels = true,
       renderYLabels = true;
 
   function chart(selection) {
@@ -66,12 +67,44 @@ function heatmapChart(style) {
         renderAnnotations();
       }
 
+      // Configure panning and zoom for the chart
+      var heatmapStartX = parseFloat(heatmap.attr('transform').split('translate(')[1].split(',')[0]),
+          heatmapW = heatmap.node().getBBox().width;
+
+      var zoom = d3.behavior.zoom().on('zoom', function() {
+          var t = zoom.translate(),
+              tx = t[0];
+
+          heatmap.attr('transform', 'translate('+(tx + heatmapStartX)+',0)');
+
+          // Fade out/in heatmap and annotation cells that are out/in the viewport
+          function inViewPort(x){ return (x) * style.cellWidth + tx > 0; }
+          function cellVisibility(x){ return inViewPort(x) ? 1 : 0.1; }
+
+          heatmapCells.style('opacity', function(d) {
+            return cellVisibility(data.xs.indexOf(d.x));
+          });
+          if (renderXLabels){
+            heatmap.selectAll('g.gd3annotationXLabels text')
+                .style('opacity', function(name) {
+                  return cellVisibility(data.xs.indexOf(name));
+                });
+          }
+          if (renderAnnotations){
+            heatmap.selectAll('g.gd3heatmapAnnotationCells rect')
+                .style('opacity', function(x) {
+                  return cellVisibility(data.xs.indexOf(x));
+                });
+          }
+      });
+      svg.call(zoom);
+
       function renderAnnotations() {
         if (!data.annotations) return;
         var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
 
         var annotationCellsG = heatmap.append('g').attr('class', 'gd3heatmapAnnotationCells'),
-            annotationXLabelsG = svg.append('g').attr('class', 'gd3annotationXLabels'),
+            annotationXLabelsG = heatmap.append('g').attr('class', 'gd3annotationXLabels'),
             annotationYLabelsG = svg.append('g').attr('class', 'gd3annotationYLabels');
 
         annotationYLabelsG.attr('transform', 'translate(0,'+verticalOffset+')');
@@ -152,9 +185,8 @@ function heatmapChart(style) {
         });
 
         // Position the x labels correctly
-        var xLabelVOffset = verticalOffset+annotationYLabelsG.node().getBBox().height,
-            xLabelHOffset = maxLabelWidth+style.labelMargins.right;
-        annotationXLabelsG.attr('transform', 'translate('+xLabelHOffset+','+xLabelVOffset+')');
+        var xLabelVOffset = verticalOffset+annotationYLabelsG.node().getBBox().height;
+        annotationXLabelsG.attr('transform', 'translate(0,'+xLabelVOffset+')');
 
         // Draw the text labels for each x value
         annotationXLabelsG.selectAll('text')

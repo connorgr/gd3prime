@@ -466,7 +466,7 @@
     return data;
   }
   function heatmapChart(style) {
-    var renderAnnotations = true, renderYLabels = true;
+    var renderAnnotations = true, renderXLabels = true, renderYLabels = true;
     function chart(selection) {
       selection.each(function(data) {
         data = heatmapData(data);
@@ -493,10 +493,35 @@
         if (renderAnnotations) {
           renderAnnotations();
         }
+        var heatmapStartX = parseFloat(heatmap.attr("transform").split("translate(")[1].split(",")[0]), heatmapW = heatmap.node().getBBox().width;
+        var zoom = d3.behavior.zoom().on("zoom", function() {
+          var t = zoom.translate(), tx = t[0];
+          heatmap.attr("transform", "translate(" + (tx + heatmapStartX) + ",0)");
+          function inViewPort(x) {
+            return x * style.cellWidth + tx > 0;
+          }
+          function cellVisibility(x) {
+            return inViewPort(x) ? 1 : .1;
+          }
+          heatmapCells.style("opacity", function(d) {
+            return cellVisibility(data.xs.indexOf(d.x));
+          });
+          if (renderXLabels) {
+            heatmap.selectAll("g.gd3annotationXLabels text").style("opacity", function(name) {
+              return cellVisibility(data.xs.indexOf(name));
+            });
+          }
+          if (renderAnnotations) {
+            heatmap.selectAll("g.gd3heatmapAnnotationCells rect").style("opacity", function(x) {
+              return cellVisibility(data.xs.indexOf(x));
+            });
+          }
+        });
+        svg.call(zoom);
         function renderAnnotations() {
           if (!data.annotations) return;
           var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
-          var annotationCellsG = heatmap.append("g").attr("class", "gd3heatmapAnnotationCells"), annotationXLabelsG = svg.append("g").attr("class", "gd3annotationXLabels"), annotationYLabelsG = svg.append("g").attr("class", "gd3annotationYLabels");
+          var annotationCellsG = heatmap.append("g").attr("class", "gd3heatmapAnnotationCells"), annotationXLabelsG = heatmap.append("g").attr("class", "gd3annotationXLabels"), annotationYLabelsG = svg.append("g").attr("class", "gd3annotationYLabels");
           annotationYLabelsG.attr("transform", "translate(0," + verticalOffset + ")");
           var annotationYLabels = annotationYLabelsG.selectAll("text").data(data.annotations.categories).enter().append("text").attr("text-anchor", "end").attr("y", function(d, i) {
             return i * (style.annotationCellHeight + style.annotationCategorySpacing) + style.annotationCellHeight;
@@ -541,8 +566,8 @@
               return annColor(value);
             });
           });
-          var xLabelVOffset = verticalOffset + annotationYLabelsG.node().getBBox().height, xLabelHOffset = maxLabelWidth + style.labelMargins.right;
-          annotationXLabelsG.attr("transform", "translate(" + xLabelHOffset + "," + xLabelVOffset + ")");
+          var xLabelVOffset = verticalOffset + annotationYLabelsG.node().getBBox().height;
+          annotationXLabelsG.attr("transform", "translate(0," + xLabelVOffset + ")");
           annotationXLabelsG.selectAll("text").data(data.xs).enter().append("text").attr("y", function(d, i) {
             return -i * style.cellWidth;
           }).attr("transform", "rotate(90)").style("font-size", style.annotationLabelFontSize).text(function(d) {
