@@ -496,15 +496,15 @@
         function renderAnnotations() {
           if (!data.annotations) return;
           var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
-          var annotationCellsG = heatmap.append("g").attr("class", "gd3heatmapAnnotationCells"), annotationLabelsG = svg.append("g").attr("class", "gd3annotationYLabels");
-          annotationLabelsG.attr("transform", "translate(0," + verticalOffset + ")");
-          var annotationLabels = annotationLabelsG.selectAll("text").data(data.annotations.categories).enter().append("text").attr("text-anchor", "end").attr("y", function(d, i) {
+          var annotationCellsG = heatmap.append("g").attr("class", "gd3heatmapAnnotationCells"), annotationXLabelsG = svg.append("g").attr("class", "gd3annotationXLabels"), annotationYLabelsG = svg.append("g").attr("class", "gd3annotationYLabels");
+          annotationYLabelsG.attr("transform", "translate(0," + verticalOffset + ")");
+          var annotationYLabels = annotationYLabelsG.selectAll("text").data(data.annotations.categories).enter().append("text").attr("text-anchor", "end").attr("y", function(d, i) {
             return i * (style.annotationCellHeight + style.annotationCategorySpacing) + style.annotationCellHeight;
-          }).style("font-size", style.fontSize).text(function(d) {
+          }).style("font-size", style.annotationLabelFontSize).text(function(d) {
             return d;
           });
-          var yLabelsHOffset = yLabelsG.node().getBBox().width || 0, annotationLabelsHOffset = annotationLabelsG.node().getBBox().width || 0, maxLabelWidth = yLabelsHOffset > annotationLabelsHOffset ? yLabelsHOffset : annotationLabelsHOffset;
-          annotationLabels.attr("x", maxLabelWidth);
+          var yLabelsHOffset = yLabelsG.node().getBBox().width || 0, annotationYLabelsHOffset = annotationYLabelsG.node().getBBox().width || 0, maxLabelWidth = yLabelsHOffset > annotationYLabelsHOffset ? yLabelsHOffset : annotationYLabelsHOffset;
+          annotationYLabels.attr("x", maxLabelWidth);
           yLabelsG.selectAll("text").attr("x", maxLabelWidth);
           heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
           annotationCellsG.attr("transform", "translate(0," + verticalOffset + ")");
@@ -541,7 +541,13 @@
               return annColor(value);
             });
           });
-          console.log(data.annotations);
+          var xLabelVOffset = verticalOffset + annotationYLabelsG.node().getBBox().height, xLabelHOffset = maxLabelWidth + style.labelMargins.right;
+          annotationXLabelsG.attr("transform", "translate(" + xLabelHOffset + "," + xLabelVOffset + ")");
+          annotationXLabelsG.selectAll("text").data(data.xs).enter().append("text").attr("y", function(d, i) {
+            return -i * style.cellWidth;
+          }).attr("transform", "rotate(90)").style("font-size", style.annotationLabelFontSize).text(function(d) {
+            return d;
+          });
         }
         function renderYLabelsFn() {
           var yLabels = yLabelsG.selectAll("text").data(ys).enter().append("text").attr("text-anchor", "end").attr("y", function(d, i) {

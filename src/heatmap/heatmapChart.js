@@ -71,12 +71,13 @@ function heatmapChart(style) {
         var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
 
         var annotationCellsG = heatmap.append('g').attr('class', 'gd3heatmapAnnotationCells'),
-            annotationLabelsG = svg.append('g').attr('class', 'gd3annotationYLabels');
+            annotationXLabelsG = svg.append('g').attr('class', 'gd3annotationXLabels'),
+            annotationYLabelsG = svg.append('g').attr('class', 'gd3annotationYLabels');
 
-        annotationLabelsG.attr('transform', 'translate(0,'+verticalOffset+')');
+        annotationYLabelsG.attr('transform', 'translate(0,'+verticalOffset+')');
 
         // Draw annotation labels
-        var annotationLabels = annotationLabelsG.selectAll('text')
+        var annotationYLabels = annotationYLabelsG.selectAll('text')
             .data(data.annotations.categories)
             .enter()
             .append('text')
@@ -85,15 +86,15 @@ function heatmapChart(style) {
                   return i*(style.annotationCellHeight+style.annotationCategorySpacing)
                       + style.annotationCellHeight;
                 })
-                .style('font-size', style.fontSize)
+                .style('font-size', style.annotationLabelFontSize)
                 .text(function(d) { return d; });
 
         // Modify label translations based on maximum of labelWidth AND annotationLabelWidth
         var yLabelsHOffset = yLabelsG.node().getBBox().width || 0,
-            annotationLabelsHOffset = annotationLabelsG.node().getBBox().width || 0,
-            maxLabelWidth = yLabelsHOffset > annotationLabelsHOffset ? yLabelsHOffset : annotationLabelsHOffset;
+            annotationYLabelsHOffset = annotationYLabelsG.node().getBBox().width || 0,
+            maxLabelWidth = yLabelsHOffset > annotationYLabelsHOffset ? yLabelsHOffset : annotationYLabelsHOffset;
 
-        annotationLabels.attr('x', maxLabelWidth);
+        annotationYLabels.attr('x', maxLabelWidth);
         yLabelsG.selectAll('text').attr('x', maxLabelWidth);
 
         // move the heatmap and annotation cells over
@@ -136,6 +137,7 @@ function heatmapChart(style) {
             annColor = d3.scale.ordinal().domain(domain).range(range);
           }
 
+          // Render the cells for each category
           thisEl.selectAll('rect')
               .data(sampleIndex)
               .enter()
@@ -149,7 +151,20 @@ function heatmapChart(style) {
                   });
         });
 
-        console.log(data.annotations)
+        // Position the x labels correctly
+        var xLabelVOffset = verticalOffset+annotationYLabelsG.node().getBBox().height,
+            xLabelHOffset = maxLabelWidth+style.labelMargins.right;
+        annotationXLabelsG.attr('transform', 'translate('+xLabelHOffset+','+xLabelVOffset+')');
+
+        // Draw the text labels for each x value
+        annotationXLabelsG.selectAll('text')
+            .data(data.xs)
+            .enter()
+            .append('text')
+            .attr('y', function(d,i) { return -i*style.cellWidth; })
+            .attr('transform', 'rotate(90)')
+            .style('font-size', style.annotationLabelFontSize)
+            .text(function(d) { return d; });
 
       }
 
