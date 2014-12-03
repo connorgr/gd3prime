@@ -71,7 +71,7 @@ function heatmapChart(style) {
                   .style('stroke-width', 1);
 
       heatmapCells.on('mouseover', function() {
-        var xOffset = +heatmap.attr('transform').replace(',','').replace('translate(','');
+        var xOffset = parseFloat(heatmap.attr('transform').replace(',','').replace('translate(',''));
         var thisEl = d3.select(this),
             h = +thisEl.attr('height'),
             w = +thisEl.attr('width'),
