@@ -59,9 +59,9 @@ function heatmapChart(style) {
 
       yLabelsG = svg.append('g').attr('class', 'gd3heatmapYLabels');
 
-      if (renderXLabels) renderXLabelsFn();
       if (renderYLabels) renderYLabelsFn();
       if (renderAnnotations) renderAnnotations();
+      if (renderXLabels) renderXLabelsFn();
 
       // Configure panning and zoom for the chart
       var heatmapStartX = parseFloat(heatmap.attr('transform').split('translate(')[1].split(',')[0]),
@@ -183,8 +183,8 @@ function heatmapChart(style) {
       function renderXLabelsFn() {
         var annotationXLabelsG = heatmap.append('g').attr('class', 'gd3annotationXLabels');
         // Position the x labels correctly
-        var xLabelVOffset = verticalOffset+annotationYLabelsG.node().getBBox().height;
-        annotationXLabelsG.attr('transform', 'translate(0,'+xLabelVOffset+')');
+        var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
+        annotationXLabelsG.attr('transform', 'translate(0,'+verticalOffset+')');
 
         // Draw the text labels for each x value
         annotationXLabelsG.selectAll('text')
