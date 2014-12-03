@@ -15,10 +15,12 @@
     console.log(gd3);
 
     d3.json('testData/example-heatmap.json', function(data) {
-
-      d3.select('#test')
-          .datum(data)
-          .call(gd3.heatmap());
+      d3.json('testData/exampleAnnotations.json', function(adata) {
+        data.annotations = adata;
+        d3.select('#test')
+            .datum(data)
+            .call(gd3.heatmap());
+      });
     });
     </script>
   </body>

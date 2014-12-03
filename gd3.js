@@ -430,6 +430,7 @@
   };
   function heatmapData(inputData) {
     var data = {
+      annotations: undefined,
       cells: [],
       maxCellValue: Number.NEGATIVE_INFINITY,
       minCellValue: Number.POSITIVE_INFINITY,
@@ -440,17 +441,32 @@
       data.cells = inputData.cells;
       data.xs = inputData.xs;
       data.ys = inputData.ys;
+      data.annotations = inputData.annotations;
       var tmp;
       for (var i = data.cells.length - 1; i >= 0; i--) {
         tmp = data.cells[i].value;
         if (tmp > data.maxCellValue) data.maxCellValue = tmp;
         if (tmp < data.minCellValue) data.minCellValue = tmp;
       }
+      if (data.annotations) {
+        if (!data.annotations.annotationToColor) data.annotations.annotationToColor = {};
+        data.annotations.categories.forEach(function(category) {
+          var entry = data.annotations.annotationToColor[category];
+          if (entry && Object.keys(entry).length > 0) return;
+          var categoryIndex = data.annotations.categories.indexOf(category);
+          var annotationNames = Object.keys(data.annotations.sampleToAnnotations), values = annotationNames.map(function(n) {
+            return data.annotations.sampleToAnnotations[n][categoryIndex];
+          });
+          entry = [ d3.min(values), d3.max(values) ];
+          data.annotations.annotationToColor[category] = entry;
+        });
+      }
     }
     defaultParse();
     return data;
   }
   function heatmapChart(style) {
+    var renderAnnotations = true, renderYLabels = true;
     function chart(selection) {
       selection.each(function(data) {
         data = heatmapData(data);
@@ -458,8 +474,8 @@
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontFamily);
         var cells = data.cells, xs = data.xs, ys = data.ys;
         var colorDomain = d3.range(data.minCellValue, data.maxCellValue, (data.maxCellValue - data.minCellValue) / style.colorScale.length).concat([ data.maxCellValue ]), colorScale = d3.scale.linear().domain(colorDomain).range(style.colorScale).interpolate(d3.interpolateLab);
-        var heatmap = svg.append("g").attr("class", "heatmapGroup");
-        var heatmapCells = heatmap.selectAll(".rect").data(cells).enter().append("rect").attr("height", style.cellHeight).attr("width", style.cellWidth).attr("x", function(d, i) {
+        var heatmap = svg.append("g").attr("class", "gd3heatmapCellsContainer");
+        var heatmapCells = heatmap.append("g").attr("class", "gd3heatmapCells").selectAll(".rect").data(cells).enter().append("rect").attr("height", style.cellHeight).attr("width", style.cellWidth).attr("x", function(d, i) {
           return data.xs.indexOf(d.x) * style.cellWidth;
         }).attr("y", function(d, i) {
           return data.ys.indexOf(d.y) * style.cellHeight;
@@ -467,22 +483,100 @@
           return d.value == null ? style.noCellValueColor : colorScale(d.value);
         });
         heatmapCells.append("title").text(function(d) {
-          var title = [ "x: " + d.x, "y: " + d.y, "value: " + (d.value === null ? "No data" : d.value) ];
-          return title.join("\n");
+          return [ "x: " + d.x, "y: " + d.y, "value: " + (d.value == null ? "No data" : d.value) ].join("\n");
         });
         var legendG = svg.append("g"), legendScale = legendG.append("g");
+        yLabelsG = svg.append("g").attr("class", "gd3heatmapYLabels");
+        if (renderYLabels) {
+          renderYLabelsFn();
+        }
+        if (renderAnnotations) {
+          renderAnnotations();
+        }
+        function renderAnnotations() {
+          if (!data.annotations) return;
+          var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
+          var annotationCellsG = heatmap.append("g").attr("class", "gd3heatmapAnnotationCells"), annotationLabelsG = svg.append("g").attr("class", "gd3annotationYLabels");
+          annotationLabelsG.attr("transform", "translate(0," + verticalOffset + ")");
+          var annotationLabels = annotationLabelsG.selectAll("text").data(data.annotations.categories).enter().append("text").attr("text-anchor", "end").attr("y", function(d, i) {
+            return i * (style.annotationCellHeight + style.annotationCategorySpacing) + style.annotationCellHeight;
+          }).style("font-size", style.fontSize).text(function(d) {
+            return d;
+          });
+          var yLabelsHOffset = yLabelsG.node().getBBox().width || 0, annotationLabelsHOffset = annotationLabelsG.node().getBBox().width || 0, maxLabelWidth = yLabelsHOffset > annotationLabelsHOffset ? yLabelsHOffset : annotationLabelsHOffset;
+          annotationLabels.attr("x", maxLabelWidth);
+          yLabelsG.selectAll("text").attr("x", maxLabelWidth);
+          heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
+          annotationCellsG.attr("transform", "translate(0," + verticalOffset + ")");
+          var annotationCategoryCellsG = annotationCellsG.selectAll("g").data(data.annotations.categories).enter().append("g").attr("transform", function(d, i) {
+            var y = i * (style.annotationCellHeight + style.annotationCategorySpacing);
+            return "translate(0," + y + ")";
+          });
+          annotationCategoryCellsG.each(function(category, categoryIndex) {
+            var thisEl = d3.select(this);
+            var sampleNames = Object.keys(data.annotations.sampleToAnnotations), sampleIndex = sampleNames.map(function(d) {
+              return [ d, data.xs.indexOf(d) ];
+            });
+            sampleIndex = sampleIndex.filter(function(d) {
+              return d[1] >= 0;
+            });
+            sampleIndex = sampleIndex.sort(function(a, b) {
+              return a[1] - b[1];
+            }).map(function(d) {
+              return d[0];
+            });
+            var colorInfo = data.annotations.annotationToColor[category], annColor;
+            if (Object.prototype.toString.call(colorInfo) === "[object Array]") {
+              annColor = d3.scale.linear().domain([ colorInfo[0], colorInfo[1] ]).range(style.annotationContinuousColorScale).interpolate(d3.interpolateLab);
+            } else {
+              var domain = Object.keys(colorInfo), range = domain.map(function(d) {
+                return colorInfo[d];
+              });
+              annColor = d3.scale.ordinal().domain(domain).range(range);
+            }
+            thisEl.selectAll("rect").data(sampleIndex).enter().append("rect").attr("height", style.annotationCellHeight).attr("width", style.cellWidth).attr("x", function(d) {
+              return xs.indexOf(d) * style.cellWidth;
+            }).style("fill", function(d) {
+              var value = data.annotations.sampleToAnnotations[d][categoryIndex];
+              return annColor(value);
+            });
+          });
+          console.log(data.annotations);
+        }
+        function renderYLabelsFn() {
+          var yLabels = yLabelsG.selectAll("text").data(ys).enter().append("text").attr("text-anchor", "end").attr("y", function(d, i) {
+            return i * style.cellHeight + style.cellHeight;
+          }).style("font-size", style.fontSize).text(function(d) {
+            return d;
+          });
+          var maxLabelWidth = 0;
+          yLabels.each(function() {
+            var tmpWidth = d3.select(this).node().getBBox().width;
+            maxLabelWidth = maxLabelWidth > tmpWidth ? maxLabelWidth : tmpWidth;
+          });
+          yLabels.attr("x", maxLabelWidth);
+          heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
+        }
       });
     }
     return chart;
   }
   function heatmapStyle(style) {
     return {
+      annotationCellHeight: style.annotationCellHeight || 10,
+      annotationCategorySpacing: style.annotationCategorySpacing || 5,
+      annotationContinuousColorScale: style.annotationContinuousColorScale || [ "#f7fcb9", "#004529" ],
+      annotationLabelFontSize: style.annotationLabelFontSize || style.fontSize || 12,
       cellHeight: style.cellHeight || 14,
       cellWidth: style.cellWidth || 14,
       colorScale: style.colorScale || [ "rgb(255,255,217)", "rgb(237,248,177)", "rgb(199,233,180)", "rgb(127,205,187)", "rgb(65,182,196)", "rgb(29,145,192)", "rgb(34,94,168)", "rgb(37,52,148)", "rgb(8,29,88)" ],
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-      fontSize: style.fontSize || "10px",
+      fontSize: style.fontSize || 12,
       height: style.height || 400,
+      labelMargins: style.labelMargins || {
+        bottom: 5,
+        right: 2
+      },
       margins: style.margins || {
         bottom: 0,
         left: 0,
