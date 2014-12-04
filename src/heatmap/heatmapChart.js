@@ -208,7 +208,7 @@ function heatmapChart(style) {
           }
 
           // Render the cells for each category
-          thisEl.selectAll('rect')
+          var annotationRects = thisEl.selectAll('rect')
               .data(sampleIndex)
               .enter()
               .append('rect')
@@ -219,6 +219,13 @@ function heatmapChart(style) {
                       var value = data.annotations.sampleToAnnotations[d][categoryIndex];
                       return annColor(value);
                   });
+
+          // Render title tooltips for the rectangles
+          annotationRects.append('title').text(function(d) {
+            var value = data.annotations.sampleToAnnotations[d][categoryIndex];
+            return ['x: ' + d, 'y: ' + category, 'value: ' + (value == null ? 'No data' : value)]
+                .join('\n');
+          });
         });
       }
 

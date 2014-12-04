@@ -595,11 +595,15 @@
               });
               annColor = d3.scale.ordinal().domain(domain).range(range);
             }
-            thisEl.selectAll("rect").data(sampleIndex).enter().append("rect").attr("height", style.annotationCellHeight).attr("width", style.cellWidth).attr("x", function(d) {
+            var annotationRects = thisEl.selectAll("rect").data(sampleIndex).enter().append("rect").attr("height", style.annotationCellHeight).attr("width", style.cellWidth).attr("x", function(d) {
               return xs.indexOf(d) * style.cellWidth;
             }).style("fill", function(d) {
               var value = data.annotations.sampleToAnnotations[d][categoryIndex];
               return annColor(value);
+            });
+            annotationRects.append("title").text(function(d) {
+              var value = data.annotations.sampleToAnnotations[d][categoryIndex];
+              return [ "x: " + d, "y: " + category, "value: " + (value == null ? "No data" : value) ].join("\n");
             });
           });
         }
