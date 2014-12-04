@@ -409,6 +409,117 @@
     var params = params || {}, style = cnaStyle(params.style || {});
     return cnaChart(style);
   };
+  function graphData(inputData) {
+    var data = {
+      edges: [],
+      nodes: []
+    };
+    function defaultParse() {
+      data.edges = inputData.edges;
+      data.nodes = inputData.nodes;
+      data.links = loadLinks(data.edges, data.nodes);
+      data.maxNodeValue = d3.max(data.nodes.map(function(d) {
+        return d.value;
+      }));
+      data.minNodeValue = d3.min(data.nodes.map(function(d) {
+        return d.value;
+      }));
+      function loadLinks(edges, nodes) {
+        var links = [];
+        for (var i = 0; i < nodes.length; i++) {
+          var u = nodes[i].name;
+          for (var j = 0; j < nodes.length; j++) {
+            var v = nodes[j].name;
+            for (var k = 0; k < edges.length; k++) {
+              var src = edges[k].source, tgt = edges[k].target;
+              if (u == src && v == tgt || u == tgt && v == src) {
+                links.push({
+                  source: nodes[i],
+                  target: nodes[j],
+                  weight: edges[k].weight,
+                  networks: edges[k].networks,
+                  references: edges[k].references
+                });
+              }
+            }
+          }
+        }
+        return links;
+      }
+    }
+    defaultParse();
+    console.log(data);
+    return data;
+  }
+  function graphChart(style) {
+    var anchorNodesOnClick = true;
+    function chart(selection) {
+      selection.each(function(data) {
+        data = graphData(data);
+        var height = style.height, width = style.width;
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontFamily);
+        var graph = svg.append("g");
+        var nodeColor = d3.scale.linear().domain([ data.minNodeValue, data.maxNodeValue ]).range(style.nodeColor).interpolate(d3.interpolateLab);
+        var forceHeight = height, forceWidth = width;
+        var force = d3.layout.force().charge(-400).linkDistance(40).size([ forceWidth, forceHeight ]);
+        var x = d3.scale.linear().range([ 0, forceWidth ]), y = d3.scale.linear().range([ 0, forceHeight ]);
+        force.nodes(data.nodes).links(data.links).start();
+        var link = graph.append("g").selectAll(".link").data(data.links).enter().append("g");
+        var node = graph.append("g").selectAll(".node").data(data.nodes).enter().append("g").style("cursor", "move").call(force.drag);
+        node.append("circle").attr("r", style.nodeRadius).attr("fill", function(d) {
+          return nodeColor(d.value);
+        }).style("stroke-width", style.nodeStrokeWidth).style("stroke", style.nodeStrokeColor);
+        node.append("text").attr("x", style.nodeRadius + style.nodeLabelPadding).attr("y", style.nodeRadius + style.nodeLabelPadding).style("font-size", style.fontSize).text(function(d) {
+          return d.name;
+        });
+        force.on("tick", function() {
+          node.attr("transform", function(d) {
+            d.x = Math.max(style.nodeRadius, Math.min(forceWidth - style.nodeRadius, d.x));
+            d.y = Math.max(style.nodeRadius, Math.min(forceHeight - style.nodeRadius, d.y));
+            return "translate(" + d.x + "," + d.y + ")";
+          });
+        });
+        if (anchorNodesOnClick) {
+          force.drag().on("dragstart", function(d) {
+            d.fixed = true;
+            d3.select(this).select("circle").style("stroke-opacity", 0);
+          });
+          node.on("dblclick", function(d) {
+            d.fixed = d.fixed ? false : true;
+            d3.select(this).select("circle").style("stroke-opacity", 1);
+          });
+        }
+      });
+    }
+    chart.clickAnchorsNodes = function(state) {
+      anchorNodesOnClick = state;
+      return chart;
+    };
+    return chart;
+  }
+  function graphStyle(style) {
+    return {
+      fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      fontSize: style.fontSize || 12,
+      height: style.height || 400,
+      margins: style.margins || {
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0
+      },
+      nodeColor: style.nodeColor || [ "#666", "#666" ],
+      nodeRadius: style.nodeRadius || 8,
+      nodeLabelPadding: style.nodeLabelPadding || 2,
+      nodeStrokeColor: style.nodeStrokeColor || "#333",
+      nodeStrokeWidth: style.nodeStrokeWidth || 1,
+      width: style.width || 400
+    };
+  }
+  gd3.graph = function(params) {
+    var params = params || {}, style = graphStyle(params.style || {});
+    return graphChart(style);
+  };
   function heatmapData(inputData) {
     var data = {
       annotations: undefined,
