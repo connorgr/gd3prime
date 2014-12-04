@@ -1,7 +1,7 @@
 function graphStyle(style) {
   return {
     edgeColors : style.edgeColors || d3.scale.category10().range(),
-    edgeWidth : style.edgeWidth || 2,
+    edgeWidth : style.edgeWidth || 5,
     fontFamily : style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
     fontSize : style.fontSize || 12,
     height : style.height || 400,
