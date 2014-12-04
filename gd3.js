@@ -499,9 +499,13 @@
             d.y = Math.max(style.nodeRadius, Math.min(forceHeight - style.nodeRadius, d.y));
             return "translate(" + d.x + "," + d.y + ")";
           });
-          link.selectAll("line").each(function(d, i) {
-            var thisEdge = d3.select(this);
-            thisEdge.attr("x1", d.source.x).attr("x2", d.target.x).attr("y1", d.source.y).attr("y2", d.target.y);
+          link.each(function(d) {
+            var thisEdgeSet = d3.select(this), categories = d.categories || [ null ], numCategories = categories.length;
+            var offset = numCategories / 2 * style.edgeWidth;
+            thisEdgeSet.selectAll("line").each(function(d, i) {
+              var thisEdge = d3.select(this);
+              thisEdge.attr("x1", d.source.x - offset + style.edgeWidth * i).attr("x2", d.target.x - offset + style.edgeWidth * i).attr("y1", d.source.y - offset + style.edgeWidth * i).attr("y2", d.target.y - offset + style.edgeWidth * i);
+            });
           });
         });
         if (anchorNodesOnClick) {
@@ -524,8 +528,8 @@
   }
   function graphStyle(style) {
     return {
-      edgeColors: style.edgeColors || d3.scale.category20().range(),
-      edgeWidth: style.edgeWidth || 1.5,
+      edgeColors: style.edgeColors || d3.scale.category10().range(),
+      edgeWidth: style.edgeWidth || 2,
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       fontSize: style.fontSize || 12,
       height: style.height || 400,
