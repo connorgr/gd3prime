@@ -101,12 +101,13 @@ function heatmapChart(style) {
       yLabelsG = svg.append('g').attr('class', 'gd3heatmapYLabels');
 
       if (renderYLabels) renderYLabelsFn();
-      if (renderAnnotations) renderAnnotations();
+      if (renderAnnotations) renderAnnotationsFn();
       if (renderXLabels) renderXLabelsFn();
       if (renderLegend) renderLegendFn();
 
       // Configure panning and zoom for the chart
-      var heatmapStartX = parseFloat(heatmap.attr('transform').split('translate(')[1].split(',')[0]),
+      var heatmapTranslate = heatmap.attr('transform') || 'translate(0,0)',
+          heatmapStartX = +heatmapTranslate.replace(')','').replace('translate(','').split(',')[0],
           heatmapW = heatmap.node().getBBox().width;
 
       var zoom = d3.behavior.zoom().on('zoom', function() {
@@ -137,7 +138,7 @@ function heatmapChart(style) {
       });
       svg.call(zoom);
 
-      function renderAnnotations() {
+      function renderAnnotationsFn() {
         if (!data.annotations) return;
         var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
 
@@ -146,29 +147,31 @@ function heatmapChart(style) {
 
         annotationYLabelsG.attr('transform', 'translate(0,'+verticalOffset+')');
 
-        // Draw annotation labels
-        var annotationYLabels = annotationYLabelsG.selectAll('text')
-            .data(data.annotations.categories)
-            .enter()
-            .append('text')
-                .attr('text-anchor', 'end')
-                .attr('y', function(d,i) {
-                  return i*(style.annotationCellHeight+style.annotationCategorySpacing)
-                      + style.annotationCellHeight;
-                })
-                .style('font-size', style.annotationLabelFontSize)
-                .text(function(d) { return d; });
+        // Draw annotation labels, if called for
+        if(renderYLabels) {
+          var annotationYLabels = annotationYLabelsG.selectAll('text')
+              .data(data.annotations.categories)
+              .enter()
+              .append('text')
+                  .attr('text-anchor', 'end')
+                  .attr('y', function(d,i) {
+                    return i*(style.annotationCellHeight+style.annotationCategorySpacing)
+                        + style.annotationCellHeight;
+                  })
+                  .style('font-size', style.annotationLabelFontSize)
+                  .text(function(d) { return d; });
 
-        // Modify label translations based on maximum of labelWidth AND annotationLabelWidth
-        var yLabelsHOffset = yLabelsG.node().getBBox().width || 0,
-            annotationYLabelsHOffset = annotationYLabelsG.node().getBBox().width || 0,
-            maxLabelWidth = yLabelsHOffset > annotationYLabelsHOffset ? yLabelsHOffset : annotationYLabelsHOffset;
+          // Modify label translations based on maximum of labelWidth AND annotationLabelWidth
+          var yLabelsHOffset = yLabelsG.node().getBBox().width || 0,
+              annotationYLabelsHOffset = annotationYLabelsG.node().getBBox().width || 0,
+              maxLabelWidth = yLabelsHOffset > annotationYLabelsHOffset ? yLabelsHOffset : annotationYLabelsHOffset;
 
-        annotationYLabels.attr('x', maxLabelWidth);
-        yLabelsG.selectAll('text').attr('x', maxLabelWidth);
+          annotationYLabels.attr('x', maxLabelWidth);
+          yLabelsG.selectAll('text').attr('x', maxLabelWidth);
+          heatmap.attr('transform', 'translate(' + (maxLabelWidth+style.labelMargins.right) +',0)');
+        }
 
-        // move the heatmap and annotation cells over
-        heatmap.attr('transform', 'translate(' + (maxLabelWidth+style.labelMargins.right) +',0)');
+        // adjust cell drawing area
         annotationCellsG.attr('transform', 'translate(0,' + verticalOffset + ')');
 
         // Draw annotation cells
@@ -230,8 +233,11 @@ function heatmapChart(style) {
       }
 
       function renderLegendFn() {
-        var xOffset = +heatmap.attr('transform').replace(')','').replace('translate(','').split(',')[0],
+        var heatmapTranslate = heatmap.attr('transform') || 'translate(0,0)',
+            xOffset = +heatmapTranslate.replace(')','').replace('translate(','').split(',')[0],
             yOffset = heatmap.node().getBBox().height+style.annotationCategorySpacing;
+
+        if (!xOffset) xOffset = 0;
 
         legendG.attr('transform', 'translate('+xOffset+','+yOffset+')');
 
@@ -261,11 +267,13 @@ function heatmapChart(style) {
 
         colorScaleRect.style('fill', 'url(#'+gradientId+')');
 
+        var textY = style.colorScaleHeight + style.fontSize + 3
+
         // append the minimum value text
         legendG.append('text')
             .attr('text-anchor', 'middle')
             .attr('x', 0)
-            .attr('y', style.colorScaleHeight + style.fontSize + 3)
+            .attr('y', textY)
             .style('font-size', style.annotationLabelFontSize)
             .text(data.minCellValue);
 
@@ -273,9 +281,17 @@ function heatmapChart(style) {
         legendG.append('text')
             .attr('text-anchor', 'middle')
             .attr('x', style.colorScaleWidth)
-            .attr('y', style.colorScaleHeight + style.fontSize + 3)
+            .attr('y', textY)
             .style('font-size', style.annotationLabelFontSize)
             .text(data.maxCellValue);
+
+        // append the name of the legend/heatmap
+        legendG.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('x', style.colorScaleWidth/2)
+            .attr('y', textY + style.annotationLabelFontSize+2)
+            .style('font-size', style.annotationLabelFontSize)
+            .text(data.name);
       }
 
       function renderXLabelsFn() {
@@ -317,6 +333,26 @@ function heatmapChart(style) {
         heatmap.attr('transform', 'translate(' + (maxLabelWidth+style.labelMargins.right) +',0)');
       }
     });
+  }
+
+  chart.showAnnotations = function(state) {
+    renderAnnotations = state;
+    return chart;
+  }
+
+  chart.showLegend = function(state) {
+    renderLegend = state;
+    return chart;
+  }
+
+  chart.showXLabels = function(state) {
+    renderXLabels = state;
+    return chart;
+  }
+
+  chart.showYLabels = function(state) {
+    renderYLabels = state;
+    return chart;
   }
 
   return chart;

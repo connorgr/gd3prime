@@ -11,6 +11,7 @@ function heatmapData(inputData) {
 
   function defaultParse () {
     data.cells = inputData.cells;
+    data.name = inputData.name;
     data.xs = inputData.xs;
     data.ys = inputData.ys;
 

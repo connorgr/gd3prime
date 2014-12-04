@@ -29,33 +29,33 @@ function cnaData(data) {
       var dSegments = d.segments;
       dSegments.forEach(function(s){
         // create simulated annotation data if it does not exist.
-        var vote = {
-          type: 'vote',
-          score: 100
-        }
-        var link = {
-          type: 'link',
-          href: 'http://www.cs.brown.edu',
-          text: 'BrownCS'
-        }
-        var testAnnotation = [
-          {
-            type: 'text',
-            title: 'Sample',
-            text: d.sample
-          },
-          {
-            type: 'table',
-            header: ['Cancer', 'PMIDs', 'Votes'],
-            data: [
-              ['1', link, vote],
-              ['4', link, vote]
-            ]
-          }
-        ];
+        // var vote = {
+        //   type: 'vote',
+        //   score: 100
+        // }
+        // var link = {
+        //   type: 'link',
+        //   href: 'http://www.cs.brown.edu',
+        //   text: 'BrownCS'
+        // }
+        // var testAnnotation = [
+        //   {
+        //     type: 'text',
+        //     title: 'Sample',
+        //     text: d.sample
+        //   },
+        //   {
+        //     type: 'table',
+        //     header: ['Cancer', 'PMIDs', 'Votes'],
+        //     data: [
+        //       ['1', link, vote],
+        //       ['4', link, vote]
+        //     ]
+        //   }
+        // ];
 
         segJSON.push({
-          annotation: testAnnotation,
+          // annotation: testAnnotation,
           gene: gene,
           start: s.start,
           end: s.end,
