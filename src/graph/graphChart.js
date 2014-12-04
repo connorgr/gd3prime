@@ -22,6 +22,11 @@ function graphChart(style) {
 
       var graph = svg.append('g');
 
+      // Set up edge coloring
+      var edgeColor = d3.scale.ordinal()
+          .domain(data.edgeCategories)
+          .range(style.edgeColors);
+
       // Set up node coloring
       var nodeColor = d3.scale.linear()
           .domain([data.minNodeValue, data.maxNodeValue])
@@ -47,6 +52,21 @@ function graphChart(style) {
           .data(data.links)
           .enter()
           .append('g');
+
+      // Draw categories for each edge
+      if(data.edgeCategories) {
+        link.each(function(d) {
+          var thisEdge = d3.select(this);
+          d.categories.forEach(function(c) {
+            thisEdge.append('line')
+                .style('stroke-width', style.edgeWidth)
+                .style('stroke', edgeColor(c));
+          });
+        });
+      } else {
+        link.append('line').style('stroke-width', style.edgeWidth).style('stroke', edgeColor(null));
+      }
+
 
       // Draw the nodes
       var node = graph.append('g').selectAll('.node')
@@ -75,7 +95,14 @@ function graphChart(style) {
           return 'translate('+ d.x + ',' + d.y + ')';
         });
 
-
+        // position the edges
+        link.selectAll('line').each(function(d,i) {
+          var thisEdge = d3.select(this);
+          thisEdge.attr('x1', d.source.x)
+              .attr('x2', d.target.x)
+              .attr('y1', d.source.y)
+              .attr('y2', d.target.y);
+        });
       });
 
 

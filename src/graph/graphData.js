@@ -13,6 +13,18 @@ function graphData(inputData) {
     data.maxNodeValue = d3.max(data.nodes.map(function(d) { return d.value; }));
     data.minNodeValue = d3.min(data.nodes.map(function(d) { return d.value; }));
 
+    data.edgeCategories = [];
+
+    // add edge categories only if they exist
+    var categories = {};
+    if(data.edges[0].categories) {
+      data.edges.forEach(function(e) {
+        e.categories.forEach(function(c) {
+          categories[c] = null;
+        });
+      });
+      data.edgeCategories = Object.keys(categories);
+    }
 
     // creates a force-directed layout friendly link list
     function loadLinks(edges, nodes) {
@@ -30,7 +42,7 @@ function graphData(inputData) {
                 source: nodes[i],
                 target: nodes[j],
                 weight: edges[k].weight,
-                networks: edges[k].networks,
+                categories: edges[k].categories,
                 references: edges[k].references
               })
             }

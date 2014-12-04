@@ -424,6 +424,16 @@
       data.minNodeValue = d3.min(data.nodes.map(function(d) {
         return d.value;
       }));
+      data.edgeCategories = [];
+      var categories = {};
+      if (data.edges[0].categories) {
+        data.edges.forEach(function(e) {
+          e.categories.forEach(function(c) {
+            categories[c] = null;
+          });
+        });
+        data.edgeCategories = Object.keys(categories);
+      }
       function loadLinks(edges, nodes) {
         var links = [];
         for (var i = 0; i < nodes.length; i++) {
@@ -437,7 +447,7 @@
                   source: nodes[i],
                   target: nodes[j],
                   weight: edges[k].weight,
-                  networks: edges[k].networks,
+                  categories: edges[k].categories,
                   references: edges[k].references
                 });
               }
@@ -459,12 +469,23 @@
         var height = style.height, width = style.width;
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontFamily);
         var graph = svg.append("g");
+        var edgeColor = d3.scale.ordinal().domain(data.edgeCategories).range(style.edgeColors);
         var nodeColor = d3.scale.linear().domain([ data.minNodeValue, data.maxNodeValue ]).range(style.nodeColor).interpolate(d3.interpolateLab);
         var forceHeight = height, forceWidth = width;
         var force = d3.layout.force().charge(-400).linkDistance(40).size([ forceWidth, forceHeight ]);
         var x = d3.scale.linear().range([ 0, forceWidth ]), y = d3.scale.linear().range([ 0, forceHeight ]);
         force.nodes(data.nodes).links(data.links).start();
         var link = graph.append("g").selectAll(".link").data(data.links).enter().append("g");
+        if (data.edgeCategories) {
+          link.each(function(d) {
+            var thisEdge = d3.select(this);
+            d.categories.forEach(function(c) {
+              thisEdge.append("line").style("stroke-width", style.edgeWidth).style("stroke", edgeColor(c));
+            });
+          });
+        } else {
+          link.append("line").style("stroke-width", style.edgeWidth).style("stroke", edgeColor(null));
+        }
         var node = graph.append("g").selectAll(".node").data(data.nodes).enter().append("g").style("cursor", "move").call(force.drag);
         node.append("circle").attr("r", style.nodeRadius).attr("fill", function(d) {
           return nodeColor(d.value);
@@ -477,6 +498,10 @@
             d.x = Math.max(style.nodeRadius, Math.min(forceWidth - style.nodeRadius, d.x));
             d.y = Math.max(style.nodeRadius, Math.min(forceHeight - style.nodeRadius, d.y));
             return "translate(" + d.x + "," + d.y + ")";
+          });
+          link.selectAll("line").each(function(d, i) {
+            var thisEdge = d3.select(this);
+            thisEdge.attr("x1", d.source.x).attr("x2", d.target.x).attr("y1", d.source.y).attr("y2", d.target.y);
           });
         });
         if (anchorNodesOnClick) {
@@ -499,6 +524,8 @@
   }
   function graphStyle(style) {
     return {
+      edgeColors: style.edgeColors || d3.scale.category20().range(),
+      edgeWidth: style.edgeWidth || 1.5,
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       fontSize: style.fontSize || 12,
       height: style.height || 400,
@@ -508,10 +535,10 @@
         right: 0,
         top: 0
       },
-      nodeColor: style.nodeColor || [ "#666", "#666" ],
+      nodeColor: style.nodeColor || [ "#ccc", "#ccc" ],
       nodeRadius: style.nodeRadius || 8,
       nodeLabelPadding: style.nodeLabelPadding || 2,
-      nodeStrokeColor: style.nodeStrokeColor || "#333",
+      nodeStrokeColor: style.nodeStrokeColor || "#aaa",
       nodeStrokeWidth: style.nodeStrokeWidth || 1,
       width: style.width || 400
     };
