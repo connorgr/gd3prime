@@ -96,12 +96,20 @@ function graphChart(style) {
         });
 
         // position the edges
-        link.selectAll('line').each(function(d,i) {
-          var thisEdge = d3.select(this);
-          thisEdge.attr('x1', d.source.x)
-              .attr('x2', d.target.x)
-              .attr('y1', d.source.y)
-              .attr('y2', d.target.y);
+        link.each(function(d) {
+          var thisEdgeSet = d3.select(this),
+              categories = d.categories || [null],
+              numCategories = categories.length;
+
+          console.log(numCategories);
+
+          thisEdgeSet.selectAll('line').each(function(d,i) {
+            var thisEdge = d3.select(this);
+            thisEdge.attr('x1', d.source.x)
+                .attr('x2', d.target.x)
+                .attr('y1', d.source.y)
+                .attr('y2', d.target.y);
+          });
         });
       });
 
