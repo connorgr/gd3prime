@@ -1,6 +1,7 @@
 import "mutmtxData";
 
 function mutmtxChart(style) {
+  var drawSortingMenu = true;
 
   function chart(selection) {
     selection.each(function(data) {
@@ -228,6 +229,69 @@ function mutmtxChart(style) {
       renderMutationMatrix();
       rerenderMutationMatrix();
 
+      if(drawSortingMenu) drawSortingMenu();
+
+
+      function drawSortingMenu() {
+        var menu = selection.append('div');
+        menu.append('p').text('Sort columns');
+
+        var optionsData = [
+          'First active row',
+          'Column category',
+          'Exclusivity',
+          'Name'
+        ];
+
+        var optionsMenu = menu.append('ul')
+            .style('list-style', 'none')
+            .style('padding-left', 0);
+
+        renderMenu();
+
+        function renderMenu() {
+          optionsMenu.selectAll('li').remove();
+          optionsMenu.selectAll('li')
+              .data(optionsData)
+              .enter()
+              .append('li')
+                  .style('font-family', style.fontFamily)
+                  .style('font-size', style.sortingMenuFontSize + 'px')
+                  .each(function(menuText,menuPosition) {
+                      var texts = ['↑',' ','↓',' ',menuText],
+                          thisLi = d3.select(this);
+                      thisLi.selectAll('span')
+                          .data(texts)
+                          .enter()
+                          .append('span')
+                              .text(function(d) { return d; })
+                              .each(function(d,i) {
+                                // Define behavior for voting glyphs
+                                if(i != 0 && i != 2) return;
+                                d3.select(this).style('cursor','pointer')
+                                    .on('mouseover', function() {
+                                      d3.select(this).style('color', 'red')
+                                    })
+                                    .on('mouseout', function() {
+                                      d3.select(this).style('color', style.fontColor);
+                                    })
+                                    .on('click', function() {
+                                      if(i == 0 && menuPosition == 0) return;
+                                      if(i == 2 && menuPosition == optionsData.length - 1) return;
+
+                                      var neighbor = menuPosition + (i == 0 ? -1 : 1),
+                                          neighborText = optionsData[neighbor];
+                                      optionsData[neighbor] = menuText;
+                                      optionsData[menuPosition] = neighborText;
+                                      renderMenu();
+                                    });
+                              });
+                  });
+        }
+
+      }
+
+
       function rerenderMutationMatrix() {
         var t = zoom.translate(),
           tx = t[0],
@@ -244,6 +308,7 @@ function mutmtxChart(style) {
               return 'translate('+wholeVisX(colIndex)+',0)';
             });
 
+        // Redraw each cell and any glyphs the cell might have
         columns.selectAll('rect').attr('width', colWidth);
         columns.selectAll('.gd3mutmtx-cellClyph').attr('transform', function (d) {
               var str = d3.select(this).attr('transform'),
@@ -306,6 +371,11 @@ function mutmtxChart(style) {
         // });
       }
     });
+  }
+
+  chart.showSortingMenu = function(state) {
+    drawSortingMenu = state;
+    return chart;
   }
 
   return chart;

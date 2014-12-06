@@ -939,6 +939,7 @@
     return data;
   }
   function mutmtxChart(style) {
+    var drawSortingMenu = true;
     function chart(selection) {
       selection.each(function(data) {
         data = mutmtxData(data);
@@ -1034,6 +1035,37 @@
         svg.call(zoom);
         renderMutationMatrix();
         rerenderMutationMatrix();
+        if (drawSortingMenu) drawSortingMenu();
+        function drawSortingMenu() {
+          var menu = selection.append("div");
+          menu.append("p").text("Sort columns");
+          var optionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
+          var optionsMenu = menu.append("ul").style("list-style", "none").style("padding-left", 0);
+          renderMenu();
+          function renderMenu() {
+            optionsMenu.selectAll("li").remove();
+            optionsMenu.selectAll("li").data(optionsData).enter().append("li").style("font-family", style.fontFamily).style("font-size", style.sortingMenuFontSize + "px").each(function(menuText, menuPosition) {
+              var texts = [ "↑", " ", "↓", " ", menuText ], thisLi = d3.select(this);
+              thisLi.selectAll("span").data(texts).enter().append("span").text(function(d) {
+                return d;
+              }).each(function(d, i) {
+                if (i != 0 && i != 2) return;
+                d3.select(this).style("cursor", "pointer").on("mouseover", function() {
+                  d3.select(this).style("color", "red");
+                }).on("mouseout", function() {
+                  d3.select(this).style("color", style.fontColor);
+                }).on("click", function() {
+                  if (i == 0 && menuPosition == 0) return;
+                  if (i == 2 && menuPosition == optionsData.length - 1) return;
+                  var neighbor = menuPosition + (i == 0 ? -1 : 1), neighborText = optionsData[neighbor];
+                  optionsData[neighbor] = menuText;
+                  optionsData[menuPosition] = neighborText;
+                  renderMenu();
+                });
+              });
+            });
+          }
+        }
         function rerenderMutationMatrix() {
           var t = zoom.translate(), tx = t[0], ty = t[1], scale = zoom.scale();
           tx = Math.min(tx, 0);
@@ -1074,6 +1106,10 @@
         }
       });
     }
+    chart.showSortingMenu = function(state) {
+      drawSortingMenu = state;
+      return chart;
+    };
     return chart;
   }
   function mutmtxStyle(style) {
@@ -1090,6 +1126,7 @@
       colorSampleTypes: style.colorSampleTypes || true,
       coocurringColor: style.coocurringColor || "orange",
       exclusiveColor: style.exclusiveColor || "blue",
+      fontColor: style.fontColor || "#000",
       fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       fullWidth: style.width || 600,
       fullHeight: style.height || 300,
@@ -1100,6 +1137,7 @@
       minBoxWidth: style.minBoxWidth || 20,
       mutationLegendHeight: style.mutationLegendHeight || 30,
       sampleStroke: style.sampleStroke || 1,
+      sortingMenuFontSize: style.sortingMenuFontSize || 12,
       zBottom: 0,
       zTop: 100
     };

@@ -12,6 +12,7 @@ function mutmtxStyle(style) {
       colorSampleTypes : style.colorSampleTypes || true,
       coocurringColor : style.coocurringColor || 'orange',
       exclusiveColor : style.exclusiveColor || 'blue',
+      fontColor: style.fontColor || '#000',
       fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       fullWidth : style.width || 600,
       fullHeight : style.height || 300,
@@ -22,6 +23,7 @@ function mutmtxStyle(style) {
       minBoxWidth : style.minBoxWidth || 20,
       mutationLegendHeight : style.mutationLegendHeight || 30,
       sampleStroke : style.sampleStroke || 1,
+      sortingMenuFontSize : style.sortingMenuFontSize || 12,
       zBottom: 0,
       zTop: 100
   };
