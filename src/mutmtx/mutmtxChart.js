@@ -1,9 +1,7 @@
 import "mutmtxData";
 
 function mutmtxChart(style) {
-  var options = {
-    showSummary: false
-  }
+
   function chart(selection) {
     selection.each(function(data) {
       data = mutmtxData(data);
@@ -245,12 +243,8 @@ function mutmtxChart(style) {
               var colIndex = data.ids.columns.indexOf(d);
               return 'translate('+wholeVisX(colIndex)+',0)';
             });
-        // summaryGroupsColumns.attr('transform', function(d) {
-        //       var colIndex = data.getColumnIds().indexOf(d.key);
-        //       return 'translate('+wholeVisX(colIndex)+',0)';
-        //     });
+
         firstGroupColumns.selectAll('rect').attr('width', colWidth);
-        // summaryGroupsColumns.selectAll('rect').attr('width', colWidth);
       }
 
 
@@ -282,84 +276,8 @@ function mutmtxChart(style) {
           d3.select(this).call(gd3.annotation())
         });
 
-        // summaryGroupsColumns.selectAll('rect')
-        //   .data(function(d){ return d.value.activeRows.map(function(row){return {row:row, type:data.columnsToTypes[d.key]}});})
-        //   .enter()
-        //   .append('rect')
-        //     .attr('x', 0)
-        //     .attr('y', function(d) {
-        //       return style.rowHeight*data.rowNames.indexOf(d.row) + style.rowHeight;
-        //     })
-        //     .attr('height', style.rowHeight)
-        //     .attr('width', colWidth)
-        //     .style('fill', function(d) { return colTypeToColor[d.type]; });
-      }
-
-      if(options.showSummary == true) {
-        var summaryArea = selection.append('div');
-        summaryArea.append('span').text('Summary:');
-        summaryArea.append('input')
-            .attr('type', 'checkbox')
-            .on('click', function() {
-              // Reset camera
-              matrix.attr('transform', 'translate(0,0)');
-
-              // Summarize
-              data.summarize(this.checked, 40);
-              var updatedData = data.getVizData(),
-                  firstGroupData = updatedData[0],
-                  summaryGroupsData = updatedData.slice(1,updatedData.length);
-
-              // Reconfigure xs so positioning is correct
-              numVisibleCols = data.getVisibleColumns().length,
-              columnWidth = (width-style.labelWidth)/numVisibleCols;
-
-              // Readjust the first column, which displays either:
-              //   1. all the data if summary is not active
-              //   2. the first group of summarized data
-              firstGroupColumns = firstGroup.selectAll('.mutmtxColumn').data(firstGroupData);
-
-              firstGroupColumns.enter().append('g');
-              firstGroupColumns.exit().remove();
-
-              firstGroupColumns.attr('class', 'mutmtxColumn')
-                  .attr('id', function(d) { return d.key; })
-                  .attr('transform', function(d) {
-                    var colIndex = data.getColumnIds().indexOf(d.key);
-
-                    return 'translate('+wholeVisX(colIndex)+',0)';
-                  });
-
-              // Readjust summary groups, if active
-              summaryGroups = matrix.selectAll('.mutmtxSummaryGroup').data(summaryGroupsData);
-              summaryGroups.enter().append('g');
-              summaryGroups.exit().remove();
-
-              summaryGroups.attr('class', 'mutmtxSummaryGroup')
-                  .attr('transform', function(d,i) {
-                    return 'translate('+(i*30 + 30)+',0)';
-                  });
-              summaryGroupsColumns = summaryGroups.selectAll('g')
-                  .data(function(d){ return d; })
-                  .enter()
-                  .append('g')
-                    .attr('class', 'mutmtxColumn')
-                    .attr('id', function(d) { return d.key; })
-                    .attr('transform', function(d) {
-                      var colIndex = data.getColumnIds().indexOf(d.key);
-                      return 'translate('+wholeVisX(colIndex)+',0)';
-                    });
-
-              renderMutationMatrix();
-            });
       }
     });
-  }
-
-  chart.addSummaryToggle = function(state) {
-    var state = state || true;
-    options.showSummary = state;
-    return chart;
   }
 
   return chart;

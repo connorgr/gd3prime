@@ -486,17 +486,19 @@
         } else {
           link.append("line").style("stroke-width", style.edgeWidth).style("stroke", edgeColor(null));
         }
+        link.selectAll("line").style("stroke-linecap", "round");
         var node = graph.append("g").selectAll(".node").data(data.nodes).enter().append("g").style("cursor", "move").call(force.drag);
         node.append("circle").attr("r", style.nodeRadius).attr("fill", function(d) {
           return nodeColor(d.value);
         }).style("stroke-width", style.nodeStrokeWidth).style("stroke", style.nodeStrokeColor);
-        node.append("text").attr("x", style.nodeRadius + style.nodeLabelPadding).attr("y", style.nodeRadius + style.nodeLabelPadding).style("font-size", style.fontSize).text(function(d) {
+        node.append("text").attr("x", style.nodeRadius + style.nodeLabelPadding).attr("y", style.nodeRadius + style.nodeLabelPadding).style("font-family", style.fontFamily).style("font-size", style.fontSize).style("font-weight", style.nodeLabelFontWeight).text(function(d) {
           return d.name;
         });
         force.on("tick", function() {
           node.attr("transform", function(d) {
-            d.x = Math.max(style.nodeRadius, Math.min(forceWidth - style.nodeRadius, d.x));
-            d.y = Math.max(style.nodeRadius, Math.min(forceHeight - style.nodeRadius, d.y));
+            var maxBound = style.nodeRadius + style.nodeStrokeWidth, minBound = forceWidth - style.nodeRadius - style.nodeStrokeWidth;
+            d.x = Math.max(maxBound, Math.min(minBound, d.x));
+            d.y = Math.max(maxBound, Math.min(minBound, d.y));
             return "translate(" + d.x + "," + d.y + ")";
           });
           link.each(function(d) {
@@ -511,11 +513,9 @@
         if (anchorNodesOnClick) {
           force.drag().on("dragstart", function(d) {
             d.fixed = true;
-            d3.select(this).select("circle").style("stroke-opacity", 0);
           });
           node.on("dblclick", function(d) {
             d.fixed = d.fixed ? false : true;
-            d3.select(this).select("circle").style("stroke-opacity", 1);
           });
         }
       });
@@ -529,7 +529,7 @@
   function graphStyle(style) {
     return {
       edgeColors: style.edgeColors || d3.scale.category10().range(),
-      edgeWidth: style.edgeWidth || 2,
+      edgeWidth: style.edgeWidth || 3,
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       fontSize: style.fontSize || 12,
       height: style.height || 400,
@@ -540,10 +540,11 @@
         top: 0
       },
       nodeColor: style.nodeColor || [ "#ccc", "#ccc" ],
-      nodeRadius: style.nodeRadius || 8,
+      nodeRadius: style.nodeRadius || 10,
       nodeLabelPadding: style.nodeLabelPadding || 2,
-      nodeStrokeColor: style.nodeStrokeColor || "#aaa",
-      nodeStrokeWidth: style.nodeStrokeWidth || 1,
+      nodeLabelFontWeight: style.nodeLabelFontWeight || "bold",
+      nodeStrokeColor: style.nodeStrokeColor || "#333",
+      nodeStrokeWidth: style.nodeStrokeWidth || 2,
       width: style.width || 400
     };
   }

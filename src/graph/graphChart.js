@@ -67,6 +67,8 @@ function graphChart(style) {
         link.append('line').style('stroke-width', style.edgeWidth).style('stroke', edgeColor(null));
       }
 
+      link.selectAll('line').style('stroke-linecap', 'round');
+
 
       // Draw the nodes
       var node = graph.append('g').selectAll('.node')
@@ -85,13 +87,17 @@ function graphChart(style) {
       node.append('text')
           .attr('x', style.nodeRadius+style.nodeLabelPadding)
           .attr('y', style.nodeRadius+style.nodeLabelPadding)
+          .style('font-family', style.fontFamily)
           .style('font-size', style.fontSize)
+          .style('font-weight', style.nodeLabelFontWeight)
           .text(function(d) { return d.name; });
 
       force.on('tick', function() {
         node.attr('transform', function(d) {
-          d.x = Math.max(style.nodeRadius, Math.min(forceWidth - style.nodeRadius, d.x));
-          d.y = Math.max(style.nodeRadius, Math.min(forceHeight - style.nodeRadius, d.y));
+          var maxBound = style.nodeRadius+style.nodeStrokeWidth,
+              minBound = forceWidth - style.nodeRadius - style.nodeStrokeWidth;
+          d.x = Math.max(maxBound, Math.min(minBound, d.x));
+          d.y = Math.max(maxBound, Math.min(minBound, d.y));
           return 'translate('+ d.x + ',' + d.y + ')';
         });
 
@@ -117,11 +123,11 @@ function graphChart(style) {
       if(anchorNodesOnClick) {
         force.drag().on('dragstart', function(d) {
           d.fixed = true;
-          d3.select(this).select('circle').style('stroke-opacity', 0);
+          //d3.select(this).select('circle').style('stroke-opacity', 0);
         });
         node.on('dblclick', function(d) {
           d.fixed = d.fixed ? false : true;
-          d3.select(this).select('circle').style('stroke-opacity', 1);
+          //d3.select(this).select('circle').style('stroke-opacity', 1);
         });
       } // end anchorNodesOnClick block
     });
