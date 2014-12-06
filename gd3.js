@@ -853,7 +853,7 @@
     data.get = function(attr) {
       if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "ids") return data.ids; else if (attr === "labels") return data.labels;
     };
-    data.reorderColumns = function() {
+    data.reorderColumns = function(ordering) {
       function sortByExclusivity(c1, c2) {
         var c1X = data.matrix.columnIdToActiveRows[c1].length > 1, c2X = data.matrix.columnIdToActiveRows[c2].length > 1;
         return d3.ascending(c1X, c2X);
@@ -868,7 +868,19 @@
       function sortByColumnCategory(c1, c2) {
         return d3.ascending(data.maps.columnIdToCategory[c1], data.maps.columnIdToCategory[c2]);
       }
-      var sortFns = [ sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByName ];
+      var sortFns;
+      if (ordering) {
+        sortFns = [];
+        ordering.forEach(function(d) {
+          if (d == "First active row") sortFns.push(sortByFirstActiveRow);
+          if (d == "Column category") sortFns.push(sortByColumnCategory);
+          if (d == "Exclusivity") sortFns.push(sortByExclusivity);
+          if (d == "Name") sortFns.push(sortByName);
+        });
+        console.log("works!");
+      } else {
+        sortFns = [ sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByName ];
+      }
       data.ids.columns.sort(function(c1, c2) {
         var sortResult;
         for (var i = 0; i < sortFns.length; i++) {
@@ -940,6 +952,7 @@
   }
   function mutmtxChart(style) {
     var drawSortingMenu = true;
+    var sortingOptionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
     function chart(selection) {
       selection.each(function(data) {
         data = mutmtxData(data);
@@ -1039,28 +1052,30 @@
         function drawSortingMenu() {
           var menu = selection.append("div");
           menu.append("p").text("Sort columns");
-          var optionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
           var optionsMenu = menu.append("ul").style("list-style", "none").style("padding-left", 0);
           renderMenu();
           function renderMenu() {
             optionsMenu.selectAll("li").remove();
-            optionsMenu.selectAll("li").data(optionsData).enter().append("li").style("font-family", style.fontFamily).style("font-size", style.sortingMenuFontSize + "px").each(function(menuText, menuPosition) {
-              var texts = [ "↑", " ", "↓", " ", menuText ], thisLi = d3.select(this);
+            var menuItem = optionsMenu.selectAll("li").data(sortingOptionsData).enter().append("li").style("font-family", style.fontFamily).style("font-size", style.sortingMenuFontSize + "px");
+            menuItem.each(function(menuText, menuPosition) {
+              var texts = [ menuPosition + 1 + ". ", "↑", " ", "↓", " ", " ", menuText ], thisLi = d3.select(this);
               thisLi.selectAll("span").data(texts).enter().append("span").text(function(d) {
                 return d;
               }).each(function(d, i) {
-                if (i != 0 && i != 2) return;
+                if (i != 1 && i != 3) return;
                 d3.select(this).style("cursor", "pointer").on("mouseover", function() {
                   d3.select(this).style("color", "red");
                 }).on("mouseout", function() {
                   d3.select(this).style("color", style.fontColor);
                 }).on("click", function() {
-                  if (i == 0 && menuPosition == 0) return;
-                  if (i == 2 && menuPosition == optionsData.length - 1) return;
-                  var neighbor = menuPosition + (i == 0 ? -1 : 1), neighborText = optionsData[neighbor];
-                  optionsData[neighbor] = menuText;
-                  optionsData[menuPosition] = neighborText;
+                  if (i == 1 && menuPosition == 0) return;
+                  if (i == 3 && menuPosition == sortingOptionsData.length - 1) return;
+                  var neighbor = menuPosition + (i == 1 ? -1 : 1), neighborText = sortingOptionsData[neighbor];
+                  sortingOptionsData[neighbor] = menuText;
+                  sortingOptionsData[menuPosition] = neighborText;
+                  data.reorderColumns(sortingOptionsData);
                   renderMenu();
+                  rerenderMutationMatrix();
                 });
               });
             });

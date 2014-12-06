@@ -3,6 +3,13 @@ import "mutmtxData";
 function mutmtxChart(style) {
   var drawSortingMenu = true;
 
+  var sortingOptionsData = [
+    'First active row',
+    'Column category',
+    'Exclusivity',
+    'Name'
+  ];
+
   function chart(selection) {
     selection.each(function(data) {
       data = mutmtxData(data);
@@ -236,13 +243,6 @@ function mutmtxChart(style) {
         var menu = selection.append('div');
         menu.append('p').text('Sort columns');
 
-        var optionsData = [
-          'First active row',
-          'Column category',
-          'Exclusivity',
-          'Name'
-        ];
-
         var optionsMenu = menu.append('ul')
             .style('list-style', 'none')
             .style('padding-left', 0);
@@ -251,42 +251,47 @@ function mutmtxChart(style) {
 
         function renderMenu() {
           optionsMenu.selectAll('li').remove();
-          optionsMenu.selectAll('li')
-              .data(optionsData)
+          var menuItem = optionsMenu.selectAll('li')
+              .data(sortingOptionsData)
               .enter()
               .append('li')
                   .style('font-family', style.fontFamily)
-                  .style('font-size', style.sortingMenuFontSize + 'px')
-                  .each(function(menuText,menuPosition) {
-                      var texts = ['↑',' ','↓',' ',menuText],
-                          thisLi = d3.select(this);
-                      thisLi.selectAll('span')
-                          .data(texts)
-                          .enter()
-                          .append('span')
-                              .text(function(d) { return d; })
-                              .each(function(d,i) {
-                                // Define behavior for voting glyphs
-                                if(i != 0 && i != 2) return;
-                                d3.select(this).style('cursor','pointer')
-                                    .on('mouseover', function() {
-                                      d3.select(this).style('color', 'red')
-                                    })
-                                    .on('mouseout', function() {
-                                      d3.select(this).style('color', style.fontColor);
-                                    })
-                                    .on('click', function() {
-                                      if(i == 0 && menuPosition == 0) return;
-                                      if(i == 2 && menuPosition == optionsData.length - 1) return;
+                  .style('font-size', style.sortingMenuFontSize + 'px');
 
-                                      var neighbor = menuPosition + (i == 0 ? -1 : 1),
-                                          neighborText = optionsData[neighbor];
-                                      optionsData[neighbor] = menuText;
-                                      optionsData[menuPosition] = neighborText;
-                                      renderMenu();
-                                    });
-                              });
-                  });
+          // Populate each menu item with up/down sort toggles and text
+          menuItem.each(function(menuText,menuPosition) {
+              var texts = [(menuPosition+1)+'. ','↑',' ','↓',' ',' ',menuText],
+                  thisLi = d3.select(this);
+              thisLi.selectAll('span')
+                  .data(texts)
+                  .enter()
+                  .append('span')
+                      .text(function(d) { return d; })
+                      .each(function(d,i) {
+                        // Define behavior for voting glyphs
+                        if(i != 1 && i != 3) return;
+                        d3.select(this).style('cursor','pointer')
+                            .on('mouseover', function() {
+                              d3.select(this).style('color', 'red')
+                            })
+                            .on('mouseout', function() {
+                              d3.select(this).style('color', style.fontColor);
+                            })
+                            .on('click', function() {
+                              if(i == 1 && menuPosition == 0) return;
+                              if(i == 3 && menuPosition == sortingOptionsData.length - 1) return;
+
+                              var neighbor = menuPosition + (i == 1 ? -1 : 1),
+                                  neighborText = sortingOptionsData[neighbor];
+                              sortingOptionsData[neighbor] = menuText;
+                              sortingOptionsData[menuPosition] = neighborText;
+
+                              data.reorderColumns(sortingOptionsData);
+                              renderMenu();
+                              rerenderMutationMatrix();
+                            });
+                      });
+          });
         }
 
       }

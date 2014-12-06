@@ -30,7 +30,7 @@ function mutmtxData(inputData) {
     else if (attr === 'labels') return data.labels;
   }
 
-  data.reorderColumns = function() {
+  data.reorderColumns = function(ordering) {
     function sortByExclusivity(c1, c2) {
       var c1X = data.matrix.columnIdToActiveRows[c1].length > 1,
           c2X = data.matrix.columnIdToActiveRows[c2].length > 1;
@@ -48,7 +48,22 @@ function mutmtxData(inputData) {
       return d3.ascending(data.maps.columnIdToCategory[c1], data.maps.columnIdToCategory[c2]);
     }
 
-    var sortFns = [sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByName];
+    // Sort the data based on input, or if none, on default ordering
+    var sortFns;
+    if(ordering) {
+      sortFns = [];
+      ordering.forEach(function(d) {
+        if(d == 'First active row') sortFns.push(sortByFirstActiveRow);
+        if(d == 'Column category') sortFns.push(sortByColumnCategory);
+        if(d == 'Exclusivity') sortFns.push(sortByExclusivity);
+        if(d == 'Name') sortFns.push(sortByName);
+      });
+      console.log('works!')
+    }
+    else {
+      sortFns = [sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByName];
+    }
+
     data.ids.columns.sort(function(c1,c2) {
       var sortResult;
       for(var i = 0; i < sortFns.length; i++) {
