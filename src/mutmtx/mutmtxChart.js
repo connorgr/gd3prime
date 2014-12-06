@@ -241,11 +241,29 @@ function mutmtxChart(style) {
 
       function drawSortingMenu() {
         var menu = selection.append('div');
-        menu.append('p').text('Sort columns');
+        menu.append('p')
+            .style('cursor', 'pointer')
+            .style('font-family', style.fontFamily)
+            .style('font-size', (style.sortingMenuFontSize + 4) + 'px')
+            .style('margin-bottom','0px')
+            .text('Sort columns [+]');
 
         var optionsMenu = menu.append('ul')
+            .style('display', 'none')
             .style('list-style', 'none')
+            .style('margin-top', '0px')
             .style('padding-left', 0);
+
+        menu.on('click', function() {
+          var optionsShown = optionsMenu.style('display') == 'block',
+              display = optionsShown ? 'none' : 'block',
+              visibility = optionsShown ? 'hidden' : 'visible';
+
+          d3.select('p').text('Sort columns ' + (optionsShown ? '[+]' : '[-]'));
+
+          optionsMenu.style('display', display);
+          optionsMenu.style('visibility', visibility);
+        });
 
         renderMenu();
 
@@ -367,7 +385,9 @@ function mutmtxChart(style) {
                 .attr('class','gd3mutmtx-cellClyph')
                 .attr('d', d3.svg.symbol().type(glyph).size(colWidth*colWidth))
                 .attr('transform', 'translate('+(colWidth/2)+','+(y + style.rowHeight/2)+')')
-                .style('fill', style.glyphColor);
+                .style('fill', style.glyphColor)
+                .style('stroke', style.glyphStrokeColor)
+                .style('stroke-width', .5);
           }
         });
 

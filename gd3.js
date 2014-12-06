@@ -877,7 +877,6 @@
           if (d == "Exclusivity") sortFns.push(sortByExclusivity);
           if (d == "Name") sortFns.push(sortByName);
         });
-        console.log("works!");
       } else {
         sortFns = [ sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByName ];
       }
@@ -897,10 +896,18 @@
         data.maps.columnIdToLabel[s._id] = s.name;
         data.labels.columns.push(s.name);
       });
+      var rowAndCount = [];
       Object.keys(inputData.M).forEach(function(k, i) {
-        data.maps.rowIdToLabel[i.toString()] = k;
         var numSamples = Object.keys(inputData.M[k]).length;
-        data.labels.rows.push(k + " (" + numSamples + ")");
+        rowAndCount.push([ k, numSamples ]);
+      });
+      rowAndCount.sort(function(a, b) {
+        return a[1] < b[1] ? 1 : -1;
+      });
+      rowAndCount.forEach(function(d, i) {
+        var name = d[0], numSamples = d[1];
+        data.maps.rowIdToLabel[i.toString()] = name;
+        data.labels.rows.push(name + " (" + numSamples + ")");
       });
       data.ids.columns = Object.keys(data.maps.columnIdToLabel);
       data.ids.rows = Object.keys(data.maps.rowIdToLabel);
@@ -1051,8 +1058,14 @@
         if (drawSortingMenu) drawSortingMenu();
         function drawSortingMenu() {
           var menu = selection.append("div");
-          menu.append("p").text("Sort columns");
-          var optionsMenu = menu.append("ul").style("list-style", "none").style("padding-left", 0);
+          menu.append("p").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.sortingMenuFontSize + 4 + "px").style("margin-bottom", "0px").text("Sort columns [+]");
+          var optionsMenu = menu.append("ul").style("display", "none").style("list-style", "none").style("margin-top", "0px").style("padding-left", 0);
+          menu.on("click", function() {
+            var optionsShown = optionsMenu.style("display") == "block", display = optionsShown ? "none" : "block", visibility = optionsShown ? "hidden" : "visible";
+            d3.select("p").text("Sort columns " + (optionsShown ? "[+]" : "[-]"));
+            optionsMenu.style("display", display);
+            optionsMenu.style("visibility", visibility);
+          });
           renderMenu();
           function renderMenu() {
             optionsMenu.selectAll("li").remove();
@@ -1115,7 +1128,7 @@
             thisCell.append("rect").attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colTypeToColor[d.cell.dataset]);
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType];
             if (glyph && glyph != null) {
-              thisCell.append("path").attr("class", "gd3mutmtx-cellClyph").attr("d", d3.svg.symbol().type(glyph).size(colWidth * colWidth)).attr("transform", "translate(" + colWidth / 2 + "," + (y + style.rowHeight / 2) + ")").style("fill", style.glyphColor);
+              thisCell.append("path").attr("class", "gd3mutmtx-cellClyph").attr("d", d3.svg.symbol().type(glyph).size(colWidth * colWidth)).attr("transform", "translate(" + colWidth / 2 + "," + (y + style.rowHeight / 2) + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("stroke-width", .5);
             }
           });
         }
@@ -1146,6 +1159,7 @@
       fullWidth: style.width || 600,
       fullHeight: style.height || 300,
       glyphColor: style.glyphColor || "#888",
+      glyphStrokeColor: style.glyphStrokeColor || "#ccc",
       rowHeight: style.rowHeight || 20,
       labelHeight: style.labelHeight || 40,
       labelWidth: style.labelWidth || 100,

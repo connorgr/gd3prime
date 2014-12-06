@@ -17,6 +17,7 @@ function mutmtxStyle(style) {
       fullWidth : style.width || 600,
       fullHeight : style.height || 300,
       glyphColor : style.glyphColor || '#888',
+      glyphStrokeColor : style.glyphStrokeColor || '#ccc',
       rowHeight : style.rowHeight || 20,
       labelHeight : style.labelHeight || 40,
       labelWidth : style.labelWidth || 100,

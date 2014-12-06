@@ -58,7 +58,6 @@ function mutmtxData(inputData) {
         if(d == 'Exclusivity') sortFns.push(sortByExclusivity);
         if(d == 'Name') sortFns.push(sortByName);
       });
-      console.log('works!')
     }
     else {
       sortFns = [sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByName];
@@ -82,11 +81,24 @@ function mutmtxData(inputData) {
       data.maps.columnIdToLabel[s._id] = s.name;
       data.labels.columns.push(s.name);
     });
+
+    var rowAndCount = [];
     Object.keys(inputData.M).forEach(function(k, i) {
-      data.maps.rowIdToLabel[i.toString()] = k;
+      // data.maps.rowIdToLabel[i.toString()] = k;
       var numSamples = Object.keys(inputData.M[k]).length;
-      data.labels.rows.push(k + ' ('+numSamples+')');
+      // data.labels.rows.push(k + ' ('+numSamples+')');
+      rowAndCount.push([k,numSamples]);
     });
+
+    rowAndCount.sort(function(a,b) { return a[1] < b[1] ? 1 : -1; });
+    rowAndCount.forEach(function(d, i) {
+      var name = d[0],
+          numSamples = d[1];
+      data.maps.rowIdToLabel[i.toString()] = name;
+      data.labels.rows.push(name + ' ('+numSamples+')');
+    });
+
+
     data.ids.columns = Object.keys(data.maps.columnIdToLabel);
     data.ids.rows = Object.keys(data.maps.rowIdToLabel);
 
