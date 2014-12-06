@@ -85,9 +85,9 @@ function mutmtxChart(style) {
           .domain([0, data.get('labels').columns.length])
           .range([style.labelWidth, width]);
 
-      var firstGroup = matrix.append('g')
-                .attr('class', '.mutmtxFirstGroup');
-      var firstGroupColumns = firstGroup.selectAll('g')
+      var columnsG = matrix.append('g')
+                .attr('class', '.mutmtxColumnsGroup');
+      var columns = columnsG.selectAll('g')
               .data(data.get('ids').columns)
               .enter()
               .append('g')
@@ -158,7 +158,7 @@ function mutmtxChart(style) {
         var maxTextHeight = 0;
 
         // add annotation data for each sample in the matrix
-        firstGroupColumns.each(function(annKey) {
+        columns.each(function(annKey) {
           var annotationKey = names.reduce(function(prev,cur,i,array) {
             if(annKey.indexOf(cur) > -1) return cur;
             else return prev;
@@ -239,21 +239,35 @@ function mutmtxChart(style) {
         zoom.translate([tx, ty]);
 
         var colWidth = wholeVisX(1)-wholeVisX(0);
-        firstGroupColumns.attr('transform', function(d) {
+        columns.attr('transform', function(d) {
               var colIndex = data.ids.columns.indexOf(d);
               return 'translate('+wholeVisX(colIndex)+',0)';
             });
 
-        firstGroupColumns.selectAll('rect').attr('width', colWidth);
+        columns.selectAll('rect').attr('width', colWidth);
+        columns.selectAll('.gd3mutmtx-cellClyph').attr('transform', function (d) {
+              var str = d3.select(this).attr('transform'),
+                  then = str.replace('translate','').replace(')','').split(','),
+                  x = colWidth/2,
+                  y = +then[1],
+                  now = 'translate('+x+','+y+')';
+              return now;
+            })
+            .attr('d', function(d) {
+              var cellType = d.cell.type,
+                  glyph = data.maps.cellTypeToGlyph[cellType],
+                  gWidth = d3.min([colWidth, style.rowHeight - style.rowHeight/2]);
+              return d3.svg.symbol().type(glyph).size(gWidth*gWidth)();
+            });
       }
 
 
       function renderMutationMatrix() {
         var colWidth = wholeVisX(1)-wholeVisX(0);
 
-        var rects = firstGroupColumns.append('g')
-            .attr('class', 'mutmtx-sampleMutationRects')
-            .selectAll('rect')
+        var cells = columns.append('g')
+            .attr('class', 'mutmtx-sampleMutationCells')
+            .selectAll('g')
             .data(function(colId){
               var activeRows = data.matrix.columnIdToActiveRows[colId];
               return activeRows.map(function(rowId){
@@ -261,21 +275,35 @@ function mutmtxChart(style) {
               });
             })
             .enter()
-            .append('rect')
+            .append('g');
+
+        // For each cell append a rect and if appropriate a glyph on the rect
+        cells.each(function(d) {
+          var thisCell = d3.select(this),
+              y = style.rowHeight*data.ids.rows.indexOf(d.row);
+
+          thisCell.append('rect')
               .attr('x', 0)
-              .attr('y', function(d) {
-                return style.rowHeight*data.ids.rows.indexOf(d.row);
-              })
+              .attr('y', y)
               .attr('height', style.rowHeight)
               .attr('width', colWidth)
-              .style('fill', function(d) { return colTypeToColor[d.cell.dataset]; });
+              .style('fill', colTypeToColor[d.cell.dataset]);
 
-        console.log(firstGroupColumns.selectAll('rect'));
+          var cellType = d.cell.type,
+              glyph = data.maps.cellTypeToGlyph[cellType];
 
-        firstGroupColumns.selectAll('rect').each(function() {
-          d3.select(this).call(gd3.annotation())
+          if(glyph && glyph != null) {
+            thisCell.append('path')
+                .attr('class','gd3mutmtx-cellClyph')
+                .attr('d', d3.svg.symbol().type(glyph).size(colWidth*colWidth))
+                .attr('transform', 'translate('+(colWidth/2)+','+(y + style.rowHeight/2)+')')
+                .style('fill', style.glyphColor);
+          }
         });
 
+        // columns.selectAll('rect').each(function() {
+        //   d3.select(this).call(gd3.annotation())
+        // });
       }
     });
   }

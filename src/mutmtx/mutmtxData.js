@@ -1,6 +1,7 @@
 function mutmtxData(inputData) {
   var data = {
     datasets: [],
+    glyphs: ['square', 'triangle-up', 'cross', 'circle', 'diamond', 'triangle-down'],
     ids: {
       columns: [],
       rows: []
@@ -10,8 +11,9 @@ function mutmtxData(inputData) {
       rows: []
     },
     maps: {
+      cellTypeToGlyph: {},
       columnIdToLabel: {},
-      columnIdToType: {},
+      columnIdToCategory: {},
       rowIdToLabel: {}
     },
     matrix: {
@@ -42,11 +44,11 @@ function mutmtxData(inputData) {
     function sortByName(c1,c2) {
       return d3.ascending(data.labels.columns[c1],data.labels.columns[c2]);
     }
-    function sortByColumnType(c1,c2) {
-      return d3.ascending(data.maps.columnIdToType[c1], data.maps.columnIdToType[c2]);
+    function sortByColumnCategory(c1,c2) {
+      return d3.ascending(data.maps.columnIdToCategory[c1], data.maps.columnIdToCategory[c2]);
     }
 
-    var sortFns = [sortByFirstActiveRow, sortByColumnType, sortByExclusivity, sortByName];
+    var sortFns = [sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByName];
     data.ids.columns.sort(function(c1,c2) {
       var sortResult;
       for(var i = 0; i < sortFns.length; i++) {
@@ -77,11 +79,12 @@ function mutmtxData(inputData) {
     var setOfDatasets = {};
     Object.keys(inputData.sampleToTypes).forEach(function(colId) {
       setOfDatasets[inputData.sampleToTypes[colId]] = null;
-      data.maps.columnIdToType[colId] = inputData.sampleToTypes[colId];
+      data.maps.columnIdToCategory[colId] = inputData.sampleToTypes[colId];
     });
     data.datasets = Object.keys(setOfDatasets);
 
     // Build matrix data and maps
+    var cellTypes = []
     Object.keys(inputData.M).forEach(function(rowLabel, rowId) {
       var columns = Object.keys(inputData.M[rowLabel]);
       rowId = rowId.toString();
@@ -101,9 +104,29 @@ function mutmtxData(inputData) {
           dataset: inputData.sampleToTypes[colId],
           type: inputData.M[rowLabel][colId][0]
         };
-        // Track which datasets have been added
+        cellTypes.push(inputData.M[rowLabel][colId][0]);
+        // Track the types of cells in the data
       });
     }); // end matrix mapping
+
+
+    // Load the cell type to glyph mapping if it exists, else create it
+    if (inputData.cellTypesToGlyph) {
+      data.maps.cellTypeToGlyph = inputData.cellTypeToGlyph;
+    } else {
+      // Remove duplicates from the cellTypes array
+      var typesTmp = {};
+      cellTypes.forEach(function(t) {
+        if(typesTmp[t] == undefined) typesTmp[t] = 0;
+        typesTmp[t] = typesTmp[t] + 1;
+      });
+      var types = Object.keys(typesTmp).sort(function(a,b) { typesTmp[a] < typesTmp[b] });
+
+      data.maps.cellTypeToGlyph[types.pop()] = null;
+      types.forEach(function(d,i) {
+        data.maps.cellTypeToGlyph[d] = data.glyphs[i%data.glyphs.length];
+      });
+    } // end glyph mapping
   }
 
   defaultParse();

@@ -15,6 +15,7 @@ function mutmtxStyle(style) {
       fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       fullWidth : style.width || 600,
       fullHeight : style.height || 300,
+      glyphColor : style.glyphColor || '#888',
       rowHeight : style.rowHeight || 20,
       labelHeight : style.labelHeight || 40,
       labelWidth : style.labelWidth || 100,
