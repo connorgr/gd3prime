@@ -1,7 +1,8 @@
 import "mutmtxData";
 
 function mutmtxChart(style) {
-  var drawSortingMenu = true;
+  var drawLegend = true,
+      drawSortingMenu = true;
 
   var sortingOptionsData = [
     'First active row',
@@ -14,16 +15,16 @@ function mutmtxChart(style) {
     selection.each(function(data) {
       data = mutmtxData(data);
 
-      var height = style.fullHeight,
-          width = style.fullWidth;
+      var height = style.height,
+          width = style.width;
 
       // Determine coloration
       var d3color = d3.scale.category20(),
-          colTypeToColor = {},
+          colCategoryToColor = {},
           datasets = data.get('datasets');
 
       for (var i = 0; i < datasets.length; i++) {
-        colTypeToColor[datasets[i]] = d3color(i);
+        colCategoryToColor[datasets[i]] = d3color(i);
       }
 
       // Select the svg element, if it exists.
@@ -153,6 +154,8 @@ function mutmtxChart(style) {
                 });
 
             annColoring[d] = {
+                max: max,
+                min: min,
                 scale: d3.scale.linear()
                     .domain([min,max])
                     .range(style.annotationContinuousScale)
@@ -236,7 +239,162 @@ function mutmtxChart(style) {
       renderMutationMatrix();
       rerenderMutationMatrix();
 
+      if(drawLegend) drawLegend();
       if(drawSortingMenu) drawSortingMenu();
+
+
+      function drawLegend() {
+        var legend = selection.append('div')
+            .style('width', style.width);
+
+        var columnCategories = legend.append('div')
+                .style('width', style.width + 'px'),
+            cellTypes = legend.append('div');
+
+        // Tabulate categories
+        var categories = {};
+        Object.keys(data.maps.columnIdToCategory).forEach(function(k) {
+          categories[data.maps.columnIdToCategory[k]] = null;
+        });
+        categories = Object.keys(categories).sort();
+        var categoryLegendKeys = columnCategories.selectAll('div')
+            .data(categories)
+            .enter()
+            .append('div')
+                .style('display', 'inline-block')
+                .style('font-family', style.fontFamily)
+                .style('font-size', style.fontSize)
+                .style('margin-right', function(d,i) {
+                    return i == categories.length - 1 ? '0px' : '10px';
+                });
+        // Append the color blocks
+        categoryLegendKeys.append('div')
+            .style('background', function(d) { return colCategoryToColor[d]; })
+            .style('display', 'inline-block')
+            .style('height', style.fontSize + 'px')
+            .style('width', (style.fontSize/2) + 'px');
+        categoryLegendKeys.append('span')
+            .style('display', 'inline-block')
+            .style('margin-left', '2px')
+            .text(function(d) { return d; });
+        // Resize the category legend key widths based on max bounding box
+        var categoryLegendKeyWidths = [];
+        categoryLegendKeys.each(function () {
+          var cWidth = this.getBoundingClientRect().width;
+          categoryLegendKeyWidths.push(cWidth);
+        });
+        categoryLegendKeys.style('width', d3.max(categoryLegendKeyWidths) + 'px');
+
+        // Tabulate cell type glyphs
+        var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
+        console.log(cellTypesData)
+        var cellTypeLegendKeys = cellTypes.selectAll('div')
+            .data(cellTypesData)
+            .enter()
+            .append('div')
+                .style('display', 'inline-block')
+                .style('font-family', style.fontFamily)
+                .style('font-size', style.fontSize)
+                .style('margin-right', function(d,i) {
+                    return i == cellTypesData.length - 1 ? '0px' : '10px';
+                });
+
+        cellTypeLegendKeys.append('svg')
+            .attr('height', style.fontSize + 'px')
+            .attr('width', style.fontSize + 'px')
+            .append('path')
+                .attr('d', function(type) {
+                  var glyph = data.maps.cellTypeToGlyph[type],
+                      diameter = style.fontSize - style.fontSize/2;
+                  return d3.svg.symbol().type(glyph).size(diameter*diameter)();
+                })
+                .attr('transform','translate('+(style.fontSize/2)+','+(style.fontSize/2)+')')
+                .style('fill', style.glyphColor)
+                .style('stroke', style.glyphStrokeColor)
+                .style('strokew-width', .5);
+
+        cellTypeLegendKeys.append('span')
+            .text(function(d) { console.log(d); return d; });
+
+
+        if(data.annotations) {
+          var annotationLegends = legend.append('div')
+              .selectAll('div')
+              .data(data.annotations.categories)
+              .enter()
+              .append('div');
+
+          annotationLegends.each(function(annotationName) {
+            var thisEl = d3.select(this),
+                scale = data.annotations.annotationToColor[annotationName];
+
+            thisEl.style('font-family', style.fontFamily)
+                .style('font-size', style.fontSize);
+            thisEl.append('span').text(annotationName+': ');
+
+            if(scale.typeOfScale && scale.typeOfScale == 'continuous') {
+              var scaleHeight = style.fontSize,
+                  scaleWidth = style.fontSize*5;
+
+              thisEl.append('span').text(scale.min);
+              var gradientSvg = thisEl.append('svg')
+                  .attr('height', scaleHeight)
+                  .attr('width', scaleWidth)
+                  .style('margin-left', '2px')
+                  .style('margin-right', '2px');
+              thisEl.append('span').text(scale.max);
+              thisEl.selectAll('*').style('display','inline-block');
+
+              // Create a unique ID for the color map gradient in case multiple heatmaps are made
+              var now = Date.now(),
+                  gradientId = 'gd3-mutmtx-gradient'+now;
+
+              // Configure the gradient to be mapped on to the legend
+              var gradient = gradientSvg.append('svg:defs')
+                    .append('svg:linearGradient')
+                      .attr('id', gradientId)
+                      .attr('x1', '0%')
+                      .attr('y1', '0%')
+                      .attr('x2', '100%')
+                      .attr('y2', '0%');
+              console.log(scale)
+              var scaleRange = scale.scale.range();
+              scaleRange.forEach(function(c, i){
+                gradient.append('svg:stop')
+                    .attr('offset', i*1./(scaleRange.length-1))
+                    .attr('stop-color', c)
+                    .attr('stop-opacity', 1);
+              });
+
+              gradientSvg.append('rect')
+                  .attr('height', scaleHeight)
+                  .attr('width', scaleWidth)
+                  .attr('fill', 'url(#'+gradientId+')');
+            } else {
+              var annKeys = thisEl.selectAll('div')
+                  .data(Object.keys(scale))
+                  .enter()
+                  .append('div')
+                      .style('display', 'inline-block')
+                      .style('font-family', style.fontFamily)
+                      .style('font-size', style.fontSize)
+                      .style('margin-right', function(d,i) {
+                          return i == Object.keys(scale).length - 1 ? '0px' : '10px';
+                      });
+              annKeys.append('div')
+                  .style('background', function(d) { return scale[d]; })
+                  .style('display', 'inline-block')
+                  .style('height', style.fontSize + 'px')
+                  .style('width', (style.fontSize/2) + 'px');
+              annKeys.append('span')
+                  .style('display', 'inline-block')
+                  .style('margin-left','2px')
+                  .text(function(d) { return d; });
+            }
+          });
+        }
+
+      }
 
 
       function drawSortingMenu() {
@@ -311,7 +469,6 @@ function mutmtxChart(style) {
                       });
           });
         }
-
       }
 
 
@@ -375,7 +532,7 @@ function mutmtxChart(style) {
               .attr('y', y)
               .attr('height', style.rowHeight)
               .attr('width', colWidth)
-              .style('fill', colTypeToColor[d.cell.dataset]);
+              .style('fill', colCategoryToColor[d.cell.dataset]);
 
           var cellType = d.cell.type,
               glyph = data.maps.cellTypeToGlyph[cellType];
@@ -396,6 +553,11 @@ function mutmtxChart(style) {
         // });
       }
     });
+  }
+
+  chart.showLegend = function(state) {
+    drawLegend = state;
+    return chart;
   }
 
   chart.showSortingMenu = function(state) {

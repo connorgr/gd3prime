@@ -958,15 +958,15 @@
     return data;
   }
   function mutmtxChart(style) {
-    var drawSortingMenu = true;
+    var drawLegend = true, drawSortingMenu = true;
     var sortingOptionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
     function chart(selection) {
       selection.each(function(data) {
         data = mutmtxData(data);
-        var height = style.fullHeight, width = style.fullWidth;
-        var d3color = d3.scale.category20(), colTypeToColor = {}, datasets = data.get("datasets");
+        var height = style.height, width = style.width;
+        var d3color = d3.scale.category20(), colCategoryToColor = {}, datasets = data.get("datasets");
         for (var i = 0; i < datasets.length; i++) {
-          colTypeToColor[datasets[i]] = d3color(i);
+          colCategoryToColor[datasets[i]] = d3color(i);
         }
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg");
         svg.attr("id", "mutation-matrix").attr("width", width).attr("height", height + style.labelHeight).attr("xmlns", "http://www.w3.org/2000/svg");
@@ -1020,6 +1020,8 @@
                 return data.annotations.sampleToAnnotations[name][i];
               });
               annColoring[d] = {
+                max: max,
+                min: min,
                 scale: d3.scale.linear().domain([ min, max ]).range(style.annotationContinuousScale).interpolate(d3.interpolateLab),
                 typeOfScale: "continuous"
               };
@@ -1055,7 +1057,78 @@
         svg.call(zoom);
         renderMutationMatrix();
         rerenderMutationMatrix();
+        if (drawLegend) drawLegend();
         if (drawSortingMenu) drawSortingMenu();
+        function drawLegend() {
+          var legend = selection.append("div").style("width", style.width);
+          var columnCategories = legend.append("div").style("width", style.width + "px"), cellTypes = legend.append("div");
+          var categories = {};
+          Object.keys(data.maps.columnIdToCategory).forEach(function(k) {
+            categories[data.maps.columnIdToCategory[k]] = null;
+          });
+          categories = Object.keys(categories).sort();
+          var categoryLegendKeys = columnCategories.selectAll("div").data(categories).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
+            return i == categories.length - 1 ? "0px" : "10px";
+          });
+          categoryLegendKeys.append("div").style("background", function(d) {
+            return colCategoryToColor[d];
+          }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px");
+          categoryLegendKeys.append("span").style("display", "inline-block").style("margin-left", "2px").text(function(d) {
+            return d;
+          });
+          var categoryLegendKeyWidths = [];
+          categoryLegendKeys.each(function() {
+            var cWidth = this.getBoundingClientRect().width;
+            categoryLegendKeyWidths.push(cWidth);
+          });
+          categoryLegendKeys.style("width", d3.max(categoryLegendKeyWidths) + "px");
+          var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
+          console.log(cellTypesData);
+          var cellTypeLegendKeys = cellTypes.selectAll("div").data(cellTypesData).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
+            return i == cellTypesData.length - 1 ? "0px" : "10px";
+          });
+          cellTypeLegendKeys.append("svg").attr("height", style.fontSize + "px").attr("width", style.fontSize + "px").append("path").attr("d", function(type) {
+            var glyph = data.maps.cellTypeToGlyph[type], diameter = style.fontSize - style.fontSize / 2;
+            return d3.svg.symbol().type(glyph).size(diameter * diameter)();
+          }).attr("transform", "translate(" + style.fontSize / 2 + "," + style.fontSize / 2 + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("strokew-width", .5);
+          cellTypeLegendKeys.append("span").text(function(d) {
+            console.log(d);
+            return d;
+          });
+          if (data.annotations) {
+            var annotationLegends = legend.append("div").selectAll("div").data(data.annotations.categories).enter().append("div");
+            annotationLegends.each(function(annotationName) {
+              var thisEl = d3.select(this), scale = data.annotations.annotationToColor[annotationName];
+              thisEl.style("font-family", style.fontFamily).style("font-size", style.fontSize);
+              thisEl.append("span").text(annotationName + ": ");
+              if (scale.typeOfScale && scale.typeOfScale == "continuous") {
+                var scaleHeight = style.fontSize, scaleWidth = style.fontSize * 5;
+                thisEl.append("span").text(scale.min);
+                var gradientSvg = thisEl.append("svg").attr("height", scaleHeight).attr("width", scaleWidth).style("margin-left", "2px").style("margin-right", "2px");
+                thisEl.append("span").text(scale.max);
+                thisEl.selectAll("*").style("display", "inline-block");
+                var now = Date.now(), gradientId = "gd3-mutmtx-gradient" + now;
+                var gradient = gradientSvg.append("svg:defs").append("svg:linearGradient").attr("id", gradientId).attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
+                console.log(scale);
+                var scaleRange = scale.scale.range();
+                scaleRange.forEach(function(c, i) {
+                  gradient.append("svg:stop").attr("offset", i * 1 / (scaleRange.length - 1)).attr("stop-color", c).attr("stop-opacity", 1);
+                });
+                gradientSvg.append("rect").attr("height", scaleHeight).attr("width", scaleWidth).attr("fill", "url(#" + gradientId + ")");
+              } else {
+                var annKeys = thisEl.selectAll("div").data(Object.keys(scale)).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
+                  return i == Object.keys(scale).length - 1 ? "0px" : "10px";
+                });
+                annKeys.append("div").style("background", function(d) {
+                  return scale[d];
+                }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px");
+                annKeys.append("span").style("display", "inline-block").style("margin-left", "2px").text(function(d) {
+                  return d;
+                });
+              }
+            });
+          }
+        }
         function drawSortingMenu() {
           var menu = selection.append("div");
           menu.append("p").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.sortingMenuFontSize + 4 + "px").style("margin-bottom", "0px").text("Sort columns [+]");
@@ -1125,7 +1198,7 @@
           }).enter().append("g");
           cells.each(function(d) {
             var thisCell = d3.select(this), y = style.rowHeight * data.ids.rows.indexOf(d.row);
-            thisCell.append("rect").attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colTypeToColor[d.cell.dataset]);
+            thisCell.append("rect").attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colCategoryToColor[d.cell.dataset]);
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType];
             if (glyph && glyph != null) {
               thisCell.append("path").attr("class", "gd3mutmtx-cellClyph").attr("d", d3.svg.symbol().type(glyph).size(colWidth * colWidth)).attr("transform", "translate(" + colWidth / 2 + "," + (y + style.rowHeight / 2) + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("stroke-width", .5);
@@ -1134,6 +1207,10 @@
         }
       });
     }
+    chart.showLegend = function(state) {
+      drawLegend = state;
+      return chart;
+    };
     chart.showSortingMenu = function(state) {
       drawSortingMenu = state;
       return chart;
@@ -1156,10 +1233,10 @@
       exclusiveColor: style.exclusiveColor || "blue",
       fontColor: style.fontColor || "#000",
       fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-      fullWidth: style.width || 600,
-      fullHeight: style.height || 300,
+      fontSize: style.fontSize || 14,
       glyphColor: style.glyphColor || "#888",
       glyphStrokeColor: style.glyphStrokeColor || "#ccc",
+      height: style.height || 300,
       rowHeight: style.rowHeight || 20,
       labelHeight: style.labelHeight || 40,
       labelWidth: style.labelWidth || 100,
@@ -1167,6 +1244,7 @@
       mutationLegendHeight: style.mutationLegendHeight || 30,
       sampleStroke: style.sampleStroke || 1,
       sortingMenuFontSize: style.sortingMenuFontSize || 12,
+      width: style.width || 600,
       zBottom: 0,
       zTop: 100
     };
