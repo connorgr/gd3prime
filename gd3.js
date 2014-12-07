@@ -1082,19 +1082,25 @@
             categoryLegendKeyWidths.push(cWidth);
           });
           categoryLegendKeys.style("width", d3.max(categoryLegendKeyWidths) + "px");
-          var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
-          console.log(cellTypesData);
-          var cellTypeLegendKeys = cellTypes.selectAll("div").data(cellTypesData).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
-            return i == cellTypesData.length - 1 ? "0px" : "10px";
-          });
-          cellTypeLegendKeys.append("svg").attr("height", style.fontSize + "px").attr("width", style.fontSize + "px").append("path").attr("d", function(type) {
-            var glyph = data.maps.cellTypeToGlyph[type], diameter = style.fontSize - style.fontSize / 2;
-            return d3.svg.symbol().type(glyph).size(diameter * diameter)();
-          }).attr("transform", "translate(" + style.fontSize / 2 + "," + style.fontSize / 2 + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("strokew-width", .5);
-          cellTypeLegendKeys.append("span").text(function(d) {
-            console.log(d);
-            return d;
-          });
+          if (Object.keys(data.maps.cellTypeToGlyph).length > 1) {
+            var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
+            console.log(cellTypesData);
+            var cellTypeLegendKeys = cellTypes.selectAll("div").data(cellTypesData).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
+              return i == cellTypesData.length - 1 ? "0px" : "10px";
+            });
+            cellTypeLegendKeys.append("svg").attr("height", style.fontSize + "px").attr("width", style.fontSize + "px").style("background", d3color(0)).style("margin-right", "2px").each(function(type) {
+              var glyph = data.maps.cellTypeToGlyph[type];
+              if (!glyph || glyph == null) return;
+              d3.select(this).append("path").attr("d", function(type) {
+                var diameter = style.fontSize - style.fontSize / 2;
+                return d3.svg.symbol().type(glyph).size(diameter * diameter)();
+              }).attr("transform", "translate(" + style.fontSize / 2 + "," + style.fontSize / 2 + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("strokew-width", .5);
+            });
+            cellTypeLegendKeys.append("span").text(function(d) {
+              console.log(d);
+              return d;
+            });
+          }
           if (data.annotations) {
             var annotationLegends = legend.append("div").selectAll("div").data(data.annotations.categories).enter().append("div");
             annotationLegends.each(function(annotationName) {
@@ -1131,9 +1137,9 @@
         }
         function drawSortingMenu() {
           var menu = selection.append("div");
-          menu.append("p").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.sortingMenuFontSize + 4 + "px").style("margin-bottom", "0px").text("Sort columns [+]");
+          var title = menu.append("p").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.sortingMenuFontSize + 4 + "px").style("margin-bottom", "0px").text("Sort columns [+]");
           var optionsMenu = menu.append("ul").style("display", "none").style("list-style", "none").style("margin-top", "0px").style("padding-left", 0);
-          menu.on("click", function() {
+          title.on("click", function() {
             var optionsShown = optionsMenu.style("display") == "block", display = optionsShown ? "none" : "block", visibility = optionsShown ? "hidden" : "visible";
             d3.select("p").text("Sort columns " + (optionsShown ? "[+]" : "[-]"));
             optionsMenu.style("display", display);
