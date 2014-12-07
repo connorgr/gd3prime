@@ -14,6 +14,7 @@ function mutmtxData(inputData) {
       cellTypeToGlyph: {},
       columnIdToLabel: {},
       columnIdToCategory: {},
+      columnIdToTypes: {},
       rowIdToLabel: {}
     },
     matrix: {
@@ -31,19 +32,29 @@ function mutmtxData(inputData) {
   }
 
   data.reorderColumns = function(ordering) {
+    // Sort by the column's most common cell type
+    function sortByCellType(c1,c2) {
+      var c1Type = data.maps.columnIdToTypes[c1][0],
+          c2Type = data.maps.columnIdToTypes[c2][0];
+      return d3.ascending(c1Type, c2Type);
+    }
+    // Sort by how exclusive each column's mutations are with one another
     function sortByExclusivity(c1, c2) {
       var c1X = data.matrix.columnIdToActiveRows[c1].length > 1,
           c2X = data.matrix.columnIdToActiveRows[c2].length > 1;
       return d3.ascending(c1X, c2X);
     }
+    // Sort by which column has more "top" activations in the rendered graphic
     function sortByFirstActiveRow(c1, c2) {
       var c1First = data.matrix.columnIdToActiveRows[c1][0],
           c2First = data.matrix.columnIdToActiveRows[c2][0];
       return d3.ascending(c1First,c2First);
     }
+    // Sort by the name of the column
     function sortByName(c1,c2) {
       return d3.ascending(data.labels.columns[c1],data.labels.columns[c2]);
     }
+    // Sort by the column category (i.e, color)
     function sortByColumnCategory(c1,c2) {
       return d3.ascending(data.maps.columnIdToCategory[c1], data.maps.columnIdToCategory[c2]);
     }
@@ -60,7 +71,7 @@ function mutmtxData(inputData) {
       });
     }
     else {
-      sortFns = [sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByName];
+      sortFns = [sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByCellType, sortByName];
     }
 
     data.ids.columns.sort(function(c1,c2) {
@@ -132,10 +143,27 @@ function mutmtxData(inputData) {
           type: inputData.M[rowLabel][colId][0]
         };
         cellTypes.push(inputData.M[rowLabel][colId][0]);
+
         // Track the types of cells in the data
+        if(!data.maps.columnIdToTypes[colId]) data.maps.columnIdToTypes[colId] = [];
+        data.maps.columnIdToTypes[colId].push(inputData.M[rowLabel][colId][0]);
       });
     }); // end matrix mapping
 
+    // Process the column to type map s.t. there are no repeats and
+    //   the map is ordered by population of each type
+    Object.keys(data.maps.columnIdToTypes).forEach(function(colId) {
+      var types = data.maps.columnIdToTypes[colId],
+          typeLog = {};
+      types.forEach(function(t) {
+        if(!typeLog[t]) typeLog[t] = 0;
+        typeLog[t] = typeLog[t] + 1;
+      });
+
+      types = Object.keys(typeLog);
+      types.sort(function(a,b) { return typeLog[a] < typeLog[b]; });
+      data.maps.columnIdToTypes[colId] = types;
+    });
 
     // Load the cell type to glyph mapping if it exists, else create it
     if (inputData.cellTypesToGlyph) {
@@ -147,9 +175,9 @@ function mutmtxData(inputData) {
         if(typesTmp[t] == undefined) typesTmp[t] = 0;
         typesTmp[t] = typesTmp[t] + 1;
       });
-      var types = Object.keys(typesTmp).sort(function(a,b) { typesTmp[a] < typesTmp[b] });
+      var types = Object.keys(typesTmp).sort(function(a,b) { typesTmp[a] > typesTmp[b] });
 
-      data.maps.cellTypeToGlyph[types.pop()] = null;
+      data.maps.cellTypeToGlyph[types.shift()] = null;
       types.forEach(function(d,i) {
         data.maps.cellTypeToGlyph[d] = data.glyphs[i%data.glyphs.length];
       });

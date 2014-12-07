@@ -842,6 +842,7 @@
         cellTypeToGlyph: {},
         columnIdToLabel: {},
         columnIdToCategory: {},
+        columnIdToTypes: {},
         rowIdToLabel: {}
       },
       matrix: {
@@ -854,6 +855,10 @@
       if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "ids") return data.ids; else if (attr === "labels") return data.labels;
     };
     data.reorderColumns = function(ordering) {
+      function sortByCellType(c1, c2) {
+        var c1Type = data.maps.columnIdToTypes[c1][0], c2Type = data.maps.columnIdToTypes[c2][0];
+        return d3.ascending(c1Type, c2Type);
+      }
       function sortByExclusivity(c1, c2) {
         var c1X = data.matrix.columnIdToActiveRows[c1].length > 1, c2X = data.matrix.columnIdToActiveRows[c2].length > 1;
         return d3.ascending(c1X, c2X);
@@ -878,7 +883,7 @@
           if (d == "Name") sortFns.push(sortByName);
         });
       } else {
-        sortFns = [ sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByName ];
+        sortFns = [ sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByCellType, sortByName ];
       }
       data.ids.columns.sort(function(c1, c2) {
         var sortResult;
@@ -932,7 +937,21 @@
             type: inputData.M[rowLabel][colId][0]
           };
           cellTypes.push(inputData.M[rowLabel][colId][0]);
+          if (!data.maps.columnIdToTypes[colId]) data.maps.columnIdToTypes[colId] = [];
+          data.maps.columnIdToTypes[colId].push(inputData.M[rowLabel][colId][0]);
         });
+      });
+      Object.keys(data.maps.columnIdToTypes).forEach(function(colId) {
+        var types = data.maps.columnIdToTypes[colId], typeLog = {};
+        types.forEach(function(t) {
+          if (!typeLog[t]) typeLog[t] = 0;
+          typeLog[t] = typeLog[t] + 1;
+        });
+        types = Object.keys(typeLog);
+        types.sort(function(a, b) {
+          return typeLog[a] < typeLog[b];
+        });
+        data.maps.columnIdToTypes[colId] = types;
       });
       if (inputData.cellTypesToGlyph) {
         data.maps.cellTypeToGlyph = inputData.cellTypeToGlyph;
@@ -943,9 +962,9 @@
           typesTmp[t] = typesTmp[t] + 1;
         });
         var types = Object.keys(typesTmp).sort(function(a, b) {
-          typesTmp[a] < typesTmp[b];
+          typesTmp[a] > typesTmp[b];
         });
-        data.maps.cellTypeToGlyph[types.pop()] = null;
+        data.maps.cellTypeToGlyph[types.shift()] = null;
         types.forEach(function(d, i) {
           data.maps.cellTypeToGlyph[d] = data.glyphs[i % data.glyphs.length];
         });
@@ -1084,7 +1103,6 @@
           categoryLegendKeys.style("width", d3.max(categoryLegendKeyWidths) + "px");
           if (Object.keys(data.maps.cellTypeToGlyph).length > 1) {
             var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
-            console.log(cellTypesData);
             var cellTypeLegendKeys = cellTypes.selectAll("div").data(cellTypesData).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
               return i == cellTypesData.length - 1 ? "0px" : "10px";
             });
@@ -1097,7 +1115,6 @@
               }).attr("transform", "translate(" + style.fontSize / 2 + "," + style.fontSize / 2 + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("strokew-width", .5);
             });
             cellTypeLegendKeys.append("span").text(function(d) {
-              console.log(d);
               return d;
             });
           }
@@ -1115,7 +1132,6 @@
                 thisEl.selectAll("*").style("display", "inline-block");
                 var now = Date.now(), gradientId = "gd3-mutmtx-gradient" + now;
                 var gradient = gradientSvg.append("svg:defs").append("svg:linearGradient").attr("id", gradientId).attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
-                console.log(scale);
                 var scaleRange = scale.scale.range();
                 scaleRange.forEach(function(c, i) {
                   gradient.append("svg:stop").attr("offset", i * 1 / (scaleRange.length - 1)).attr("stop-color", c).attr("stop-opacity", 1);

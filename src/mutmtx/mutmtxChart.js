@@ -288,7 +288,6 @@ function mutmtxChart(style) {
         // Tabulate cell type glyphs, if present
         if(Object.keys(data.maps.cellTypeToGlyph).length > 1) {
           var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
-          console.log(cellTypesData)
           var cellTypeLegendKeys = cellTypes.selectAll('div')
               .data(cellTypesData)
               .enter()
@@ -321,7 +320,7 @@ function mutmtxChart(style) {
               });
 
           cellTypeLegendKeys.append('span')
-              .text(function(d) { console.log(d); return d; });
+              .text(function(d) { return d; });
         }
 
 
@@ -365,7 +364,7 @@ function mutmtxChart(style) {
                       .attr('y1', '0%')
                       .attr('x2', '100%')
                       .attr('y2', '0%');
-              console.log(scale)
+
               var scaleRange = scale.scale.range();
               scaleRange.forEach(function(c, i){
                 gradient.append('svg:stop')
