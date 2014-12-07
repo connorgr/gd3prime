@@ -1,7 +1,8 @@
 import "mutmtxData";
 
 function mutmtxChart(style) {
-  var drawLegend = true,
+  var drawHoverLegend = true,
+      drawLegend = false,
       drawSortingMenu = true;
 
   var sortingOptionsData = [
@@ -239,16 +240,59 @@ function mutmtxChart(style) {
       renderMutationMatrix();
       rerenderMutationMatrix();
 
-      if(drawLegend) drawLegend();
+      if(drawLegend) drawLegendFn(selection.append('div').style('width', style.width));
+      if(drawHoverLegend) {
+        var container = selection.append('div'),
+            legendHoverHeader = container.append('span')
+                .style('font-family', style.fontFamily)
+                .text('Legend (mouse over)'),
+            legend = container.append('div')
+                .style('background', '#fff')
+                .style('border', '1px solid #ccc')
+                .style('padding', '10px')
+                .style('position','absolute')
+                .style('display','none')
+                .style('visibility','hidden');
+
+        legendHoverHeader.on('mouseover', function() {
+          // make sure the width of the legend is less than the window size
+          var legendW = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+          legendW = legendW - 20 - 20; // - 20 for page space, -20 for div padding
+          legendW = legendW < style.width - 20 - 20 ? legendW : style.width - 20 - 20;
+
+          var body = document.body,
+              docElement = document.documentElement,
+              legendHeaderBounds = legendHoverHeader.node().getBoundingClientRect(),
+
+              clientTop = docElement.clientTop || body.clientTop || 0,
+              clientLeft = docElement.clientLeft || body.clientLeft || 0,
+              scrollLeft = window.pageXOffset || docElement.scrollLeft || body.scrollLeft,
+              scrollTop = window.pageYOffset || docElement.scrollTop || body.scrollTop,
+
+              top = legendHeaderBounds.top + scrollTop - clientTop,
+              left = legendHeaderBounds.left + scrollLeft - clientLeft;
+
+          legend.style('left', left)
+              .style('top', top + legendHeaderBounds.height + 5)
+              .style('display','block')
+              .style('visibility', 'visible');
+
+          drawLegendFn(legend.style('width', legendW+'px'));
+        })
+        .on('mouseout', function() {
+          legend.selectAll('*').remove();
+          legend.style('display','none')
+                .style('visibility','hidden');
+        });
+      }
       if(drawSortingMenu) drawSortingMenu();
 
 
-      function drawLegend() {
-        var legend = selection.append('div')
-            .style('width', style.width);
-
+      // Legend should be a DIV d3 selection
+      function drawLegendFn(legend) {
         var columnCategories = legend.append('div')
-                .style('width', style.width + 'px'),
+                .style('min-width', legend.style('width'))
+                .style('width', legend.style('width')),
             cellTypes = legend.append('div');
 
         // Tabulate categories
@@ -283,7 +327,8 @@ function mutmtxChart(style) {
           var cWidth = this.getBoundingClientRect().width;
           categoryLegendKeyWidths.push(cWidth);
         });
-        categoryLegendKeys.style('width', d3.max(categoryLegendKeyWidths) + 'px');
+        categoryLegendKeys.style('width', d3.max(categoryLegendKeyWidths) + 'px')
+            .style('min-width', d3.max(categoryLegendKeyWidths) + 'px');
 
         // Tabulate cell type glyphs, if present
         if(Object.keys(data.maps.cellTypeToGlyph).length > 1) {
@@ -471,7 +516,7 @@ function mutmtxChart(style) {
 
                               data.reorderColumns(sortingOptionsData);
                               renderMenu();
-                              rerenderMutationMatrix();
+                              rerenderMutationMatrix(true);
                             });
                       });
           });
@@ -479,7 +524,7 @@ function mutmtxChart(style) {
       }
 
 
-      function rerenderMutationMatrix() {
+      function rerenderMutationMatrix(transition) {
         var t = zoom.translate(),
           tx = t[0],
           ty = t[1],
@@ -490,10 +535,17 @@ function mutmtxChart(style) {
         zoom.translate([tx, ty]);
 
         var colWidth = wholeVisX(1)-wholeVisX(0);
-        columns.attr('transform', function(d) {
-              var colIndex = data.ids.columns.indexOf(d);
-              return 'translate('+wholeVisX(colIndex)+',0)';
-            });
+        if(transition && transition == true) {
+          columns.transition().attr('transform', function(d) {
+            var colIndex = data.ids.columns.indexOf(d);
+            return 'translate('+wholeVisX(colIndex)+',0)';
+          });
+        } else {
+          columns.attr('transform', function(d) {
+            var colIndex = data.ids.columns.indexOf(d);
+            return 'translate('+wholeVisX(colIndex)+',0)';
+          });
+        }
 
         // Redraw each cell and any glyphs the cell might have
         columns.selectAll('rect').attr('width', colWidth);
@@ -560,6 +612,11 @@ function mutmtxChart(style) {
         // });
       }
     });
+  }
+
+  chart.showHoverLegend = function(state) {
+    drawHoverLegend = state;
+    return chart;
   }
 
   chart.showLegend = function(state) {

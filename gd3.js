@@ -977,7 +977,7 @@
     return data;
   }
   function mutmtxChart(style) {
-    var drawLegend = true, drawSortingMenu = true;
+    var drawHoverLegend = true, drawLegend = false, drawSortingMenu = true;
     var sortingOptionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
     function chart(selection) {
       selection.each(function(data) {
@@ -1076,11 +1076,24 @@
         svg.call(zoom);
         renderMutationMatrix();
         rerenderMutationMatrix();
-        if (drawLegend) drawLegend();
+        if (drawLegend) drawLegendFn(selection.append("div").style("width", style.width));
+        if (drawHoverLegend) {
+          var container = selection.append("div"), legendHoverHeader = container.append("span").style("font-family", style.fontFamily).text("Legend (mouse over)"), legend = container.append("div").style("background", "#fff").style("border", "1px solid #ccc").style("padding", "10px").style("position", "absolute").style("display", "none").style("visibility", "hidden");
+          legendHoverHeader.on("mouseover", function() {
+            var legendW = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+            legendW = legendW - 20 - 20;
+            legendW = legendW < style.width - 20 - 20 ? legendW : style.width - 20 - 20;
+            var body = document.body, docElement = document.documentElement, legendHeaderBounds = legendHoverHeader.node().getBoundingClientRect(), clientTop = docElement.clientTop || body.clientTop || 0, clientLeft = docElement.clientLeft || body.clientLeft || 0, scrollLeft = window.pageXOffset || docElement.scrollLeft || body.scrollLeft, scrollTop = window.pageYOffset || docElement.scrollTop || body.scrollTop, top = legendHeaderBounds.top + scrollTop - clientTop, left = legendHeaderBounds.left + scrollLeft - clientLeft;
+            legend.style("left", left).style("top", top + legendHeaderBounds.height + 5).style("display", "block").style("visibility", "visible");
+            drawLegendFn(legend.style("width", legendW + "px"));
+          }).on("mouseout", function() {
+            legend.selectAll("*").remove();
+            legend.style("display", "none").style("visibility", "hidden");
+          });
+        }
         if (drawSortingMenu) drawSortingMenu();
-        function drawLegend() {
-          var legend = selection.append("div").style("width", style.width);
-          var columnCategories = legend.append("div").style("width", style.width + "px"), cellTypes = legend.append("div");
+        function drawLegendFn(legend) {
+          var columnCategories = legend.append("div").style("min-width", legend.style("width")).style("width", legend.style("width")), cellTypes = legend.append("div");
           var categories = {};
           Object.keys(data.maps.columnIdToCategory).forEach(function(k) {
             categories[data.maps.columnIdToCategory[k]] = null;
@@ -1100,7 +1113,7 @@
             var cWidth = this.getBoundingClientRect().width;
             categoryLegendKeyWidths.push(cWidth);
           });
-          categoryLegendKeys.style("width", d3.max(categoryLegendKeyWidths) + "px");
+          categoryLegendKeys.style("width", d3.max(categoryLegendKeyWidths) + "px").style("min-width", d3.max(categoryLegendKeyWidths) + "px");
           if (Object.keys(data.maps.cellTypeToGlyph).length > 1) {
             var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
             var cellTypeLegendKeys = cellTypes.selectAll("div").data(cellTypesData).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
@@ -1183,21 +1196,28 @@
                   sortingOptionsData[menuPosition] = neighborText;
                   data.reorderColumns(sortingOptionsData);
                   renderMenu();
-                  rerenderMutationMatrix();
+                  rerenderMutationMatrix(true);
                 });
               });
             });
           }
         }
-        function rerenderMutationMatrix() {
+        function rerenderMutationMatrix(transition) {
           var t = zoom.translate(), tx = t[0], ty = t[1], scale = zoom.scale();
           tx = Math.min(tx, 0);
           zoom.translate([ tx, ty ]);
           var colWidth = wholeVisX(1) - wholeVisX(0);
-          columns.attr("transform", function(d) {
-            var colIndex = data.ids.columns.indexOf(d);
-            return "translate(" + wholeVisX(colIndex) + ",0)";
-          });
+          if (transition && transition == true) {
+            columns.transition().attr("transform", function(d) {
+              var colIndex = data.ids.columns.indexOf(d);
+              return "translate(" + wholeVisX(colIndex) + ",0)";
+            });
+          } else {
+            columns.attr("transform", function(d) {
+              var colIndex = data.ids.columns.indexOf(d);
+              return "translate(" + wholeVisX(colIndex) + ",0)";
+            });
+          }
           columns.selectAll("rect").attr("width", colWidth);
           columns.selectAll(".gd3mutmtx-cellClyph").attr("transform", function(d) {
             var str = d3.select(this).attr("transform"), then = str.replace("translate", "").replace(")", "").split(","), x = colWidth / 2, y = +then[1], now = "translate(" + x + "," + y + ")";
@@ -1229,6 +1249,10 @@
         }
       });
     }
+    chart.showHoverLegend = function(state) {
+      drawHoverLegend = state;
+      return chart;
+    };
     chart.showLegend = function(state) {
       drawLegend = state;
       return chart;

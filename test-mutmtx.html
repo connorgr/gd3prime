@@ -12,14 +12,17 @@
     <script src="../bower_components/d3/d3.min.js"></script>
     <script src="gd3.js"></script>
     <script>
-    console.log(gd3);
+
+    var style = {
+      width: 800
+    }
 
     d3.json('testData/example2-mutation-matrix.json', function(data) {
       d3.json('testData/exampleAnnotations.json', function(annData) {
         data.annotations = annData;
         d3.select('#test')
           .datum(data)
-          .call(gd3.mutationMatrix());
+          .call(gd3.mutationMatrix({style:style}));
       });
     });
     </script>
