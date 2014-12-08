@@ -204,8 +204,8 @@ function transcriptChart(style) {
             .style('fill', function(d) { return sampleTypeToColor[d.dataset]; })
             .style('fill-opacity', 1)
             .style('stroke', function(d) { return sampleTypeToColor[d.dataset]; })
-            .style('stroke-opacity', 1)
-            .call(gd3.annotation());
+            .style('stroke-opacity', 1);
+            // .call(gd3.annotation());
         inactivatingMutations.attr('transform', function(d, i) {
                 var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex,
                     curIndex = Math.round(d.locus/curRes),
@@ -233,8 +233,8 @@ function transcriptChart(style) {
             .style('fill', function(d) { return sampleTypeToColor[d.dataset]; })
             .style('fill-opacity', 1)
             .style('stroke', function(d) { return sampleTypeToColor[d.dataset]; })
-            .style('stroke-opacity', 1)
-            .call(gd3.annotation());
+            .style('stroke-opacity', 1);
+            // .call(gd3.annotation());
 
         // update the axis
         transcriptAxis.call(xAxis);

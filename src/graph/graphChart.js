@@ -1,7 +1,8 @@
 import "graphData.js";
 
 function graphChart(style) {
-  var anchorNodesOnClick = true;
+  var anchorNodesOnClick = true,
+      drawLegend = true;
 
   function chart(selection) {
     selection.each(function(data) {
@@ -33,12 +34,20 @@ function graphChart(style) {
           .range(style.nodeColor)
           .interpolate(d3.interpolateLab);
 
-      // Set up force directed graph
       var forceHeight = height,
           forceWidth = width;
+
+      if(drawLegend) {
+        var xLegend = style.width - style.legendWidth,
+            legend = svg.append('g')
+                .attr('transform','translate('+xLegend+',0)')
+        drawLegendFn(legend);
+      }
+
+      // Set up force directed graph
       var force = d3.layout.force()
           .charge(-400)
-          .linkDistance(40)
+          .linkDistance(10)
           .size([forceWidth,forceHeight]);
 
       var x = d3.scale.linear().range([0,forceWidth]),
@@ -95,9 +104,11 @@ function graphChart(style) {
       force.on('tick', function() {
         node.attr('transform', function(d) {
           var maxBound = style.nodeRadius+style.nodeStrokeWidth,
-              minBound = forceWidth - style.nodeRadius - style.nodeStrokeWidth;
-          d.x = Math.max(maxBound, Math.min(minBound, d.x));
-          d.y = Math.max(maxBound, Math.min(minBound, d.y));
+              minBoundX = forceWidth - style.nodeRadius - style.nodeStrokeWidth,
+              minBoundY = forceHeight - style.nodeRadius - style.nodeStrokeWidth;
+          if(drawLegend) minBoundX = minBoundX - style.legendWidth;
+          d.x = Math.max(maxBound, Math.min(minBoundX, d.x));
+          d.y = Math.max(maxBound, Math.min(minBoundY, d.y));
           return 'translate('+ d.x + ',' + d.y + ')';
         });
 
@@ -130,11 +141,103 @@ function graphChart(style) {
           //d3.select(this).select('circle').style('stroke-opacity', 1);
         });
       } // end anchorNodesOnClick block
+
+
+      function drawLegendFn(legend) {
+        legend.style('font-family', style.fontFamily);
+        legend.append('rect')
+            .attr('width',style.legendWidth)
+            .attr('height', style.height)
+            .style('fill', '#ffffff')
+            .style('opacity', .95);
+
+        data.title = 'Graph\ntitle\nwith newlines!';
+        var title = legend.append('text')
+            .style('font-size', style.legendFontSize);
+
+        title.selectAll('tspan')
+            .data(data.title.split('\n'))
+            .enter()
+            .append('tspan')
+                .attr('x', 0)
+                .attr('dy', style.legendFontSize+2)
+                .text(function(d){ return d; });
+
+        // Render the scale
+        var titleHeight = title.node().getBBox().height + 4,
+            scaleG = legend.append('g')
+                .attr('transform','translate(0,'+titleHeight+')');
+        scaleG.append('text')
+            .attr('x', style.legendScaleWidth + 2)
+            .attr('y', style.legendFontSize)
+            .style('font-size', style.legendFontSize)
+            .text(data.maxNodeValue);
+        scaleG.append('text')
+                .attr('x', style.legendScaleWidth + 2)
+                .attr('y', style.height/2)
+                .style('font-size', style.legendFontSize)
+                .text(data.minNodeValue);
+        var colorScaleRect = scaleG.append('rect')
+            .attr('height', style.height/2)
+            .attr('width', style.legendScaleWidth);
+
+        // Create a unique ID for the color map gradient in case multiple graphs are made
+        var now = Date.now(),
+            gradientId = 'gd3-graph-gradient'+now;
+
+        // Configure the gradient to be mapped on to the legend
+        var gradient = scaleG.append('svg:defs')
+              .append('svg:linearGradient')
+                .attr('id', gradientId)
+                .attr('x1', '0%')
+                .attr('y1', '100%')
+                .attr('x2', '0%')
+                .attr('y2', '0%');
+
+        var scaleRange = nodeColor.range();
+        scaleRange.forEach(function(c, i){
+          gradient.append('svg:stop')
+              .attr('offset', i*1./(scaleRange.length-1))
+              .attr('stop-color', c)
+              .attr('stop-opacity', 1);
+        });
+
+        colorScaleRect.attr('fill', 'url(#'+gradientId+')');
+
+        // Add the edge keys to the graph
+        var scaleHeight = scaleG.node().getBBox().height + 4,
+            edgeKeys = legend.append('g').selectAll('g')
+                .data(data.edgeCategories)
+                .enter()
+                .append('g');
+        edgeKeys.each(function(category, i) {
+          var thisEl = d3.select(this),
+              thisY = (i+1)*style.legendFontSize + titleHeight + scaleHeight;
+          thisEl.append('line')
+              .attr('x1', 0)
+              .attr('y1', thisY - style.legendFontSize/4)
+              .attr('x2', 15)
+              .attr('y2', thisY - style.legendFontSize/4)
+              .style('stroke', edgeColor(category))
+              .style('stroke-width', style.legendFontSize/2);
+
+          thisEl.append('text')
+              .attr('x', 16)
+              .attr('y', (i+1)*style.legendFontSize + titleHeight + scaleHeight)
+              .style('font-size', style.legendFontSize)
+              .text(category);
+        });
+      }
     });
   }
 
   chart.clickAnchorsNodes = function(state) {
     anchorNodesOnClick = state;
+    return chart;
+  }
+
+  chart.showLegend = function(state) {
+    drawLegend = state;
     return chart;
   }
 

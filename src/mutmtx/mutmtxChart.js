@@ -46,10 +46,6 @@ function mutmtxChart(style) {
 
       var rowLabelsG = svg.append('g')
               .attr('class', 'mutmtx-rowLabels'),
-          rowLabelsBG = rowLabelsG.append('rect')
-              .attr('x', 0)
-              .attr('y', 0)
-              .style('fill', '#fff'),
           rowLabels = rowLabelsG.selectAll('text')
               .data(data.get('labels').rows)
               .enter()
@@ -70,8 +66,6 @@ function mutmtxChart(style) {
       style.labelWidth = Math.ceil(maxTextWidth)+5;
 
       style.matrixWidth = width - style.labelWidth;
-
-      rowLabelsBG.attr('width', style.labelWidth).attr('height', rowLabelsG.node().getBBox().height);
 
       // Add horizontal rules to the table
       var rowNames = data.get('labels').rows,
@@ -119,8 +113,7 @@ function mutmtxChart(style) {
             categories = data.annotations.categories;
 
         var annRowLabelsG = svg.append('g').attr('class', 'mutmtx-annRowLabels')
-                .attr('transform', 'translate(0,'+rowLabelsG.node().getBBox().height+')'),
-            annRowLabelsBG = annRowLabelsG.append('rect').style('fill', '#fff');
+                .attr('transform', 'translate(0,'+rowLabelsG.node().getBBox().height+')');
 
         var annRowLabels = annRowLabelsG.selectAll('text')
             .data(categories)
@@ -134,9 +127,6 @@ function mutmtxChart(style) {
                 .style('font-family', style.fontFamily)
                 .style('font-size', style.annotationRowHeight)
                 .text(function(d) { return d; });
-
-        annRowLabelsBG.attr('height', annRowLabelsG.node().getBBox().height + style.annotationRowSpacing)
-            .attr('width', annRowLabelsG.node().getBBox().width);
 
         var annColoring = data.annotations.annotationToColor;
 
@@ -244,6 +234,7 @@ function mutmtxChart(style) {
       if(drawHoverLegend) {
         var container = selection.append('div'),
             legendHoverHeader = container.append('span')
+                .style('cursor', 'pointer')
                 .style('font-family', style.fontFamily)
                 .text('Legend (mouse over)'),
             legend = container.append('div')
