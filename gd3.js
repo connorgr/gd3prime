@@ -465,6 +465,7 @@
     function chart(selection) {
       selection.each(function(data) {
         data = graphData(data);
+        var instanceIDConst = "gd3-graph-" + Date.now();
         var height = style.height, width = style.width;
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontFamily);
         var graph = svg.append("g");
@@ -483,7 +484,7 @@
           link.each(function(d) {
             var thisEdge = d3.select(this);
             d.categories.forEach(function(c) {
-              thisEdge.append("line").style("stroke-width", style.edgeWidth).style("stroke", edgeColor(c));
+              thisEdge.append("line").attr("class", instanceIDConst + "-" + c).style("stroke-width", style.edgeWidth).style("stroke", edgeColor(c));
             });
           });
         } else {
@@ -541,7 +542,14 @@
             gradient.append("svg:stop").attr("offset", i * 1 / (scaleRange.length - 1)).attr("stop-color", c).attr("stop-opacity", 1);
           });
           colorScaleRect.attr("fill", "url(#" + gradientId + ")");
-          var scaleHeight = scaleG.node().getBBox().height + 4, edgeKeys = legend.append("g").selectAll("g").data(data.edgeCategories).enter().append("g");
+          var scaleHeight = scaleG.node().getBBox().height + 4, edgeKeys = legend.append("g").selectAll("g").data(data.edgeCategories).enter().append("g").style("cursor", "pointer").on("click", function(category) {
+            var catEdges = d3.selectAll("." + instanceIDConst + "-" + category), opacity = catEdges.style("opacity");
+            catEdges.style("opacity", opacity == 0 ? 1 : 0);
+          }).on("mouseover", function() {
+            d3.select(this).selectAll("text").style("fill", "red");
+          }).on("mouseout", function() {
+            d3.select(this).selectAll("text").style("fill", "black");
+          });
           edgeKeys.each(function(category, i) {
             var thisEl = d3.select(this), thisY = (i + 1) * style.legendFontSize + titleHeight + scaleHeight;
             thisEl.append("line").attr("x1", 0).attr("y1", thisY - style.legendFontSize / 4).attr("x2", 15).attr("y2", thisY - style.legendFontSize / 4).style("stroke", edgeColor(category)).style("stroke-width", style.legendFontSize / 2);

@@ -8,6 +8,9 @@ function graphChart(style) {
     selection.each(function(data) {
       data = graphData(data);
 
+      // Used for edge classes and filtering
+      var instanceIDConst = 'gd3-graph-'+Date.now();
+
       var height = style.height,
           width = style.width;
 
@@ -68,6 +71,7 @@ function graphChart(style) {
           var thisEdge = d3.select(this);
           d.categories.forEach(function(c) {
             thisEdge.append('line')
+                .attr('class', instanceIDConst+'-'+c)
                 .style('stroke-width', style.edgeWidth)
                 .style('stroke', edgeColor(c));
           });
@@ -209,7 +213,19 @@ function graphChart(style) {
             edgeKeys = legend.append('g').selectAll('g')
                 .data(data.edgeCategories)
                 .enter()
-                .append('g');
+                .append('g')
+                    .style('cursor', 'pointer')
+                    .on('click', function(category) {
+                      var catEdges = d3.selectAll('.'+instanceIDConst+'-'+category),
+                          opacity = catEdges.style('opacity');
+                      catEdges.style('opacity', opacity == 0 ? 1 : 0);
+                    })
+                    .on('mouseover', function() {
+                      d3.select(this).selectAll('text').style('fill', 'red');
+                    })
+                    .on('mouseout', function() {
+                      d3.select(this).selectAll('text').style('fill', 'black');
+                    });
         edgeKeys.each(function(category, i) {
           var thisEl = d3.select(this),
               thisY = (i+1)*style.legendFontSize + titleHeight + scaleHeight;
