@@ -414,6 +414,7 @@
       nodes: []
     };
     function defaultParse() {
+      data.title = inputData.title || "";
       data.edges = inputData.edges;
       data.nodes = inputData.nodes;
       data.links = loadLinks(data.edges, data.nodes);
@@ -526,7 +527,6 @@
         function drawLegendFn(legend) {
           legend.style("font-family", style.fontFamily);
           legend.append("rect").attr("width", style.legendWidth).attr("height", style.height).style("fill", "#ffffff").style("opacity", .95);
-          data.title = "Graph\ntitle\nwith newlines!";
           var title = legend.append("text").style("font-size", style.legendFontSize);
           title.selectAll("tspan").data(data.title.split("\n")).enter().append("tspan").attr("x", 0).attr("dy", style.legendFontSize + 2).text(function(d) {
             return d;

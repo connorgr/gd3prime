@@ -6,6 +6,7 @@ function graphData(inputData) {
 
 
   function defaultParse () {
+    data.title = inputData.title || '';
     data.edges = inputData.edges;
     data.nodes = inputData.nodes;
     data.links = loadLinks(data.edges,data.nodes);

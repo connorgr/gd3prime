@@ -155,7 +155,6 @@ function graphChart(style) {
             .style('fill', '#ffffff')
             .style('opacity', .95);
 
-        data.title = 'Graph\ntitle\nwith newlines!';
         var title = legend.append('text')
             .style('font-size', style.legendFontSize);
 
