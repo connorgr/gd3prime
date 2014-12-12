@@ -1615,6 +1615,199 @@
     var params = params || {}, style = transcriptStyle(params.style || {});
     return transcriptChart(style);
   };
+  function dendrogramChart(style) {
+    var update;
+    function chart(selection) {
+      selection.each(function(data) {
+        if (!data.Z || !data.labels) {
+          throw "dendrogram: Z and labels *required*.";
+        }
+        var indices = data.Z.map(function(r) {
+          return r[3];
+        });
+        if (indices.length != d3.set(indices).values().length) {
+          data.Z.forEach(function(r, i) {
+            r[3] = i + "-" + r[3];
+          });
+        }
+        var height = style.height, width = style.width, colorScheme = style.colorScheme, colorSchemes = style.colorSchemes;
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("xmlns", "http://www.w3.org/2000/svg"), fig = svg.append("g"), edges = fig.append("g").attr("id", "edges"), leafGroup = fig.append("g").attr("id", "leaves");
+        svg.attr("id", "figure").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontSize);
+        var xAxis = d3.svg.axis(), xAxisGroup = fig.append("g").style({
+          stroke: style.fontColor,
+          fill: "none",
+          "stroke-width": style.strokeWidth
+        }).attr("transform", "translate(" + style.margins.left + "," + height + ")");
+        if (!(colorScheme in colorSchemes)) {
+          console.log("Color scheme " + colorScheme + " not found, using default.");
+          colorScheme = "default";
+        }
+        var color = colorSchemes[colorScheme];
+        update = function(treeData) {
+          var Z = treeData.Z, labels = treeData.labels, labelToGroup = treeData.labelToGroup, n = labels.length;
+          if (!treeData.labelToGroup) {
+            labelToGroup = {};
+            labels.forEach(function(d, i) {
+              labelToGroup[d] = i;
+            });
+          }
+          function isLeaf(v) {
+            return v < n;
+          }
+          var nodeToIndex = [];
+          labels.forEach(function(n, i) {
+            nodeToIndex[i] = i;
+          });
+          var y = d3.scale.linear().domain([ 0, labels.length - 1 ]).range([ style.nodeRadius, height - style.nodeRadius ]), labelToY = d3.scale.ordinal().domain(labels).rangePoints([ style.nodeRadius, height - style.nodeRadius ]);
+          var leaves = leafGroup.selectAll("g").data(labels, function(d) {
+            return d;
+          });
+          leaves.transition().duration(style.animationSpeed).attr("transform", function(d) {
+            return "translate(0," + labelToY(d) + ")";
+          });
+          leaves.select("circle").attr("fill", function(d) {
+            return color(labelToGroup[d]);
+          });
+          var leafGs = leaves.enter().append("g").attr("transform", function(d) {
+            return "translate(0," + labelToY(d) + ")";
+          });
+          leafGs.append("circle").attr("r", style.nodeRadius).style("fill-opacity", 1e-6).attr("fill", function(d) {
+            return color(labelToGroup[d]);
+          }).transition().duration(style.animationSpeed).style("fill-opacity", 1);
+          leafGs.append("text").attr("text-anchor", "start").attr("x", style.nodeRadius + 5).attr("y", style.nodeRadius / 2).text(function(d) {
+            return d;
+          });
+          leaves.exit().transition().duration(style.animationSpeed).style("fill-opacity", 1e-6).remove();
+          var labelWidth = leafGroup.node().getBBox().width, treeWidth = width - labelWidth - style.margins.left;
+          leafGroup.attr("transform", "translate(" + (width - labelWidth) + ",0)");
+          var maxDist = d3.max(Z.map(function(row) {
+            return row[2];
+          })), x = d3.scale.linear().domain([ 0, maxDist ]).range([ treeWidth, style.margins.left ]);
+          var edgeData = [], distances = labels.map(function(_) {
+            return 0;
+          });
+          groups = labels.map(function(d) {
+            return [ labelToGroup[d] ];
+          });
+          function connectNodes(u, v, w, index) {
+            var i = nodeToIndex[u], j = nodeToIndex[v], d1 = distances[u], d2 = distances[v], g1 = groups[u], g2 = groups[v], newG = g1.length == 1 && g2.length == 1 && g1[0] == g2[0] ? g1 : g1.concat(g2);
+            console.log(index);
+            edgeData.push({
+              name: "u" + index,
+              x1: x(d1),
+              x2: x(w),
+              y1: y(i),
+              y2: y(i),
+              groups: g1
+            });
+            edgeData.push({
+              name: "v" + index,
+              x1: x(d2),
+              x2: x(w),
+              y1: y(j),
+              y2: y(j),
+              groups: g2
+            });
+            edgeData.push({
+              name: "uv" + index,
+              x1: x(w),
+              x2: x(w),
+              y1: y(i),
+              y2: y(j),
+              groups: newG
+            });
+            nodeToIndex.push((i + j) / 2);
+            distances.push(w);
+            groups.push(newG);
+          }
+          Z.forEach(function(row) {
+            connectNodes(row[0], row[1], row[2], row[3]);
+          });
+          var lines = edges.selectAll("line").data(edgeData, function(d) {
+            return d.name + " " + d.ty;
+          });
+          lines.transition().duration(style.animationSpeed).attr("x1", function(d) {
+            return d.x1;
+          }).attr("x2", function(d) {
+            return d.x2;
+          }).attr("y1", function(d) {
+            return d.y1;
+          }).attr("y2", function(d) {
+            return d.y2;
+          }).attr("stroke-dasharray", function(d) {
+            if (d.groups.length == 1) {
+              return "";
+            } else {
+              return "3", "3";
+            }
+          });
+          lines.enter().append("line").attr("x1", function(d) {
+            return d.x1;
+          }).attr("x2", function(d) {
+            return d.x1;
+          }).attr("y1", function(d) {
+            return d.y1;
+          }).attr("y2", function(d) {
+            return d.y1;
+          }).attr("stroke", style.strokeColor).attr("stroke-width", style.strokeWidth).attr("stroke-dasharray", function(d) {
+            if (d.groups.length == 1) {
+              return "";
+            } else {
+              return "3", "3";
+            }
+          }).attr("fill-opacity", 1e-6).transition().duration(style.animationSpeed).attr("x2", function(d) {
+            return d.x2;
+          }).attr("y2", function(d) {
+            return d.y2;
+          }).attr("fill-opacity", 1);
+          lines.exit().transition().duration(style.animationSpeed).style("stroke-opacity", 1e-6).remove();
+          xAxis.scale(x);
+          xAxisGroup.call(xAxis);
+          xAxisGroup.selectAll("text").style({
+            "stroke-width": "0px",
+            fill: style.fontColor
+          });
+          svg.attr("height", fig.node().getBBox().height);
+        };
+        update(data);
+      });
+    }
+    chart.update = function(treeData) {
+      update(treeData);
+    };
+    chart.animationSpeed = function() {
+      return style.animationSpeed;
+    };
+    return chart;
+  }
+  function dendrogramStyle(style) {
+    return {
+      colorSchemes: style.colorSchemes || {
+        "default": d3.scale.category20()
+      },
+      edgeWidth: style.edgeWidth || 1.5,
+      fontColor: style.fontColor || "#333",
+      fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      fontSize: style.fontSize || "12px",
+      margins: style.margins || {
+        bottom: 0,
+        left: 5,
+        right: 0,
+        top: 0
+      },
+      nodeRadius: style.nodeRadius || 10,
+      width: style.width || 1200,
+      height: style.height || 600,
+      strokeWidth: style.strokeWidth || 1,
+      strokeColor: style.strokeColor || "#333",
+      colorScheme: style.colorScheme || "default",
+      animationSpeed: style.animationSpeed || 750
+    };
+  }
+  gd3.dendrogram = function(params) {
+    var params = params || {}, style = dendrogramStyle(params.style || {});
+    return dendrogramChart(style);
+  };
   if (typeof define === "function" && define.amd) define(gd3); else if (typeof module === "object" && module.exports) module.exports = gd3;
   this.gd3 = gd3;
 }();
