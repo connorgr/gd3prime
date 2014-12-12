@@ -1616,7 +1616,7 @@
     return transcriptChart(style);
   };
   function dendrogramChart(style) {
-    var update;
+    var update, showSlider = false;
     function chart(selection) {
       selection.each(function(data) {
         if (!data.Z || !data.labels) {
@@ -1770,13 +1770,22 @@
           svg.attr("height", fig.node().getBBox().height);
         };
         update(data);
+        if (showSlider) {
+          console.log("HELLO");
+        }
       });
     }
     chart.update = function(treeData) {
       update(treeData);
+      return chart;
     };
     chart.animationSpeed = function() {
       return style.animationSpeed;
+      return chart;
+    };
+    chart.showSlider = function() {
+      showSlider = true;
+      return chart;
     };
     return chart;
   }

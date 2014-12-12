@@ -1,6 +1,7 @@
 function dendrogramChart(style) {
 	// Globals controllable by the user
-	var update;
+	var update,
+		showSlider = false;
 
 	function chart(selection) {
 		selection.each(function(data) {
@@ -150,7 +151,7 @@ function dendrogramChart(style) {
 						g1 = groups[u],
 						g2 = groups[v],
 						newG = g1.length == 1 && g2.length == 1 && g1[0] == g2[0] ? g1 : g1.concat(g2);
-					console.log(index)
+
 					// Draw the horizontal line from u
 					edgeData.push({name: "u" + index, x1: x(d1), x2: x(w), y1: y(i), y2: y(i), groups: g1 });
 
@@ -227,12 +228,18 @@ function dendrogramChart(style) {
 			// Draw the inital dendrogram
 			update(data);
 
+			// Show the slider if necessary
+			if (showSlider){
+				console.log("HELLO")
+			}
+
 		});
 
 	}
 
-	chart.update = function(treeData){ update(treeData); }
-	chart.animationSpeed = function(){ return style.animationSpeed; }
+	chart.update = function(treeData){ update(treeData); return chart; }
+	chart.animationSpeed = function(){ return style.animationSpeed; return chart; }
+	chart.showSlider = function(){ showSlider = true; return chart; }
 
 	return chart;
 }
