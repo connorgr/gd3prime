@@ -54,6 +54,7 @@ function mutmtxChart(style) {
                     .attr('x', 0)
                     .attr('y', function(d,i) { return style.rowHeight*data.labels.rows.indexOf(d) + style.rowHeight - 3})
                     .style('font-family', style.fontFamily)
+                    .style('font-size', style.fontSize)
                     .text(function(d){return d});
 
       // Adjust the label width to minimize the label area and maximize matrix area
@@ -236,6 +237,7 @@ function mutmtxChart(style) {
             legendHoverHeader = container.append('span')
                 .style('cursor', 'pointer')
                 .style('font-family', style.fontFamily)
+                .style('font-size', style.fontSize + 'px')
                 .text('Legend (mouse over)'),
             legend = container.append('div')
                 .style('background', '#fff')
@@ -281,6 +283,7 @@ function mutmtxChart(style) {
 
       // Legend should be a DIV d3 selection
       function drawLegendFn(legend) {
+        legend.style('font-size', style.fontSize + 'px')
         var columnCategories = legend.append('div')
                 .style('min-width', legend.style('width'))
                 .style('width', legend.style('width')),
@@ -445,13 +448,16 @@ function mutmtxChart(style) {
         var title = menu.append('p')
             .style('cursor', 'pointer')
             .style('font-family', style.fontFamily)
-            .style('font-size', (style.sortingMenuFontSize + 4) + 'px')
+            .style('font-size', style.fontSize + 'px')
             .style('margin-bottom','0px')
             .text('Sort columns [+]');
 
         var optionsMenu = menu.append('ul')
             .style('display', 'none')
             .style('list-style', 'none')
+            .style('margin-right', '0px')
+            .style('margin-bottom', '0px')
+            .style('margin-left', '0px')
             .style('margin-top', '0px')
             .style('padding-left', 0);
 

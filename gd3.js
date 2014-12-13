@@ -1037,7 +1037,7 @@
         var matrix = svg.append("g");
         var rowLabelsG = svg.append("g").attr("class", "mutmtx-rowLabels"), rowLabels = rowLabelsG.selectAll("text").data(data.get("labels").rows).enter().append("text").attr("text-anchor", "end").attr("x", 0).attr("y", function(d, i) {
           return style.rowHeight * data.labels.rows.indexOf(d) + style.rowHeight - 3;
-        }).style("font-family", style.fontFamily).text(function(d) {
+        }).style("font-family", style.fontFamily).style("font-size", style.fontSize).text(function(d) {
           return d;
         });
         var maxTextWidth = -Infinity;
@@ -1121,7 +1121,7 @@
         rerenderMutationMatrix();
         if (drawLegend) drawLegendFn(selection.append("div").style("width", style.width));
         if (drawHoverLegend) {
-          var container = selection.append("div"), legendHoverHeader = container.append("span").style("cursor", "pointer").style("font-family", style.fontFamily).text("Legend (mouse over)"), legend = container.append("div").style("background", "#fff").style("border", "1px solid #ccc").style("padding", "10px").style("position", "absolute").style("display", "none").style("visibility", "hidden");
+          var container = selection.append("div"), legendHoverHeader = container.append("span").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.fontSize + "px").text("Legend (mouse over)"), legend = container.append("div").style("background", "#fff").style("border", "1px solid #ccc").style("padding", "10px").style("position", "absolute").style("display", "none").style("visibility", "hidden");
           legendHoverHeader.on("mouseover", function() {
             var legendW = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
             legendW = legendW - 20 - 20;
@@ -1136,6 +1136,7 @@
         }
         if (drawSortingMenu) drawSortingMenu();
         function drawLegendFn(legend) {
+          legend.style("font-size", style.fontSize + "px");
           var columnCategories = legend.append("div").style("min-width", legend.style("width")).style("width", legend.style("width")), cellTypes = legend.append("div");
           var categories = {};
           Object.keys(data.maps.columnIdToCategory).forEach(function(k) {
@@ -1209,8 +1210,8 @@
         }
         function drawSortingMenu() {
           var menu = selection.append("div");
-          var title = menu.append("p").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.sortingMenuFontSize + 4 + "px").style("margin-bottom", "0px").text("Sort columns [+]");
-          var optionsMenu = menu.append("ul").style("display", "none").style("list-style", "none").style("margin-top", "0px").style("padding-left", 0);
+          var title = menu.append("p").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.fontSize + "px").style("margin-bottom", "0px").text("Sort columns [+]");
+          var optionsMenu = menu.append("ul").style("display", "none").style("list-style", "none").style("margin-right", "0px").style("margin-bottom", "0px").style("margin-left", "0px").style("margin-top", "0px").style("padding-left", 0);
           title.on("click", function() {
             var optionsShown = optionsMenu.style("display") == "block", display = optionsShown ? "none" : "block", visibility = optionsShown ? "hidden" : "visible";
             d3.select("p").text("Sort columns " + (optionsShown ? "[+]" : "[-]"));
