@@ -1,0 +1,24 @@
+{
+  "name": "gd3prime",
+  "version": "1.0.0",
+  "description": "",
+  "main": "gd3.js",
+  "dependencies": {
+    "uglify-js": "~2.4.15",
+    "smash": "~0.0.12"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/connorgr/gd3prime.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/connorgr/gd3prime/issues"
+  },
+  "homepage": "https://github.com/connorgr/gd3prime"
+}
