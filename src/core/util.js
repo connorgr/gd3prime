@@ -17,5 +17,17 @@ var gd3_util = {
     return a.filter(function(item) {
       return seen.hasOwnProperty(item) ? false : (seen[item] = true);
     });
+  },
+  allPairs: function(xs){
+    var n = xs.length,
+        pairs = [];
+
+    for (var i = 0; i < n; i++){
+      for (var j = i+1; j < n; j++){
+        pairs.push( [xs[i], xs[j]] );
+      }
+    }
+    return pairs;
   }
+
 }
