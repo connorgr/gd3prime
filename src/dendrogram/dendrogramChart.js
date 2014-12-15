@@ -64,7 +64,6 @@ function dendrogramChart(style) {
 
 			// Set up colors
 			if (!(colorScheme in colorSchemes)){
-				console.log("Color scheme " + colorScheme + " not found, using default.")
 				colorScheme = "default";
 			}
 			var color = colorSchemes[colorScheme];
