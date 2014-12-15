@@ -348,15 +348,15 @@ function dendrogramChart(style) {
           .call(sliderYAxis);
 
         sliderSVG.selectAll(".axis path")
-          .style({fill: "none", stroke: "#000", "shape-rendering": "crispEdges"})
+          .style({fill: "none", stroke: "#000", "shape-rendering": "crispEdges"});
         sliderSVG.selectAll(".axis line")
-          .style({fill: "none", stroke: "#000", "shape-rendering": "crispEdges"})
+          .style({fill: "none", stroke: "#000", "shape-rendering": "crispEdges"});
 
         // Add a series legend, aligned to the right topmost corner of the plot
         var legend = sliderSVG.append("g"),
             legendGroups = legend.selectAll(".legend-text")
               .data(series).enter()
-              .append("g")
+              .append("g");
 
         legendGroups.append("line")
           .attr("x1", 0)
