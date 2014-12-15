@@ -60,7 +60,7 @@ function dendrogramChart(style) {
       var xAxis = d3.svg.axis(),
           xAxisGroup = fig.append("g")
             .style({'stroke': style.fontColor, 'fill': 'none', 'stroke-width': style.strokeWidth})
-            .attr("transform", "translate(0," + height + ")")
+            .attr("transform", "translate(0," + height + ")");
 
       // Set up colors
       if (!(colorScheme in colorSchemes)){
