@@ -1830,7 +1830,6 @@
           "stroke-width": style.strokeWidth
         }).attr("transform", "translate(0," + height + ")");
         if (!(colorScheme in colorSchemes)) {
-          console.log("Color scheme " + colorScheme + " not found, using default.");
           colorScheme = "default";
         }
         var color = colorSchemes[colorScheme];
@@ -2030,8 +2029,7 @@
             stroke: "#000",
             "shape-rendering": "crispEdges"
           });
-          var legend = sliderSVG.append("g");
-          var legendGroups = legend.selectAll(".legend-text").data(series).enter().append("g");
+          var legend = sliderSVG.append("g"), legendGroups = legend.selectAll(".legend-text").data(series).enter().append("g");
           legendGroups.append("line").attr("x1", 0).attr("x1", 20).attr("y1", 0).attr("y2", 0).style("stroke", function(d) {
             return sliderColor(d.name);
           });
@@ -2095,7 +2093,7 @@
       fontColor: style.fontColor || "#333",
       backgroundColor: "#fff",
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-      fontSize: style.fontSize || "12px",
+      fontSize: style.fontSize || 12,
       margins: style.margins || {
         bottom: 0,
         left: 5,
