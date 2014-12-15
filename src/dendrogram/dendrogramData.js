@@ -9,8 +9,8 @@ function dendrogramData(inputData, delta, T) {
 function cutDendrogram(data, delta, T){
   function MRCA(u, v){
     var parentsU = [],
-    parentsV = [],
-    node = u;
+        parentsV = [],
+        node = u;
 
     while (node != null){
       node = T[node].parent;
@@ -32,14 +32,14 @@ function cutDendrogram(data, delta, T){
 
   // Declarations
   var Z = [], labelToGroup = {}, groupLabels = {}, groupIndex = 0,
-    rows = data.Z.filter(function(row){ return row[2] <= +delta; })
-            .map(function(row, i){ return row.slice(0, 3).concat([i]); }),
-    n = rows.length,
-    N = data.labels.length;
+      rows = data.Z.filter(function(row){ return row[2] <= +delta; })
+                   .map(function(row, i){ return row.slice(0, 3).concat([i]); }),
+      n = rows.length,
+      N = data.labels.length;
 
   // Add all the nodes that are below the cut value to the UnionFind
   var U = gd3_data_structures.UnionFind(),
-    leafIndices = [];
+      leafIndices = [];
 
   rows.forEach(function(row, i){
     U.union([row[0], row[1], N+i]);
@@ -81,10 +81,10 @@ function cutDendrogram(data, delta, T){
 
   // Compute the pseudoedges
   var groups = U.groups().map(function(g){
-      return {members: g, _id: d3.max(g) - N + m};
-    }),
-    pairs = gd3_util.allPairs(groups),
-    d = {};
+        return {members: g, _id: d3.max(g) - N + m};
+      }),
+      pairs = gd3_util.allPairs(groups),
+      d = {};
 
   pairs.forEach(function(P){
     var dist = subtreeDistance(P[0].members, P[1].members);
@@ -145,7 +145,7 @@ function cutDendrogram(data, delta, T){
 // compute distances between subtrees
 function treeFromLinkageMatrix(data){
   var N = data.labels.length,
-    T = {};
+      T = {};
 
   data.Z.forEach(function(row, i){
     T[N+i] = { children: [row[0], row[1]], weight: row[2], parent: null };
