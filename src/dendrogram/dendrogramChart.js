@@ -106,7 +106,7 @@ function dendrogramChart(style) {
 				// UPDATE: transition old elements
 				leaves.transition()
 					.duration(style.animationSpeed)
-					.attr("transform", function(d){ return "translate(0," + labelToY(d) + ")"; })
+					.attr("transform", function(d){ return "translate(0," + labelToY(d) + ")"; });
 
 				leaves.select("circle")
 					.attr("fill", function(d){ return color(labelToGroup[d]); });
@@ -191,7 +191,7 @@ function dendrogramChart(style) {
 				// EDGES' GENERAL UPDATE
 				// Data join
 				var lines = edges.selectAll("line")
-					.data(edgeData, function(d){ return d.name + " " + d.ty; })
+					.data(edgeData, function(d){ return d.name + " " + d.ty; });
 
 				// Transition existing elements
 				lines.transition()
@@ -203,7 +203,7 @@ function dendrogramChart(style) {
 					.attr("stroke-dasharray", function(d){
 						if (d.groups.length == 1){ return ""; }
 						else { return ("3", "3"); }
-					})
+					});
 
 				// Add new elements
 				lines.enter()
@@ -236,7 +236,7 @@ function dendrogramChart(style) {
 				xAxis.scale(x);
 				xAxisGroup.call(xAxis);
 				xAxisGroup.selectAll("text")
-					.style({'stroke-width': '0px', 'fill': style.fontColor })
+					.style({'stroke-width': '0px', 'fill': style.fontColor });
 
 				///////////////////////////////////////////////////////////////////
 				// Resize the SVG to make sure everything fits
