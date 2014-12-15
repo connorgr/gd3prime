@@ -13,10 +13,10 @@
     <script src="gd3.js"></script>
     <script>
     d3.json('testData/example-dendrogram-N30.json', function(data) {
-      var hStyle = {height: 700, width: 1200};
+      var hStyle = {height: 600, width: 1200};
       d3.select('#dendrogram')
           .datum(data)
-          .call(gd3.dendrogram({style:hStyle}).showSlider());
+          .call(gd3.dendrogram({style:hStyle}).showSlider().logScale(false));
     });
     </script>
   </body>

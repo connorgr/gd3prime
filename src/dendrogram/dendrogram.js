@@ -1,3 +1,5 @@
+import "../core/util.js"
+import "../core/dataStructures.js"
 import "dendrogramChart";
 import "dendrogramStyle";
 
