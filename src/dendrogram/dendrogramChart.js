@@ -11,7 +11,12 @@ function dendrogramChart(style) {
 	function chart(selection) {
 		selection.each(function(inputData) {
 			///////////////////////////////////////////////////////////////////
-			// Perform simple validation
+			// Perform simple validation of data
+			// Z: N-1 x 4 linkage matrix, where N is the number of leaves. Each
+			//    row stores which two nodes (columns 1 and 2) merge at distance
+			//     (column 3). See Scipy for details: http://goo.gl/nycOCS
+			// labels: array of labels (strings). Labels will be drawn in the order
+			//          given in this array.
 			if (!inputData.Z || !inputData.labels){
 				throw "dendrogram: Z and labels *required*."
 			}
