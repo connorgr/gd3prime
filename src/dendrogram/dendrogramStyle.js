@@ -5,7 +5,7 @@ function dendrogramStyle(style) {
 		fontColor: style.fontColor || '#333',
 		backgroundColor: "#fff",
 		fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-		fontSize: style.fontSize || '12px',
+		fontSize: style.fontSize || 12,
 		margins: style.margins || {bottom: 0, left: 5, right: 0, top: 0},
 		nodeRadius: style.nodeRadius || 10,
 		width: style.width || 1200,
