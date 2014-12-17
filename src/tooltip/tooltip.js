@@ -1,12 +1,12 @@
-import "annotationStyle";
-import "annotationView";
+import "tooltipStyle";
+import "tooltipView";
 
-gd3.annotation = function(params) {
+gd3.tooltip = function(params) {
   var params = params || {},
-      style  = annotationStyle(params.style || {}),
+      style  = tooltipStyle(params.style || {}),
       votingFns = params.votingFns || {};
 
   // annotation functions as a partial application, binding the given variables
   //   into the returned instance.
-  return annotationView(style);
+  return tooltipView(style);
 };

@@ -2,185 +2,6 @@
   var gd3 = {
     version: "0.2.1"
   };
-  function annotationStyle(style) {
-    return {
-      fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-      fontSize: "12px",
-      height: style.height || 200,
-      width: style.width || 500
-    };
-  }
-  function annotationView(style, votingFns) {
-    var point = null, svg = null, target = null;
-    var votingFns = votingFns || {};
-    function getScreenBBox() {
-      var targetel = d3.event.target, bbox = {}, matrix = targetel.getScreenCTM(), tbbox = targetel.getBBox(), width = tbbox.width, height = tbbox.height, x = tbbox.x, y = tbbox.y;
-      point.x = x;
-      point.y = y;
-      bbox.nw = point.matrixTransform(matrix);
-      point.x += width;
-      bbox.ne = point.matrixTransform(matrix);
-      point.y += height;
-      bbox.se = point.matrixTransform(matrix);
-      point.x -= width;
-      bbox.sw = point.matrixTransform(matrix);
-      point.y -= height / 2;
-      bbox.w = point.matrixTransform(matrix);
-      point.x += width;
-      bbox.e = point.matrixTransform(matrix);
-      point.x -= width / 2;
-      point.y -= height / 2;
-      bbox.n = point.matrixTransform(matrix);
-      point.y += height;
-      bbox.s = point.matrixTransform(matrix);
-      return bbox;
-    }
-    function view(selection) {
-      function appendText(selection, data) {
-        var title = data.title ? data.title + ": " : "", text = data.text ? data.text : "";
-        selection.append("p").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(title + text);
-      }
-      function appendLink(selection, data) {
-        selection.append("a").attr("href", data.href).style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0px").text(data.text);
-      }
-      function appendTable(selection, data) {
-        var table = selection.append("table"), header = table.append("thead").append("tr"), body = table.append("tbody");
-        table.style({
-          "border-collapse": "collapse",
-          "border-bottom": "2px solid #ccc",
-          "border-top": "2px solid #ccc",
-          "margin-top": "3px"
-        });
-        header.style("border-bottom", "1px solid #ccc");
-        header.selectAll("td").data(data.header).enter().append("td").style("color", "#fff").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin", "0px").style("padding", "0 5px 2px 0").text(function(d) {
-          return d;
-        });
-        var rows = body.selectAll("tr").data(data.data).enter().append("tr");
-        var cells = rows.selectAll("td").data(function(d) {
-          return d;
-        }).enter().append("td").style("max-width", "115px").style("padding", "0 3px 0 3px").each(function(d) {
-          if (typeof d === "string") {
-            appendText(d3.select(this), {
-              text: d
-            });
-          } else if (d.type === "vote") {
-            appendVote(d3.select(this), d);
-          } else if (d.type === "link") {
-            appendLink(d3.select(this), d);
-          }
-        });
-      }
-      function appendVote(selection, data) {
-        var down = null, score = null, up = null;
-        var defaultColor = "rgb(255, 255, 255)", activeColor = "rgb(255, 165, 0)";
-        function abstractVote(clickedArrow, otherArrow) {
-          var upvote = clickedArrow == up, adjust = upvote ? 1 : -1;
-          var scoreDatum = score.datum();
-          if (clickedArrow.style("color") == defaultColor) {
-            if (otherArrow.style("color") == activeColor) {
-              score.text(parseInt(score.text()) + adjust);
-            }
-            clickedArrow.style("color", activeColor);
-            otherArrow.style("color", defaultColor);
-            score.text(parseInt(score.text()) + adjust);
-            scoreDatum.voted = upvote ? "upVote" : "downVote";
-          } else {
-            clickedArrow.style("color", defaultColor);
-            score.text(parseInt(score.text()) - adjust);
-            scoreDatum.voted = "none";
-          }
-          scoreDatum.score = parseInt(score.text());
-          score.datum(scoreDatum);
-        }
-        function downVote(d) {
-          abstractVote(down, up);
-          if (votingFns.downVote != undefined) votingFns.downVote(d);
-        }
-        function upVote(d) {
-          abstractVote(up, down);
-          if (votingFns.upVote) votingFns.upVote(d);
-        }
-        var textStyle = {
-          color: "#fff",
-          display: "inline-block",
-          "font-family": style.fontFamily,
-          "font-size": style.fontSize,
-          margin: "0px",
-          "-webkit-touch-callout": "none",
-          "-webkit-user-select": "none",
-          "-khtml-user-select": "none",
-          "-moz-user-select": "none",
-          "-ms-user-select": "none",
-          "user-select": "none"
-        };
-        down = selection.append("p").style(textStyle).style("padding", "0").style("cursor", "pointer").text("▼").on("click", downVote);
-        score = selection.append("p").style(textStyle).style("padding", "0 1px 0 1px").text(data.score);
-        up = selection.append("p").style(textStyle).style("padding", "0").style("cursor", "pointer").text("▲").on("click", upVote);
-        if (score.datum().voted != undefined) {
-          if (score.datum().voted == "upVote") up.style("color", activeColor);
-          if (score.datum().voted == "downVote") down.style("color", activeColor);
-        }
-      }
-      function activate(d) {
-        if (d.annotation == undefined && d.cell.annotation == undefined) {
-          return;
-        }
-        target = target || d3.event.target;
-        svg = target.tagName.toLowerCase() == "svg" ? target : target.ownerSVGElement;
-        if (d3.select(svg).select("SVGPoint").empty() == true) {
-          point = svg.createSVGPoint();
-        } else {
-          point = d3.select(svg).select("SVGPoint").node();
-        }
-        var aData = d.annotation || d.cell.annotation, bbox = getScreenBBox();
-        d3.selectAll(".gd3AnnotationViewDiv").remove();
-        var container = d3.select(document.createElement("div"));
-        container.attr("class", "gd3AnnotationViewDiv");
-        container.style({
-          background: "rgba(0,0,0,.75)",
-          "border-radius": "3px",
-          padding: "5px",
-          position: "absolute"
-        });
-        for (var i in aData) {
-          var aPart = aData[i], type = aPart.type;
-          if (type == "link") {
-            appendLink(container, aPart);
-          } else if (type == "table") {
-            appendTable(container, aPart);
-          } else if (type == "text") {
-            appendText(container, aPart);
-          }
-        }
-        document.body.appendChild(container.node());
-        var node = container.node(), scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft, scrollTop = document.documentElement.scrollTop || document.body.scrollTop, nodeL = bbox.s.x - node.offsetWidth / 2, nodeT = bbox.s.y;
-        var offsetTop = nodeT + scrollTop + 2, offsetLeft = nodeL + scrollLeft;
-        container.style("left", offsetLeft.toString() + "px").style("top", offsetTop.toString() + "px");
-        var xoutLeft = (node.offsetWidth - 10).toString() + "px";
-        container.append("span").text("☓").on("click", function() {
-          d3.selectAll(".gd3AnnotationViewDiv").remove();
-        }).style({
-          color: "#000",
-          cursor: "pointer",
-          display: "inline",
-          "font-size": "10px",
-          "font-weight": "bold",
-          left: xoutLeft,
-          "line-height": 1,
-          position: "absolute",
-          "text-align": "right",
-          top: "-10px",
-          width: "10px"
-        });
-      }
-      selection.on("mouseover", activate);
-    }
-    return view;
-  }
-  gd3.annotation = function(params) {
-    var params = params || {}, style = annotationStyle(params.style || {}), votingFns = params.votingFns || {};
-    return annotationView(style);
-  };
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -1342,6 +1163,200 @@
   gd3.mutationMatrix = function(params) {
     var params = params || {}, style = mutmtxStyle(params.style || {});
     return mutmtxChart(style);
+  };
+  function tooltipStyle(style) {
+    return {
+      fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      fontSize: "12px",
+      height: style.height || 200,
+      width: style.width || 500
+    };
+  }
+  function tooltipView(style) {
+    var direction = d3_tip_direction, offset = d3_tip_offset, html = d3_tip_html, node = null, svg = null, point = null, target = null;
+    function view(selection) {
+      svg = selection;
+      point = selection.node().createSVGPoint();
+      node = d3.select("body").append("div");
+      node.style({
+        "border-radius": "2px",
+        color: "#fff",
+        "font-family": style.fontFamily,
+        position: "absolute",
+        top: 0,
+        opacity: 0,
+        "pointer-events": "none",
+        "box-sizing": "border-box",
+        padding: "12px",
+        background: "rgba(0, 0, 0, 0.8)"
+      });
+      node = node.node();
+      var tipObjects = selection.selectAll(".gd3-tipobj").on("mouseover", view.render).on("mouseout", view.hide);
+    }
+    view.render = function() {
+      var args = Array.prototype.slice.call(arguments);
+      if (args[args.length - 1] instanceof SVGElement) target = args.pop();
+      var content = html.apply(this, args), poffset = offset.apply(this, args), dir = direction.apply(this, args), nodel = d3.select(node), i = directions.length, coords, scrollTop = document.documentElement.scrollTop || document.body.scrollTop, scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+      nodel.html(content).style({
+        opacity: 1,
+        "pointer-events": "all"
+      });
+      while (i--) nodel.classed(directions[i], false);
+      coords = direction_callbacks.get(dir).apply(this);
+      nodel.classed(dir, true).style({
+        top: coords.top + poffset[0] + scrollTop + "px",
+        left: coords.left + poffset[1] + scrollLeft + "px"
+      });
+      console.log(node);
+      return view;
+    };
+    view.hide = function() {
+      var nodel = d3.select(node);
+      nodel.style({
+        opacity: 0,
+        "pointer-events": "none"
+      });
+      return view;
+    };
+    view.attr = function(n, v) {
+      if (arguments.length < 2 && typeof n === "string") {
+        return d3.select(node).attr(n);
+      } else {
+        var args = Array.prototype.slice.call(arguments);
+        d3.selection.prototype.attr.apply(d3.select(node), args);
+      }
+      return view;
+    };
+    view.style = function(n, v) {
+      if (arguments.length < 2 && typeof n === "string") {
+        return d3.select(node).style(n);
+      } else {
+        var args = Array.prototype.slice.call(arguments);
+        d3.selection.prototype.style.apply(d3.select(node), args);
+      }
+      return view;
+    };
+    view.direction = function(v) {
+      if (!arguments.length) return direction;
+      direction = v == null ? v : d3.functor(v);
+      return view;
+    };
+    view.offset = function(v) {
+      if (!arguments.length) return offset;
+      offset = v == null ? v : d3.functor(v);
+      return view;
+    };
+    view.html = function(v) {
+      if (!arguments.length) return html;
+      html = v == null ? v : d3.functor(v);
+      return view;
+    };
+    function d3_tip_direction() {
+      return "n";
+    }
+    function d3_tip_offset() {
+      return [ 0, 0 ];
+    }
+    function d3_tip_html() {
+      return " ";
+    }
+    var direction_callbacks = d3.map({
+      n: direction_n,
+      s: direction_s,
+      e: direction_e,
+      w: direction_w,
+      nw: direction_nw,
+      ne: direction_ne,
+      sw: direction_sw,
+      se: direction_se
+    }), directions = direction_callbacks.keys();
+    function direction_n() {
+      var bbox = getScreenBBox();
+      return {
+        top: bbox.n.y - node.offsetHeight,
+        left: bbox.n.x - node.offsetWidth / 2
+      };
+    }
+    function direction_s() {
+      var bbox = getScreenBBox();
+      return {
+        top: bbox.s.y,
+        left: bbox.s.x - node.offsetWidth / 2
+      };
+    }
+    function direction_e() {
+      var bbox = getScreenBBox();
+      return {
+        top: bbox.e.y - node.offsetHeight / 2,
+        left: bbox.e.x
+      };
+    }
+    function direction_w() {
+      var bbox = getScreenBBox();
+      return {
+        top: bbox.w.y - node.offsetHeight / 2,
+        left: bbox.w.x - node.offsetWidth
+      };
+    }
+    function direction_nw() {
+      var bbox = getScreenBBox();
+      return {
+        top: bbox.nw.y - node.offsetHeight,
+        left: bbox.nw.x - node.offsetWidth
+      };
+    }
+    function direction_ne() {
+      var bbox = getScreenBBox();
+      return {
+        top: bbox.ne.y - node.offsetHeight,
+        left: bbox.ne.x
+      };
+    }
+    function direction_sw() {
+      var bbox = getScreenBBox();
+      return {
+        top: bbox.sw.y,
+        left: bbox.sw.x - node.offsetWidth
+      };
+    }
+    function direction_se() {
+      var bbox = getScreenBBox();
+      return {
+        top: bbox.se.y,
+        left: bbox.e.x
+      };
+    }
+    function getScreenBBox() {
+      var targetel = target || d3.event.target;
+      while ("undefined" === typeof targetel.getScreenCTM && "undefined" === targetel.parentNode) {
+        targetel = targetel.parentNode;
+      }
+      var bbox = {}, matrix = targetel.getScreenCTM(), tbbox = targetel.getBBox(), width = tbbox.width, height = tbbox.height, x = tbbox.x, y = tbbox.y;
+      point.x = x;
+      point.y = y;
+      bbox.nw = point.matrixTransform(matrix);
+      point.x += width;
+      bbox.ne = point.matrixTransform(matrix);
+      point.y += height;
+      bbox.se = point.matrixTransform(matrix);
+      point.x -= width;
+      bbox.sw = point.matrixTransform(matrix);
+      point.y -= height / 2;
+      bbox.w = point.matrixTransform(matrix);
+      point.x += width;
+      bbox.e = point.matrixTransform(matrix);
+      point.x -= width / 2;
+      point.y -= height / 2;
+      bbox.n = point.matrixTransform(matrix);
+      point.y += height;
+      bbox.s = point.matrixTransform(matrix);
+      return bbox;
+    }
+    return view;
+  }
+  gd3.tooltip = function(params) {
+    var params = params || {}, style = tooltipStyle(params.style || {}), votingFns = params.votingFns || {};
+    return tooltipView(style);
   };
   function transcriptData(data) {
     function parseCancer(cdata) {
