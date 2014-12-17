@@ -55,8 +55,6 @@ function tooltipView(style) {
       left: (coords.left + poffset[1]) + scrollLeft + 'px'
     });
 
-    console.log(node);
-
     return view;
   }
 
