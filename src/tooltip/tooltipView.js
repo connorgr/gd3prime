@@ -3,6 +3,7 @@ function tooltipView(style) {
       offset    = d3_tip_offset,
       html      = d3_tip_html,
       node      = null,
+      sticky    = false,
       svg       = null,
       point     = null,
       target    = null;
@@ -29,6 +30,7 @@ function tooltipView(style) {
     node = node.node();
 
     var tipObjects = selection.selectAll('.gd3-tipobj')
+        .on('click', sticky = sticky ? false : true)
         .on('mouseover', view.render )
         .on('mouseout', view.hide );
   } // end view
@@ -59,6 +61,7 @@ function tooltipView(style) {
   }
 
   view.hide = function() {
+    if (sticky) return;
     var nodel = d3.select(node);
     nodel.style({ opacity: 0, 'pointer-events': 'none' });
     return view;

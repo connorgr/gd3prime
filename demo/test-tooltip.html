@@ -29,6 +29,21 @@
         .style('fill', 'steelblue');
 
     svg.call(gd3.tooltip().html(function(d) { return '<span>hi</span>'; }));
+
+
+    var svgdos = d3.select('#test').append('svg')
+        .style('margin-left', '50px')
+        .style('margin-top', '50px')
+        .attr('width', 20)
+        .attr('height', 20);
+    svgdos.append('rect')
+        .attr('width', 20)
+        .attr('height', 20)
+        .attr('class', 'gd3-tipobj')
+        .style('fill', 'orange');
+
+    svgdos.call(gd3.tooltip().html(function(d) { return '<span>hola</span>'; }));
+
     </script>
   </body>
 </html>
