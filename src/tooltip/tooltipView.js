@@ -14,19 +14,19 @@ function tooltipView(style) {
     // node = d3.select(document.createElement('div'));
     node = d3.select('body').append('div');
     node.style({
-      'border-radius': '2px',
-      color: '#fff',
+      background: style.background,
+      border: style.border,
+      'border-radius': style.borderRadius,
+      color: style.fontColor,
       'font-family': style.fontFamily,
       position: 'absolute',
       top: 0,
       opacity: 0,
       'pointer-events': 'none',
       'box-sizing': 'border-box',
-      padding: '12px',
-      background: 'rgba(0, 0, 0, 0.8)'
+      padding: style.padding
     });
     node = node.node();
-
 
     var tipObjects = selection.selectAll('.gd3-tipobj')
         .on('mouseover', view.render )

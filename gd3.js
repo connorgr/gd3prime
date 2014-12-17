@@ -1227,9 +1227,14 @@
   };
   function tooltipStyle(style) {
     return {
-      fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      background: style.background || "rgba(0, 0, 0, 0.75)",
+      border: style.border || "1px solid rgba(0,0,0,0.8)",
+      borderRadius: style.borderRadius || "2px",
+      fontColor: style.fontColor || "#ffffff",
+      fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       fontSize: "12px",
       height: style.height || 200,
+      padding: style.padding || "5px",
       width: style.width || 500
     };
   }
@@ -1240,16 +1245,17 @@
       point = selection.node().createSVGPoint();
       node = d3.select("body").append("div");
       node.style({
-        "border-radius": "2px",
-        color: "#fff",
+        background: style.background,
+        border: style.border,
+        "border-radius": style.borderRadius,
+        color: style.fontColor,
         "font-family": style.fontFamily,
         position: "absolute",
         top: 0,
         opacity: 0,
         "pointer-events": "none",
         "box-sizing": "border-box",
-        padding: "12px",
-        background: "rgba(0, 0, 0, 0.8)"
+        padding: style.padding
       });
       node = node.node();
       var tipObjects = selection.selectAll(".gd3-tipobj").on("mouseover", view.render).on("mouseout", view.hide);

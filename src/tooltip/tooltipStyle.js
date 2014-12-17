@@ -1,8 +1,13 @@
 function tooltipStyle(style) {
   return {
-    fontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+    background: style.background || 'rgba(0, 0, 0, 0.75)',
+    border: style.border || '1px solid rgba(0,0,0,0.8)',
+    borderRadius: style.borderRadius || '2px',
+    fontColor: style.fontColor || '#ffffff',
+    fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
     fontSize: '12px',
     height: style.height || 200,
+    padding: style.padding || '5px',
     width: style.width || 500,
   };
 }
