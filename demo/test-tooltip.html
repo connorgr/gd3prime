@@ -25,7 +25,8 @@
     svg.append('rect')
         .attr('width', 20)
         .attr('height', 20)
-        .attr('class', 'gd3-tipobj');
+        .attr('class', 'gd3-tipobj')
+        .style('fill', 'steelblue');
 
     svg.call(gd3.tooltip().html(function(d) { return '<span>hi</span>'; }));
     </script>
