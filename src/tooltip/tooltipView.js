@@ -20,6 +20,7 @@ function tooltipView(style) {
       'border-radius': style.borderRadius,
       color: style.fontColor,
       'font-family': style.fontFamily,
+      'line-height': style.lineHeight,
       position: 'absolute',
       top: 0,
       opacity: 0,
