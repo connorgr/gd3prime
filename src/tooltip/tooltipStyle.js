@@ -5,7 +5,7 @@ function tooltipStyle(style) {
     borderRadius: style.borderRadius || '2px',
     fontColor: style.fontColor || '#ffffff',
     fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-    fontSize: '10px',
+    fontSize: '11px',
     height: style.height || 200,
     lineHeight: style.lineHeight || 1,
     padding: style.padding || '5px',
