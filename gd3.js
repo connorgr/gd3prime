@@ -1232,8 +1232,9 @@
       borderRadius: style.borderRadius || "2px",
       fontColor: style.fontColor || "#ffffff",
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-      fontSize: "12px",
+      fontSize: "10px",
       height: style.height || 200,
+      lineHeight: style.lineHeight || 1,
       padding: style.padding || "5px",
       width: style.width || 500
     };
@@ -1250,6 +1251,7 @@
         "border-radius": style.borderRadius,
         color: style.fontColor,
         "font-family": style.fontFamily,
+        "line-height": style.lineHeight,
         position: "absolute",
         top: 0,
         opacity: 0,
