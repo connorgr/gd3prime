@@ -30,12 +30,13 @@ function tooltipView(style) {
     node = node.node();
 
     var tipObjects = selection.selectAll('.gd3-tipobj')
-        .on('click', sticky = sticky ? false : true)
+        .on('click', function() { sticky = sticky ? false : true; })
         .on('mouseover', view.render )
         .on('mouseout', view.hide );
   } // end view
 
   view.render = function() {
+    if (sticky) return;
     var args = Array.prototype.slice.call(arguments);
     if(args[args.length - 1] instanceof SVGElement) target = args.pop();
 

@@ -20,7 +20,7 @@
     var svg = d3.select('#test').append('svg')
         .style('margin-left', '50px')
         .style('margin-top', '50px')
-        .attr('width', 20)
+        .attr('width', 100)
         .attr('height', 20);
     svg.append('rect')
         .attr('width', 20)
@@ -28,8 +28,16 @@
         .attr('class', 'gd3-tipobj')
         .style('fill', 'steelblue');
 
-    svg.call(gd3.tooltip().html(function(d) { return '<span>hi</span>'; }));
+    svg.append('rect')
+        .attr('x', 30)
+        .attr('width', 20)
+        .attr('height', 20)
+        .attr('class', 'gd3-tipobj')
+        .style('fill', 'orange');
 
+    svg.call(gd3.tooltip().html(function(d,i) { return '<span>'+i+'</span>'; }));
+
+    d3.select('#test').append('br');
 
     var svgdos = d3.select('#test').append('svg')
         .style('margin-left', '50px')
@@ -40,7 +48,7 @@
         .attr('width', 20)
         .attr('height', 20)
         .attr('class', 'gd3-tipobj')
-        .style('fill', 'orange');
+        .style('fill', 'crimson');
 
     svgdos.call(gd3.tooltip().html(function(d) { return '<span>hola</span>'; }));
 

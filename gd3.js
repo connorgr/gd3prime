@@ -1239,7 +1239,7 @@
     };
   }
   function tooltipView(style) {
-    var direction = d3_tip_direction, offset = d3_tip_offset, html = d3_tip_html, node = null, svg = null, point = null, target = null;
+    var direction = d3_tip_direction, offset = d3_tip_offset, html = d3_tip_html, node = null, sticky = false, svg = null, point = null, target = null;
     function view(selection) {
       svg = selection;
       point = selection.node().createSVGPoint();
@@ -1258,9 +1258,12 @@
         padding: style.padding
       });
       node = node.node();
-      var tipObjects = selection.selectAll(".gd3-tipobj").on("mouseover", view.render).on("mouseout", view.hide);
+      var tipObjects = selection.selectAll(".gd3-tipobj").on("click", function() {
+        sticky = sticky ? false : true;
+      }).on("mouseover", view.render).on("mouseout", view.hide);
     }
     view.render = function() {
+      if (sticky) return;
       var args = Array.prototype.slice.call(arguments);
       if (args[args.length - 1] instanceof SVGElement) target = args.pop();
       var content = html.apply(this, args), poffset = offset.apply(this, args), dir = direction.apply(this, args), nodel = d3.select(node), i = directions.length, coords, scrollTop = document.documentElement.scrollTop || document.body.scrollTop, scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
@@ -1277,6 +1280,7 @@
       return view;
     };
     view.hide = function() {
+      if (sticky) return;
       var nodel = d3.select(node);
       nodel.style({
         opacity: 0,
