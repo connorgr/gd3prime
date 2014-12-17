@@ -6,5 +6,5 @@ import "heatmap/";
 import "mutmtx/";
 import "tooltip/";
 import "transcript/";
-
+import "dendrogram/";
 import "end.js";

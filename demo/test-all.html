@@ -25,7 +25,8 @@
     <div id="mutmtx"></div>
     <hr />
     <div id="transcript"></div>
-
+    <hr/>
+    <div id="dendrogram"></div>
     <div style="height:200px"></div>
     <script src="../bower_components/d3/d3.min.js"></script>
     <script src="../gd3.js"></script>
@@ -111,6 +112,13 @@
       d3.select('#transcript')
           .datum(vizData[1])
           .call(gd3.transcript(params));
+    });
+
+    d3.json('testData/example-dendrogram-N30.json', function(data) {
+      var hStyle = {height: 400, width: 800};
+      d3.select('#dendrogram')
+          .datum(data)
+          .call(gd3.dendrogram({style:hStyle}));
     });
     </script>
   </body>
