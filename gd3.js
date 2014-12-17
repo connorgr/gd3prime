@@ -1268,7 +1268,6 @@
         top: coords.top + poffset[0] + scrollTop + "px",
         left: coords.left + poffset[1] + scrollLeft + "px"
       });
-      console.log(node);
       return view;
     };
     view.hide = function() {

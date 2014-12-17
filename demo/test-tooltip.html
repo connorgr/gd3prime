@@ -26,7 +26,6 @@
         .attr('width', 20)
         .attr('height', 20)
         .attr('class', 'gd3-tipobj');
-    svg.call(function(selection) { console.log(selection); });
 
     svg.call(gd3.tooltip().html(function(d) { return '<span>hi</span>'; }));
     </script>
