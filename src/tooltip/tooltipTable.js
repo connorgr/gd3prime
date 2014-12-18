@@ -18,8 +18,6 @@ gd3_tooltipTablePrototype.toString = function() {
 };
 
 gd3_tooltipTablePrototype.render = function(selection) {
-  console.log(this);
-  console.log(selection)
   var thisTooltip = this;
       table = selection.append('table'),
       rows = table.selectAll('tr').data(thisTooltip.table).enter().append('tr'),
