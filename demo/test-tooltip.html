@@ -58,15 +58,24 @@
     body.append('hr');
 
     var testText = new gd3.tooltipText('Testing tooltip\n'),
-        testLink = new gd3.tooltipLink('https://google.com', 'Google Link\n'),
         imgSrc = 'https://www.google.com/images/srpr/logo11w.png',
-        testImg = new gd3.tooltipImage(imgSrc, 'Google\'s logo');
+        testImg = new gd3.tooltipImage(imgSrc, 'Google\'s logo'),
+        testLink = new gd3.tooltipLink('https://google.com', 'Google Link\n'),
+        testLinkImg = new gd3.tooltipLink('https://google.com', testImg),
+        testVote = new gd3.tooltipVote(null,null,80);
 
     testText.render(body);
     body.append('br');
     testLink.render(body);
     body.append('br');
+    testLinkImg.render(body);
+    body.append('br');
     testImg.render(body);
+    body.append('br');
+    testVote.render(body);
+
+    var testTable = new gd3.tooltipTable([ [1,2,3], [4,5,testText] ] );
+    testTable.render(body);
 
     </script>
   </body>

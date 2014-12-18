@@ -1464,6 +1464,43 @@
   gd3_tooltipTextPrototype.render = function(selection) {
     selection.append("span").text(this.text);
   };
+  gd3.tooltipVote = gd3_tooltipVote;
+  function gd3_tooltipVote(downvoteFn, upvoteFn, voteCount) {
+    if (!this instanceof gd3_tooltipVote) return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount);
+    this.downvoteFn = downvoteFn;
+    this.upvoteFn = upvoteFn;
+    this.voteCount = voteCount;
+    return this;
+  }
+  var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipDatum();
+  gd3_tooltipVotePrototype.toString = function() {
+    return this.voteCount + " votes";
+  };
+  gd3_tooltipVotePrototype.render = function(selection) {
+    var votingArea = selection.append("span"), downVote = votingArea.append("span").text("▼"), voteCount = votingArea.append("span").text(this.voteCount), upVote = votingArea.append("span").text("▲");
+    votingArea.selectAll("span").style({
+      display: "inline-block"
+    });
+    downVote.on("click", function(d) {
+      downVote.classed("gd3-vote-active", true);
+      upVote.classed("gd3-vote-active", false);
+      this.downVoteFn(d);
+    });
+    upVote.on("click", function(d) {
+      downVote.classed("gd3-vote-active", false);
+      upVote.classed("gd3-vote-active", true);
+      this.upvoteFn(d);
+    });
+    var voteGlyphStyle = {
+      cursor: "pointer",
+      "-moz-user-select": "none",
+      "-ms-user-select": "none",
+      "-o-user-select": "none",
+      "-webkit-user-select": "none"
+    };
+    downVote.style(voteGlyphStyle);
+    upVote.style(voteGlyphStyle);
+  };
   gd3.tooltipLink = gd3_tooltipLink;
   function gd3_tooltipLink(href, body) {
     if (!this instanceof gd3_tooltipLink) return new gd3_tooltipLink(href, body);
@@ -1480,6 +1517,28 @@
     var thisTooltip = this;
     a = selection.append("a").attr("href", this.href);
     if (thisTooltip.body.render) thisTooltip.body.render(a); else a.text(thisTooltip.body.toString());
+  };
+  gd3.tooltipTable = gd3_tooltipTable;
+  function gd3_tooltipTable(array) {
+    if (!this instanceof gd3_tooltipTable) return new gd3_tooltipTable(array);
+    this.table = array;
+    return this;
+  }
+  var gd3_tooltipTablePrototype = gd3_tooltipTable.prototype = new gd3_tooltipDatum();
+  gd3_tooltipTablePrototype.toString = function() {
+    return this.body.toString();
+  };
+  gd3_tooltipTablePrototype.render = function(selection) {
+    console.log(this);
+    console.log(selection);
+    var thisTooltip = this;
+    table = selection.append("table"), rows = table.selectAll("tr").data(thisTooltip.table).enter().append("tr"), 
+    cells = rows.selectAll("td").data(function(d) {
+      return d;
+    }).enter().append("td");
+    cells.each(function(d) {
+      if (d.render) d.render(d3.select(this)); else d3.select(this).text(d.toString());
+    });
   };
   function transcriptData(data) {
     function parseCancer(cdata) {
