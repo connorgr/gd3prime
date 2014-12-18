@@ -52,6 +52,10 @@
 
     svgdos.call(gd3.tooltip().html(function(d) { return '<span>hola</span>'; }));
 
+    var imgSrc = 'https://www.google.com/images/srpr/logo11w.png',
+        testImg = new gd3.tooltipImage(imgSrc, 'Google\'s logo');
+    testImg.render(d3.select('body'));
+
     </script>
   </body>
 </html>
