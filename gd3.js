@@ -1431,6 +1431,39 @@
     var params = params || {}, style = tooltipStyle(params.style || {}), votingFns = params.votingFns || {};
     return tooltipView(style);
   };
+  gd3.tooltipDatum = gd3_tooltipDatum;
+  function gd3_tooltipDatum() {}
+  gd3.tooltipText = gd3_tooltipText;
+  function gd3_tooltipText(text) {
+    if (!this instanceof gd3_tooltipText) return new gd3_tooltipText(text);
+    this.text = text;
+    this.type = "text";
+    return this;
+  }
+  var gd3_tooltipTextPrototype = gd3_tooltipText.prototype = new gd3_tooltipDatum();
+  gd3_tooltipTextPrototype.toString = function() {
+    return this.text;
+  };
+  gd3_tooltipTextPrototype.render = function(selection) {
+    selection.append("span").text(this.text);
+  };
+  gd3.tooltipLink = gd3_tooltipLink;
+  function gd3_tooltipLink(href, body) {
+    if (!this instanceof gd3_tooltipLink) return new gd3_tooltipLink(href, body);
+    this.body = body || "(click)";
+    this.href = href || "";
+    this.type = "link";
+    return this;
+  }
+  var gd3_tooltipLinkPrototype = gd3_tooltipLink.prototype = new gd3_tooltipDatum();
+  gd3_tooltipLinkPrototype.toString = function() {
+    return this.body.toString();
+  };
+  gd3_tooltipLinkPrototype.render = function(selection) {
+    var thisTooltip = this;
+    a = selection.append("a").attr("href", this.href);
+    if (thisTooltip.body.render) thisTooltip.body.render(a); else a.text(thisTooltip.body.toString());
+  };
   function transcriptData(data) {
     function parseCancer(cdata) {
       var defaultInactivatingMutations = {
