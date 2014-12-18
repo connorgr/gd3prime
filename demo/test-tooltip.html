@@ -13,11 +13,13 @@
     <script src="../gd3.js"></script>
     <script>
 
+    var body = d3.select('body');
+
     var style = {
       width: 800
     }
 
-    var svg = d3.select('#test').append('svg')
+    var svg = body.append('svg')
         .style('margin-left', '50px')
         .style('margin-top', '50px')
         .attr('width', 100)
@@ -37,9 +39,9 @@
 
     svg.call(gd3.tooltip().html(function(d,i) { return '<span>'+i+'</span>'; }));
 
-    d3.select('#test').append('br');
+    body.append('br');
 
-    var svgdos = d3.select('#test').append('svg')
+    var svgdos = body.append('svg')
         .style('margin-left', '50px')
         .style('margin-top', '50px')
         .attr('width', 20)
@@ -52,9 +54,19 @@
 
     svgdos.call(gd3.tooltip().html(function(d) { return '<span>hola</span>'; }));
 
-    var imgSrc = 'https://www.google.com/images/srpr/logo11w.png',
+
+    body.append('hr');
+
+    var testText = new gd3.tooltipText('Testing tooltip\n'),
+        testLink = new gd3.tooltipLink('https://google.com', 'Google Link\n'),
+        imgSrc = 'https://www.google.com/images/srpr/logo11w.png',
         testImg = new gd3.tooltipImage(imgSrc, 'Google\'s logo');
-    testImg.render(d3.select('body'));
+
+    testText.render(body);
+    body.append('br');
+    testLink.render(body);
+    body.append('br');
+    testImg.render(body);
 
     </script>
   </body>
