@@ -113,6 +113,16 @@ function tooltipView(style) {
     return view;
   }
 
+  view.useData = function(data) {
+    var nodel = d3.select(node);
+    console.log(nodel);
+    nodel.selectAll('*').remove();
+    data.forEach(function(d) { d.render(nodel); });
+    html = nodel.html();
+
+    return view;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Private functions
 

@@ -1,6 +1,7 @@
 import "tooltip";
 
-import "tooltipDatum";
+import "tooltipElement";
+
 import "tooltipImage";
 import "tooltipText";
 import "tooltipVote";

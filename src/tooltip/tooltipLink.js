@@ -1,6 +1,6 @@
-import "tooltipDatum";
+import "tooltipElement";
 
-gd3.tooltipLink = gd3_tooltipLink;
+gd3.tooltip.link = gd3_tooltipLink;
 
 function gd3_tooltipLink(href, body) {
   if (!this instanceof gd3_tooltipLink) return new gd3_tooltipLink(href, body);
@@ -11,7 +11,7 @@ function gd3_tooltipLink(href, body) {
   return this;
 }
 
-var gd3_tooltipLinkPrototype = gd3_tooltipLink.prototype = new gd3_tooltipDatum;
+var gd3_tooltipLinkPrototype = gd3_tooltipLink.prototype = new gd3_tooltipElement;
 
 gd3_tooltipLinkPrototype.toString = function() {
   return this.body.toString();

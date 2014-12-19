@@ -16,7 +16,9 @@ import "tooltipView";
 //        factories that can automatically populate and format tooltips
 //
 
-gd3.tooltip = function(params) {
+gd3.tooltip = {};
+
+gd3.tooltip.make = function(params) {
   var params = params || {},
       style  = tooltipStyle(params.style || {}),
       votingFns = params.votingFns || {};
@@ -25,3 +27,18 @@ gd3.tooltip = function(params) {
   //   into the returned instance.
   return tooltipView(style);
 };
+
+gd3.tooltip.data = function(ds) {
+  return ds.map(function(d) { return gd3.tooltip.datum(d); });
+}
+
+// tooltip datum convenience constructor
+gd3.tooltip.datum = function(d) {
+  if(!d.type) return new gd3.tooltip.text(d.toString());
+  else if(d.type == 'image') return new gd3.tooltip.image(d.src, d.title);
+  else if(d.type == 'link') return new gd3.tooltip.link(d.href, d.body);
+  else if(d.type == 'table') return new gd3.tooltip.table(d.table);
+  else if(d.type == 'text') return new gd3.tooltip.text(d.text);
+  else if(d.type == 'vote') return new gd3.tooltip.vote(d.downvoteFn, d.upvoteFn, d.voteCount);
+  else return new gd3.tooltip.text(d.toString());
+}

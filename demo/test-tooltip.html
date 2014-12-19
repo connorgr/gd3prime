@@ -37,7 +37,7 @@
         .attr('class', 'gd3-tipobj')
         .style('fill', 'orange');
 
-    svg.call(gd3.tooltip().html(function(d,i) { return '<span>'+i+'</span>'; }));
+    svg.call(gd3.tooltip.make().html(function(d,i) { return '<span>'+i+'</span>'; }));
 
     body.append('br');
 
@@ -52,17 +52,18 @@
         .attr('class', 'gd3-tipobj')
         .style('fill', 'crimson');
 
-    svgdos.call(gd3.tooltip().html(function(d) { return '<span>hola</span>'; }));
+    svgdos.call(gd3.tooltip.make().html(function(d) { return '<span>hola</span>'; }));
 
+    body.append('br');
 
     body.append('hr');
 
-    var testText = new gd3.tooltipText('Testing tooltip\n'),
+    var testText = new gd3.tooltip.text('Testing tooltip\n'),
         imgSrc = 'https://www.google.com/images/srpr/logo11w.png',
-        testImg = new gd3.tooltipImage(imgSrc, 'Google\'s logo'),
-        testLink = new gd3.tooltipLink('https://google.com', 'Google Link\n'),
-        testLinkImg = new gd3.tooltipLink('https://google.com', testImg),
-        testVote = new gd3.tooltipVote(null,null,80);
+        testImg = new gd3.tooltip.image(imgSrc, 'Google\'s logo'),
+        testLink = new gd3.tooltip.link('https://google.com', 'Google Link\n'),
+        testLinkImg = new gd3.tooltip.link('https://google.com', testImg),
+        testVote = new gd3.tooltip.vote(null,null,80);
 
     testText.render(body);
     body.append('br');
@@ -74,8 +75,45 @@
     body.append('br');
     testVote.render(body);
 
-    var testTable = new gd3.tooltipTable([ [1,2,3], [4,5,testText] ] );
+    var testTable = new gd3.tooltip.table([ [1,2,3], [4,5,testText] ] );
     testTable.render(body);
+
+    body.append('br');
+
+    var testDatum = gd3.tooltip.datum({type: 'text', text:'datum text test works' });
+    testDatum.render(body);
+
+    body.append('br');
+    body.append('hr');
+
+    var svgtres = body.append('svg')
+        .style('margin-left', '50px')
+        .style('margin-top', '50px')
+        .attr('width', 20)
+        .attr('height', 20);
+    var svgtres_rects = svgtres.selectAll('rect')
+        .data(['test'])
+        .enter()
+        .append('rect')
+            .attr('width', 20)
+            .attr('height', 20)
+            .attr('class', 'gd3-tipobj')
+            .style('fill', 'forestgreen');
+
+    var testingData = [
+          { type: 'text', text: 'Title would go here'},
+          { type: 'link', href: 'https://google.com', body: 'Google link test'}
+        ].map(function(d) { return gd3.tooltip.datum(d); });
+
+    console.log(testingData)
+
+    svgtres.call(gd3.tooltip.make().useData(testingData));
+
+    // svgtres_rects.each(function(data) {
+    //   var tipdata = gd3.tooltip.data(data);
+    //   tipdata.forEach(function(d) { d.render(tooltip); });
+    //   svgtres.call( gd3.tooltip.make().html(html) );
+    // });
 
     </script>
   </body>

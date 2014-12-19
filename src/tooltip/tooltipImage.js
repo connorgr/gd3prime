@@ -1,6 +1,6 @@
-import "tooltipDatum";
+import "tooltipElement";
 
-gd3.tooltipImage = gd3_tooltipImage;
+gd3.tooltip.image = gd3_tooltipImage;
 
 function gd3_tooltipImage(src, title) {
   if (!this instanceof gd3_tooltipImage) return new gd3_tooltipImage(src, title);
@@ -11,7 +11,7 @@ function gd3_tooltipImage(src, title) {
   return this;
 }
 
-var gd3_tooltipImagePrototype = gd3_tooltipImage.prototype = new gd3_tooltipDatum;
+var gd3_tooltipImagePrototype = gd3_tooltipImage.prototype = new gd3_tooltipElement;
 
 gd3_tooltipImagePrototype.toString = function() {
   return this.title.toString();

@@ -1,6 +1,6 @@
-import "tooltipDatum";
+import "tooltipElement";
 
-gd3.tooltipTable = gd3_tooltipTable;
+gd3.tooltip.table = gd3_tooltipTable;
 
 // Array should be a 2D array.
 function gd3_tooltipTable(array) {
@@ -11,7 +11,7 @@ function gd3_tooltipTable(array) {
   return this;
 }
 
-var gd3_tooltipTablePrototype = gd3_tooltipTable.prototype = new gd3_tooltipDatum;
+var gd3_tooltipTablePrototype = gd3_tooltipTable.prototype = new gd3_tooltipElement;
 
 gd3_tooltipTablePrototype.toString = function() {
   return this.body.toString();

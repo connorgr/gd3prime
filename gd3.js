@@ -1324,6 +1324,16 @@
       html = v == null ? v : d3.functor(v);
       return view;
     };
+    view.useData = function(data) {
+      var nodel = d3.select(node);
+      console.log(nodel);
+      nodel.selectAll("*").remove();
+      data.forEach(function(d) {
+        d.render(nodel);
+      });
+      html = nodel.html();
+      return view;
+    };
     function d3_tip_direction() {
       return "n";
     }
@@ -1427,13 +1437,22 @@
     }
     return view;
   }
-  gd3.tooltip = function(params) {
+  gd3.tooltip = {};
+  gd3.tooltip.make = function(params) {
     var params = params || {}, style = tooltipStyle(params.style || {}), votingFns = params.votingFns || {};
     return tooltipView(style);
   };
-  gd3.tooltipDatum = gd3_tooltipDatum;
-  function gd3_tooltipDatum() {}
-  gd3.tooltipImage = gd3_tooltipImage;
+  gd3.tooltip.data = function(ds) {
+    return ds.map(function(d) {
+      return gd3.tooltip.datum(d);
+    });
+  };
+  gd3.tooltip.datum = function(d) {
+    if (!d.type) return new gd3.tooltip.text(d.toString()); else if (d.type == "image") return new gd3.tooltip.image(d.src, d.title); else if (d.type == "link") return new gd3.tooltip.link(d.href, d.body); else if (d.type == "table") return new gd3.tooltip.table(d.table); else if (d.type == "text") return new gd3.tooltip.text(d.text); else if (d.type == "vote") return new gd3.tooltip.vote(d.downvoteFn, d.upvoteFn, d.voteCount); else return new gd3.tooltip.text(d.toString());
+  };
+  gd3.tooltip.element = gd3_tooltipElement;
+  function gd3_tooltipElement() {}
+  gd3.tooltip.image = gd3_tooltipImage;
   function gd3_tooltipImage(src, title) {
     if (!this instanceof gd3_tooltipImage) return new gd3_tooltipImage(src, title);
     this.src = src;
@@ -1441,7 +1460,7 @@
     this.type = "link";
     return this;
   }
-  var gd3_tooltipImagePrototype = gd3_tooltipImage.prototype = new gd3_tooltipDatum();
+  var gd3_tooltipImagePrototype = gd3_tooltipImage.prototype = new gd3_tooltipElement();
   gd3_tooltipImagePrototype.toString = function() {
     return this.title.toString();
   };
@@ -1450,21 +1469,21 @@
     img = selection.append("img").attr("src", this.src);
     if (this.title) img.attr("alt", this.title);
   };
-  gd3.tooltipText = gd3_tooltipText;
+  gd3.tooltip.text = gd3_tooltipText;
   function gd3_tooltipText(text) {
     if (!this instanceof gd3_tooltipText) return new gd3_tooltipText(text);
     this.text = text;
     this.type = "text";
     return this;
   }
-  var gd3_tooltipTextPrototype = gd3_tooltipText.prototype = new gd3_tooltipDatum();
+  var gd3_tooltipTextPrototype = gd3_tooltipText.prototype = new gd3_tooltipElement();
   gd3_tooltipTextPrototype.toString = function() {
     return this.text;
   };
   gd3_tooltipTextPrototype.render = function(selection) {
     selection.append("span").text(this.text);
   };
-  gd3.tooltipVote = gd3_tooltipVote;
+  gd3.tooltip.vote = gd3_tooltipVote;
   function gd3_tooltipVote(downvoteFn, upvoteFn, voteCount) {
     if (!this instanceof gd3_tooltipVote) return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount);
     this.downvoteFn = downvoteFn;
@@ -1472,7 +1491,7 @@
     this.voteCount = voteCount;
     return this;
   }
-  var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipDatum();
+  var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElement();
   gd3_tooltipVotePrototype.toString = function() {
     return this.voteCount + " votes";
   };
@@ -1501,7 +1520,7 @@
     downVote.style(voteGlyphStyle);
     upVote.style(voteGlyphStyle);
   };
-  gd3.tooltipLink = gd3_tooltipLink;
+  gd3.tooltip.link = gd3_tooltipLink;
   function gd3_tooltipLink(href, body) {
     if (!this instanceof gd3_tooltipLink) return new gd3_tooltipLink(href, body);
     this.body = body;
@@ -1509,7 +1528,7 @@
     this.type = "link";
     return this;
   }
-  var gd3_tooltipLinkPrototype = gd3_tooltipLink.prototype = new gd3_tooltipDatum();
+  var gd3_tooltipLinkPrototype = gd3_tooltipLink.prototype = new gd3_tooltipElement();
   gd3_tooltipLinkPrototype.toString = function() {
     return this.body.toString();
   };
@@ -1518,19 +1537,17 @@
     a = selection.append("a").attr("href", this.href);
     if (thisTooltip.body.render) thisTooltip.body.render(a); else a.text(thisTooltip.body.toString());
   };
-  gd3.tooltipTable = gd3_tooltipTable;
+  gd3.tooltip.table = gd3_tooltipTable;
   function gd3_tooltipTable(array) {
     if (!this instanceof gd3_tooltipTable) return new gd3_tooltipTable(array);
     this.table = array;
     return this;
   }
-  var gd3_tooltipTablePrototype = gd3_tooltipTable.prototype = new gd3_tooltipDatum();
+  var gd3_tooltipTablePrototype = gd3_tooltipTable.prototype = new gd3_tooltipElement();
   gd3_tooltipTablePrototype.toString = function() {
     return this.body.toString();
   };
   gd3_tooltipTablePrototype.render = function(selection) {
-    console.log(this);
-    console.log(selection);
     var thisTooltip = this;
     table = selection.append("table"), rows = table.selectAll("tr").data(thisTooltip.table).enter().append("tr"), 
     cells = rows.selectAll("td").data(function(d) {

@@ -1,6 +1,6 @@
-import "tooltipDatum";
+import "tooltipElement";
 
-gd3.tooltipText = gd3_tooltipText;
+gd3.tooltip.text = gd3_tooltipText;
 
 function gd3_tooltipText(text) {
   if (!this instanceof gd3_tooltipText) return new gd3_tooltipText(text);
@@ -10,7 +10,7 @@ function gd3_tooltipText(text) {
   return this;
 }
 
-var gd3_tooltipTextPrototype = gd3_tooltipText.prototype = new gd3_tooltipDatum;
+var gd3_tooltipTextPrototype = gd3_tooltipText.prototype = new gd3_tooltipElement;
 
 gd3_tooltipTextPrototype.toString = function() {
   return this.text;
