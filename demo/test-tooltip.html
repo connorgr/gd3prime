@@ -105,8 +105,6 @@
           { type: 'link', href: 'https://google.com', body: 'Google link test'}
         ].map(function(d) { return gd3.tooltip.datum(d); });
 
-    console.log(testingData)
-
     svgtres.call(gd3.tooltip.make().useData(testingData));
 
     // svgtres_rects.each(function(data) {

@@ -2,7 +2,7 @@ function tooltipView(style) {
   var direction = d3_tip_direction,
       offset    = d3_tip_offset,
       html      = d3_tip_html,
-      node      = null,
+      node      = undefined,
       sticky    = false,
       svg       = null,
       point     = null,
@@ -113,13 +113,18 @@ function tooltipView(style) {
     return view;
   }
 
+  // use the given data to generate an HTML string and proceed as normal
   view.useData = function(data) {
     var nodel = d3.select(node);
-    console.log(nodel);
+
+    var ghostNode = document.createElement('div'),
+        nodel = d3.select(ghostNode);
+
     nodel.selectAll('*').remove();
     data.forEach(function(d) { d.render(nodel); });
     html = nodel.html();
 
+    html = html == null ? html : d3.functor(html);
     return view;
   }
 

@@ -1240,7 +1240,7 @@
     };
   }
   function tooltipView(style) {
-    var direction = d3_tip_direction, offset = d3_tip_offset, html = d3_tip_html, node = null, sticky = false, svg = null, point = null, target = null;
+    var direction = d3_tip_direction, offset = d3_tip_offset, html = d3_tip_html, node = undefined, sticky = false, svg = null, point = null, target = null;
     function view(selection) {
       svg = selection;
       point = selection.node().createSVGPoint();
@@ -1326,12 +1326,13 @@
     };
     view.useData = function(data) {
       var nodel = d3.select(node);
-      console.log(nodel);
+      var ghostNode = document.createElement("div"), nodel = d3.select(ghostNode);
       nodel.selectAll("*").remove();
       data.forEach(function(d) {
         d.render(nodel);
       });
       html = nodel.html();
+      html = html == null ? html : d3.functor(html);
       return view;
     };
     function d3_tip_direction() {
