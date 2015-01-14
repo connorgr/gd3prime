@@ -1274,6 +1274,7 @@
         opacity: 1,
         "pointer-events": "all"
       });
+      nodel.selectAll("*").style("display", "block");
       while (i--) nodel.classed(directions[i], false);
       coords = direction_callbacks.get(dir).apply(this);
       nodel.classed(dir, true).style({
@@ -1325,7 +1326,6 @@
       return view;
     };
     view.useData = function(data) {
-      var nodel = d3.select(node);
       var ghostNode = document.createElement("div"), nodel = d3.select(ghostNode);
       nodel.selectAll("*").remove();
       data.forEach(function(d) {
@@ -1333,6 +1333,7 @@
       });
       html = nodel.html();
       html = html == null ? html : d3.functor(html);
+      d3.select(ghostNode).remove();
       return view;
     };
     function d3_tip_direction() {
