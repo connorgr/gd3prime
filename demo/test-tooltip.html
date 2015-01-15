@@ -97,31 +97,75 @@ a:visited {
     body.append('hr');
 
     var svgtres = body.append('svg')
+        .style('margin-bottom', '20px')
         .style('margin-left', '50px')
         .style('margin-top', '50px')
         .attr('width', 50)
         .attr('height', 20);
-    var svgtres_rects = svgtres.selectAll('rect')
-        .data(['steelblue', 'crimson'])
-        .enter()
-        .append('rect')
-            .attr('x', function(d,i) { return i*25; })
-            .attr('width', 20)
-            .attr('height', 20)
+    svgtres.append('rect')
+        .attr('width', 20)
+        .attr('height', 20)
+        .attr('class', 'gd3-tipobj')
+        .style('fill', 'steelblue');
+    svgtres.append('circle')
+            .attr('cx', 35)
+            .attr('cy',10)
+            .attr('r', 10)
             .attr('class', 'gd3-tipobj')
-            .style('fill', function(d) { return d; });
+            .style('fill', 'crimson');
 
     var testingData = [
-          [{ type: 'text', text: 'Title would go here'},
+          [{ type: 'text', text: 'The title would go here.'},
             { type: 'link', href: 'https://google.com', body: 'Google link test'}
           ].map(gd3.tooltip.datum),
-          [{ type: 'text', text: 'El titulo seria aqui'},
+          [{ type: 'text', text: 'El título estaría aquí.'},
             { type: 'link', href: 'https://google.com', body: 'Google link test'}
           ].map(gd3.tooltip.datum)
         ];
 
     // need to figure out how to call this array intelligently with the tooltip
     svgtres.call(gd3.tooltip.make().useData(testingData));
+
+    body.append('br');
+    body.append('hr');
+
+    var svg_groupTest = body.append('svg')
+        .style('background', '#ccc')
+        .style('margin-bottom', '20px')
+        .style('margin-left', '50px')
+        .style('margin-top', '50px')
+        .attr('width', 100)
+        .attr('height', 100);
+
+    var groupTest_g = svg_groupTest.selectAll('g')
+        .data(['rect','circle'])
+        .enter()
+        .append('g')
+            .attr('class', 'gd3-tipobj')
+            .style('pointer-events', 'all');
+
+    groupTest_g.each(function(d,i) {
+      var g = d3.select(this),
+          elems = g.selectAll(d).data([1,2]).enter().append(d);
+
+      if(d == 'rect') {
+        elems.attr('height', 20)
+            .attr('width', 20)
+            .attr('x', function(el,j) { return j*25 + 10; })
+            .attr('y', i*25 + 10)
+            .style('fill', 'crimson');
+      } else { // is circle
+        elems.attr('cx', function(el,j) { return j*25 + 20; })
+            .attr('cy', i*25 + 20)
+            .attr('r', 10)
+            .style('fill', 'steelblue');
+      }
+    });
+
+    svg_groupTest.call(gd3.tooltip.make().useData(testingData));
+
+    body.append('br');
+    body.append('hr');
 
     </script>
   </body>
