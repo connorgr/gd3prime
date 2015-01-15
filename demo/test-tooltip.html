@@ -167,6 +167,27 @@ a:visited {
     body.append('br');
     body.append('hr');
 
+    var mutmtx = body.append('div').attr('id', 'mutmtxtest');
+
+    d3.json('testData/example2-mutation-matrix.json', function(data) {
+      d3.json('testData/exampleAnnotations.json', function(annData) {
+        data.annotations = annData;
+        d3.select('#mutmtxtest')
+          .datum(data)
+          .call(gd3.mutationMatrix({style:style}));
+
+        var cols = mutmtx.selectAll('.mutmtxColumn');
+        cols.classed('gd3-tipobj', true);
+
+        var testMutmtxData = [];
+        cols.each(function(d,i) {
+          testMutmtxData.push( [{ type: 'text', text: 'Number ' + i }].map(gd3.tooltip.datum) );
+        });
+
+        mutmtx.select('svg').call(gd3.tooltip.make().useData(testMutmtxData));
+      });
+    });
+
     </script>
   </body>
 </html>
