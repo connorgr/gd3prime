@@ -1326,14 +1326,36 @@
       return view;
     };
     view.useData = function(data) {
+      function depth(d) {
+        return Array.isArray(d) ? depth(d[0]) + 1 : 0;
+      }
       var ghostNode = document.createElement("div"), nodel = d3.select(ghostNode);
-      nodel.selectAll("*").remove();
-      data.forEach(function(d) {
-        d.render(nodel);
-      });
-      html = nodel.html();
-      html = html == null ? html : d3.functor(html);
-      d3.select(ghostNode).remove();
+      var dimensionality = depth(data);
+      if (dimensionality == 0) {
+        data.render(nodel);
+        html = nodel.html();
+        html = html == null ? html : d3.functor(html);
+        d3.select(ghostNode).remove();
+      } else if (dimensionality == 1) {
+        data.forEach(function(d) {
+          d.render(nodel);
+        });
+        html = nodel.html();
+        html = html == null ? html : d3.functor(html);
+        d3.select(ghostNode).remove();
+      } else {
+        var htmls = [];
+        data.forEach(function(d) {
+          nodel.selectAll("*").remove();
+          d.forEach(function(datum) {
+            datum.render(nodel);
+          });
+          htmls.push(nodel.html());
+        });
+        html = d3.functor(function(d, i) {
+          return htmls[i];
+        });
+      }
       return view;
     };
     function d3_tip_direction() {
