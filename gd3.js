@@ -290,6 +290,456 @@
     var params = params || {}, style = cnaStyle(params.style || {});
     return cnaChart(style);
   };
+  function dendrogramData(inputData, delta, T) {
+    if (!delta) delta = inputData.Z[inputData.Z.length - 1][2];
+    return cutDendrogram(inputData, delta, T);
+  }
+  function cutDendrogram(data, delta, T) {
+    function MRCA(u, v) {
+      var parentsU = [], parentsV = [], node = u;
+      while (node != null) {
+        node = T[node].parent;
+        parentsU.push(node);
+      }
+      node = v;
+      while (node != null) {
+        node = T[node].parent;
+        if (parentsU.indexOf(node) != -1) {
+          return T[node].weight;
+        }
+      }
+      return 0;
+    }
+    function subtreeDistance(t1, t2) {
+      return MRCA(d3.max(t1), d3.max(t2));
+    }
+    function isLeaf(v) {
+      return v < N;
+    }
+    var Z = [], labelToGroup = {}, groupLabels = {}, groupIndex = 0, rows = data.Z.filter(function(row) {
+      return row[2] <= +delta;
+    }).map(function(row, i) {
+      return row.slice(0, 3).concat([ i ]);
+    }), n = rows.length, N = data.labels.length;
+    var U = gd3_data_structures.UnionFind(), leafIndices = [];
+    rows.forEach(function(row, i) {
+      U.union([ row[0], row[1], N + i ]);
+      if (isLeaf(row[0])) leafIndices.push(row[0]);
+      if (isLeaf(row[1])) leafIndices.push(row[1]);
+    });
+    leafIndices = leafIndices.sort(function(i, j) {
+      return d3.ascending(+i, +j);
+    });
+    var labels = leafIndices.map(function(i) {
+      return data.labels[i];
+    });
+    function addIfLeaf(v) {
+      if (!isLeaf(v)) return v;
+      var group = U.get(v);
+      if (!(group in groupLabels)) groupLabels[group] = groupIndex++;
+      labelToGroup[data.labels[v]] = groupLabels[group];
+      return leafIndices.indexOf(v);
+    }
+    rows.forEach(function(row, i) {
+      row[0] = addIfLeaf(row[0]);
+      row[1] = addIfLeaf(row[1]);
+    });
+    var m = labels.length;
+    rows.forEach(function(row) {
+      if (row[0] >= m) row[0] -= N - m;
+      if (row[1] >= m) row[1] -= N - m;
+    });
+    var groups = U.groups().map(function(g) {
+      return {
+        members: g,
+        _id: d3.max(g) - N + m
+      };
+    }), pairs = gd3_util.allPairs(groups), d = {};
+    pairs.forEach(function(P) {
+      var dist = subtreeDistance(P[0].members, P[1].members);
+      if (!d[P[0]._id]) d[P[0]._id] = {};
+      if (!d[P[1]._id]) d[P[1]._id] = {};
+      d[P[0]._id][P[1]._id] = dist;
+      d[P[1]._id][P[0]._id] = dist;
+    });
+    var iterations = 0;
+    while (pairs.length > 0) {
+      if (iterations > 1e4) throw new Error("This while loop shouldn't execute 10k times.");
+      iterations++;
+      var toMerge, lowest = Number.MAX_VALUE;
+      pairs.forEach(function(P, i) {
+        if (d[P[0]._id][P[1]._id] < lowest) {
+          lowest = d[P[0]._id][P[1]._id];
+          toMerge = P;
+        }
+      });
+      rows.push([ toMerge[0]._id, toMerge[1]._id, lowest, rows.length ]);
+      var idsToRemove = [ toMerge[0]._id, toMerge[1]._id ];
+      groups = groups.filter(function(G) {
+        return idsToRemove.indexOf(G._id) === -1;
+      });
+      pairs = pairs.filter(function(P) {
+        return idsToRemove.indexOf(P[0]._id) === -1 && idsToRemove.indexOf(P[1]._id) === -1;
+      });
+      var newGroup = {
+        _id: m + rows.length - 1,
+        members: d3.merge([ toMerge[0].members, toMerge[1].members ])
+      };
+      d[newGroup._id] = {};
+      groups.forEach(function(G) {
+        var dist = d3.min([ d[toMerge[0]._id][G._id], d[toMerge[1]._id][G._id] ]);
+        pairs.push([ G, newGroup ]);
+        d[G._id][newGroup._id] = dist;
+        d[newGroup._id][G._id] = dist;
+      });
+      groups.push(newGroup);
+    }
+    Z = rows.map(function(row) {
+      return row.slice(0);
+    });
+    return {
+      Z: Z,
+      labels: labels,
+      labelToGroup: labelToGroup
+    };
+  }
+  function treeFromLinkageMatrix(data) {
+    var N = data.labels.length, T = {};
+    data.Z.forEach(function(row, i) {
+      T[N + i] = {
+        children: [ row[0], row[1] ],
+        weight: row[2],
+        parent: null
+      };
+      if (!(row[0] in T)) T[row[0]] = {};
+      T[row[0]].parent = N + i;
+      if (!(row[1] in T)) T[row[1]] = {};
+      T[row[1]].parent = N + i;
+    });
+    return T;
+  }
+  function dendrogramChart(style) {
+    var update, currentDelta, cutAndUpdate, showSlider = false, useLogScale = false;
+    function chart(selection) {
+      selection.each(function(inputData) {
+        if (!inputData.Z || !inputData.labels) {
+          throw "dendrogram: Z and labels *required*.";
+        }
+        var T = treeFromLinkageMatrix(inputData);
+        data = dendrogramData(inputData, currentDelta, T);
+        var indices = data.Z.map(function(r) {
+          return r[3];
+        });
+        if (indices.length != d3.set(indices).values().length) {
+          data.Z.forEach(function(r, i) {
+            r[3] = i + "-" + r[3];
+          });
+        }
+        var height = style.height, width = style.width, treeWidth, colorScheme = style.colorScheme, colorSchemes = style.colorSchemes;
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("xmlns", "http://www.w3.org/2000/svg"), fig = svg.append("g"), edges = fig.append("g").attr("id", "edges"), leafGroup = fig.append("g").attr("id", "leaves");
+        svg.attr("id", "figure").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontSize);
+        var xAxis = d3.svg.axis(), xAxisGroup = fig.append("g").style({
+          stroke: style.fontColor,
+          fill: "none",
+          "stroke-width": style.strokeWidth
+        }).attr("transform", "translate(0," + height + ")");
+        if (!(colorScheme in colorSchemes)) {
+          colorScheme = "default";
+        }
+        var color = colorSchemes[colorScheme];
+        update = function(treeData) {
+          var Z = treeData.Z, labels = treeData.labels, labelToGroup = treeData.labelToGroup, n = labels.length;
+          if (!treeData.labelToGroup) {
+            labelToGroup = {};
+            labels.forEach(function(d, i) {
+              labelToGroup[d] = i;
+            });
+          }
+          function isLeaf(v) {
+            return v < n;
+          }
+          var nodeToIndex = [];
+          labels.forEach(function(n, i) {
+            nodeToIndex[i] = i;
+          });
+          var y = d3.scale.linear().domain([ 0, labels.length - 1 ]).range([ style.nodeRadius, height - style.nodeRadius ]), labelToY = d3.scale.ordinal().domain(labels).rangePoints([ style.nodeRadius, height - style.nodeRadius ]);
+          var leaves = leafGroup.selectAll("g").data(labels, function(d) {
+            return d;
+          });
+          leaves.transition().duration(style.animationSpeed).attr("transform", function(d) {
+            return "translate(0," + labelToY(d) + ")";
+          });
+          leaves.select("circle").attr("fill", function(d) {
+            return color(labelToGroup[d]);
+          });
+          var leafGs = leaves.enter().append("g").attr("transform", function(d) {
+            return "translate(0," + labelToY(d) + ")";
+          });
+          leafGs.append("circle").attr("r", style.nodeRadius).style("fill-opacity", 1e-6).attr("fill", function(d) {
+            return color(labelToGroup[d]);
+          }).transition().duration(style.animationSpeed).style("fill-opacity", 1);
+          leafGs.append("text").attr("text-anchor", "start").attr("x", style.nodeRadius + 5).attr("y", style.nodeRadius / 2).text(function(d) {
+            return d;
+          });
+          leaves.exit().transition().duration(style.animationSpeed).style("fill-opacity", 1e-6).remove();
+          var labelWidth = leafGroup.node().getBBox().width;
+          treeWidth = width - labelWidth - style.margins.left;
+          leafGroup.attr("transform", "translate(" + treeWidth + ",0)");
+          var dists = Z.map(function(row) {
+            return row[2];
+          }), xExtent = d3.extent(dists);
+          if (useLogScale) x = d3.scale.log(); else x = d3.scale.linear();
+          x.domain(xExtent).range([ treeWidth, style.margins.left ]);
+          var edgeData = [], distances = labels.map(function(_) {
+            return xExtent[0];
+          });
+          groups = labels.map(function(d) {
+            return [ labelToGroup[d] ];
+          });
+          function connectNodes(u, v, w, index) {
+            var i = nodeToIndex[u], j = nodeToIndex[v], d1 = distances[u], d2 = distances[v], g1 = groups[u], g2 = groups[v], newG = g1.length == 1 && g2.length == 1 && g1[0] == g2[0] ? g1 : g1.concat(g2);
+            edgeData.push({
+              name: "u" + index,
+              x1: x(d1),
+              x2: x(w),
+              y1: y(i),
+              y2: y(i),
+              groups: g1
+            });
+            edgeData.push({
+              name: "v" + index,
+              x1: x(d2),
+              x2: x(w),
+              y1: y(j),
+              y2: y(j),
+              groups: g2
+            });
+            edgeData.push({
+              name: "uv" + index,
+              x1: x(w),
+              x2: x(w),
+              y1: y(i),
+              y2: y(j),
+              groups: newG
+            });
+            nodeToIndex.push((i + j) / 2);
+            distances.push(w);
+            groups.push(newG);
+          }
+          Z.forEach(function(row) {
+            connectNodes(row[0], row[1], row[2], row[3]);
+          });
+          var lines = edges.selectAll("line").data(edgeData, function(d) {
+            return d.name + " " + d.ty;
+          });
+          lines.transition().duration(style.animationSpeed).attr("x1", function(d) {
+            return d.x1;
+          }).attr("x2", function(d) {
+            return d.x2;
+          }).attr("y1", function(d) {
+            return d.y1;
+          }).attr("y2", function(d) {
+            return d.y2;
+          }).attr("stroke-dasharray", function(d) {
+            if (d.groups.length == 1) {
+              return "";
+            } else {
+              return "3", "3";
+            }
+          });
+          lines.enter().append("line").attr("x1", function(d) {
+            return d.x1;
+          }).attr("x2", function(d) {
+            return d.x1;
+          }).attr("y1", function(d) {
+            return d.y1;
+          }).attr("y2", function(d) {
+            return d.y1;
+          }).attr("stroke", style.strokeColor).attr("stroke-width", style.strokeWidth).attr("stroke-dasharray", function(d) {
+            if (d.groups.length == 1) {
+              return "";
+            } else {
+              return "3", "3";
+            }
+          }).attr("fill-opacity", 1e-6).transition().duration(style.animationSpeed).attr("x2", function(d) {
+            return d.x2;
+          }).attr("y2", function(d) {
+            return d.y2;
+          }).attr("fill-opacity", 1);
+          lines.exit().transition().duration(style.animationSpeed).style("stroke-opacity", 1e-6).remove();
+          xAxis.scale(x);
+          xAxisGroup.call(xAxis);
+          xAxisGroup.selectAll("text").style({
+            "stroke-width": "0px",
+            fill: style.fontColor
+          });
+          svg.attr("height", fig.node().getBBox().height);
+        };
+        update(data);
+        if (showSlider) {
+          var U = gd3_data_structures.UnionFind(), N = inputData.labels.length, step = Math.ceil(N / 100), series = [ {
+            values: [],
+            name: "Largest component"
+          }, {
+            values: [],
+            name: "Non-singleton components"
+          } ];
+          inputData.Z.forEach(function(row, i) {
+            U.union([ row[0], row[1], N + i ]);
+            if (i % step == 0) {
+              var groups = U.groups(), largestSize = d3.max(groups, function(g) {
+                return g.length;
+              }), nonSingletons = d3.sum(groups.map(function(g) {
+                return g.length > 1;
+              }));
+              if (row[2] != 0) {
+                series[0].values.push({
+                  x: row[2],
+                  y: largestSize
+                });
+                series[1].values.push({
+                  x: row[2],
+                  y: nonSingletons
+                });
+              }
+            }
+          });
+          var allPoints = d3.merge(series.map(function(d, i) {
+            return d.values;
+          }));
+          var sliderWidth = treeWidth - style.sliderMargins.left - style.sliderMargins.right, sliderHeight = style.sliderHeight - style.sliderMargins.top - style.sliderMargins.bottom;
+          if (useLogScale) sliderX = d3.scale.log().range([ 0, sliderWidth ]); else sliderX = d3.scale.linear().range([ 0, sliderWidth ]);
+          var yExtent = d3.extent(allPoints, function(d) {
+            return d.y;
+          });
+          if (yExtent[1] - yExtent[0] > 100) sliderY = d3.scale.log().range([ sliderHeight, 0 ]); else sliderY = d3.scale.linear().range([ sliderHeight, 0 ]);
+          sliderX.domain(d3.extent(allPoints, function(d) {
+            return d.x;
+          }).reverse());
+          sliderY.domain(yExtent).nice();
+          var sliderColor = d3.scale.category10(), sliderXAxis = d3.svg.axis().scale(sliderX).orient("bottom"), sliderYAxis = d3.svg.axis().scale(sliderY).ticks(5).orient("left"), line = d3.svg.line().interpolate("basis").x(function(d) {
+            return sliderX(d.x);
+          }).y(function(d) {
+            return sliderY(d.y);
+          });
+          d3.select(this).insert("div", "svg").html("<b>Instructions</b>: Choose &delta; by mousing over the plot below and double-clicking. You can change your selection by double-clicking again.<br/><br/>");
+          var sliderSVG = d3.select(this).insert("svg", "svg").attr("width", sliderWidth + style.sliderMargins.left + style.sliderMargins.right).attr("height", sliderHeight + style.sliderMargins.top + style.sliderMargins.bottom).append("g").attr("transform", "translate(" + style.sliderMargins.left + "," + style.sliderMargins.top + ")").style("font-size", style.fontSize);
+          sliderSVG.append("rect").attr("width", sliderWidth + style.sliderMargins.left + style.sliderMargins.right).attr("height", sliderHeight + style.sliderMargins.top + style.sliderMargins.bottom).attr("fill", style.backgroundColor);
+          var lines = sliderSVG.selectAll(".point").data(series).enter().append("g").attr("class", "point");
+          lines.append("path").attr("class", "line").attr("d", function(d) {
+            return line(d.values);
+          }).style("fill", "none").style("stroke", function(d) {
+            return sliderColor(d.name);
+          });
+          sliderSVG.append("g").attr("class", "x axis").attr("transform", "translate(0," + sliderHeight + ")").call(sliderXAxis).append("text").attr("x", sliderWidth / 2).attr("dy", "30px").style("text-anchor", "middle").text("δ");
+          sliderSVG.append("g").attr("class", "y axis").call(sliderYAxis);
+          sliderSVG.selectAll(".axis path").style({
+            fill: "none",
+            stroke: "#000",
+            "shape-rendering": "crispEdges"
+          });
+          sliderSVG.selectAll(".axis line").style({
+            fill: "none",
+            stroke: "#000",
+            "shape-rendering": "crispEdges"
+          });
+          var legend = sliderSVG.append("g"), legendGroups = legend.selectAll(".legend-text").data(series).enter().append("g");
+          legendGroups.append("line").attr("x1", 0).attr("x1", 20).attr("y1", 0).attr("y2", 0).style("stroke", function(d) {
+            return sliderColor(d.name);
+          });
+          legendGroups.append("text").attr("x", 25).attr("y", 3).text(function(d) {
+            return d.name;
+          });
+          var legendWidth = legend.node().getBBox().width;
+          legendGroups.attr("transform", function(d, i) {
+            var thisX = treeWidth - legendWidth - style.sliderMargins.left, thisY = sliderY(d3.max(sliderY.domain())) + i * 15;
+            return "translate(" + thisX + "," + thisY + ")";
+          });
+          var deltaFixed = false, deltaFormat = d3.format(".5r"), deltaLine = sliderSVG.append("line").attr("y1", sliderY(d3.min(sliderY.domain()))).attr("y2", sliderY(d3.max(sliderY.domain()))).style("fill", "none").style("stroke", style.strokeColor).style("opacity", 0), delta = sliderSVG.append("text").attr("text-anchor", "start").attr("x", treeWidth - legendWidth - style.sliderMargins.left).attr("y", sliderY(d3.max(sliderY.domain())) + series.length * 15 + 5).text("δ: " + deltaFormat(d3.max(sliderX.domain())));
+          sliderSVG.on("mousemove", function() {
+            var coordinates = d3.mouse(this);
+            if (!deltaFixed && coordinates[0] > 0) {
+              deltaLine.attr("x1", coordinates[0]).attr("x2", coordinates[0]).style("opacity", 1);
+            }
+          });
+          sliderSVG.on("dblclick", function() {
+            if (!deltaFixed) {
+              currentDelta = sliderX.invert(deltaLine.attr("x1"));
+              cutAndUpdate();
+            }
+            deltaFixed = !deltaFixed;
+          });
+        }
+        cutAndUpdate = function() {
+          if (showSlider) delta.text("δ: " + deltaFormat(currentDelta));
+          update(cutDendrogram(inputData, currentDelta, T));
+        };
+      });
+    }
+    chart.update = function(treeData) {
+      update(treeData);
+      return chart;
+    };
+    chart.animationSpeed = function() {
+      return style.animationSpeed;
+    };
+    chart.showSlider = function() {
+      showSlider = true;
+      return chart;
+    };
+    chart.setDelta = function(delta) {
+      currentDelta = delta;
+      if (cutAndUpdate) cutAndUpdate(delta);
+      return chart;
+    };
+    chart.logScale = function(_) {
+      if (arguments.length) useLogScale = _;
+      return chart;
+    };
+    return chart;
+  }
+  function dendrogramStyle(style) {
+    return {
+      colorSchemes: style.colorSchemes || {
+        "default": d3.scale.category20()
+      },
+      edgeWidth: style.edgeWidth || 1.5,
+      fontColor: style.fontColor || "#333",
+      backgroundColor: "#fff",
+      fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      fontSize: style.fontSize || 12,
+      margins: style.margins || {
+        bottom: 0,
+        left: 5,
+        right: 0,
+        top: 0
+      },
+      nodeRadius: style.nodeRadius || 10,
+      width: style.width || 1200,
+      height: style.height || 600,
+      strokeWidth: style.strokeWidth || 1,
+      strokeColor: style.strokeColor || "#333",
+      colorScheme: style.colorScheme || "default",
+      animationSpeed: style.animationSpeed || 750,
+      margins: {
+        left: 40,
+        right: 0,
+        top: 0,
+        bottom: 0
+      },
+      sliderMargins: {
+        left: 40,
+        right: 0,
+        top: 5,
+        bottom: 20
+      },
+      sliderHeight: 125
+    };
+  }
+  gd3.dendrogram = function(params) {
+    var params = params || {}, style = dendrogramStyle(params.style || {});
+    return dendrogramChart(style);
+  };
   function graphData(inputData) {
     var data = {
       edges: [],
@@ -340,7 +790,6 @@
       }
     }
     defaultParse();
-    console.log(data);
     return data;
   }
   function graphChart(style) {
@@ -350,7 +799,7 @@
         data = graphData(data);
         var instanceIDConst = "gd3-graph-" + Date.now();
         var height = style.height, width = style.width;
-        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontFamily);
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontSize);
         var graph = svg.append("g");
         var edgeColor = d3.scale.ordinal().domain(data.edgeCategories).range(style.edgeColors);
         var nodeColor = d3.scale.linear().domain([ data.minNodeValue, data.maxNodeValue ]).range(style.nodeColor).interpolate(d3.interpolateLab);
@@ -1225,6 +1674,79 @@
     var params = params || {}, style = mutmtxStyle(params.style || {});
     return mutmtxChart(style);
   };
+  function scatterplotData(inputData) {
+    var data = {
+      categories: [],
+      pts: [],
+      title: "",
+      xScale: {
+        max: Number.NEGATIVE_INFINITY,
+        min: Number.POSITIVE_INFINITY
+      },
+      yScale: {
+        max: Number.NEGATIVE_INFINITY,
+        min: Number.POSITIVE_INFINITY
+      }
+    };
+    function parseJSON() {
+      data.categories = data.categories;
+      data.pts = inputData.pts.map(function(d) {
+        d.x = +d.x;
+        d.y = +d.y;
+        if (!inputData.xScale) {
+          xScale.max = d3.max([ d.x, xScale.max ]);
+          xScale.min = d3.min([ d.x, xScale.min ]);
+        }
+        if (!inputData.yScale) {
+          yScale.max = d3.max([ d.y, yScale.max ]);
+          yScale.min = d3.min([ d.y, yScale.min ]);
+        }
+        return d;
+      });
+      data.title = inputData.title;
+      if (inputData.xScale) data.xScale = inputData.xScale;
+      if (inputData.yScale) data.yScale = inputData.yScale;
+    }
+    parseJSON();
+    return data;
+  }
+  function scatterplotChart(style) {
+    function chart(selection) {
+      selection.each(function(data) {
+        data = scatterplotData(data);
+        var height = style.height, width = style.width;
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width).attr("xmlns", "http://www.w3.org/2000/svg").style("font-family", style.fontFamily).style("font-size", style.fontSize);
+        var scatterplot = svg.append("g");
+        var x = d3.scale.linear().domain([ xScale.min, xScale.max ]).range([ 0, width ]), y = d3.scale.linear().domain([ yScale.min, yScale.max ]).range([ height, 0 ]);
+        var xAxis = d3.svg.axis().scale(xScale).orient("bottom"), yAxis = d3.svg.axis().scale(yScale).orient("left");
+        scatterplot.selectAll(".point").data(data.pts).enter().append("path").attr("class", "point").attr("d", d3.svg.symbol().type("circle")).attr("transform", function(d) {
+          return "translate(" + x(d.x) + "," + y(d.y) + ")";
+        });
+      });
+    }
+    return chart;
+  }
+  function scatterplotStyle(style) {
+    return {
+      fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      fontSize: style.fontSize || 12,
+      height: style.height || 200,
+      legendFontSize: style.legendFontSize || 11,
+      legendScaleWidth: style.legendScaleWidth || 30,
+      legendWidth: style.legendWidth || 75,
+      margins: style.margins || {
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0
+      },
+      width: style.width || 300
+    };
+  }
+  gd3.scatterplot = function(params) {
+    var params = params || {}, style = scatterplotStyle(params.style || {});
+    return scatterplotChart(style);
+  };
   function tooltipStyle(style) {
     return {
       background: style.background || "rgba(0, 0, 0, 0.75)",
@@ -1853,456 +2375,6 @@
   gd3.transcript = function(params) {
     var params = params || {}, style = transcriptStyle(params.style || {});
     return transcriptChart(style);
-  };
-  function dendrogramData(inputData, delta, T) {
-    if (!delta) delta = inputData.Z[inputData.Z.length - 1][2];
-    return cutDendrogram(inputData, delta, T);
-  }
-  function cutDendrogram(data, delta, T) {
-    function MRCA(u, v) {
-      var parentsU = [], parentsV = [], node = u;
-      while (node != null) {
-        node = T[node].parent;
-        parentsU.push(node);
-      }
-      node = v;
-      while (node != null) {
-        node = T[node].parent;
-        if (parentsU.indexOf(node) != -1) {
-          return T[node].weight;
-        }
-      }
-      return 0;
-    }
-    function subtreeDistance(t1, t2) {
-      return MRCA(d3.max(t1), d3.max(t2));
-    }
-    function isLeaf(v) {
-      return v < N;
-    }
-    var Z = [], labelToGroup = {}, groupLabels = {}, groupIndex = 0, rows = data.Z.filter(function(row) {
-      return row[2] <= +delta;
-    }).map(function(row, i) {
-      return row.slice(0, 3).concat([ i ]);
-    }), n = rows.length, N = data.labels.length;
-    var U = gd3_data_structures.UnionFind(), leafIndices = [];
-    rows.forEach(function(row, i) {
-      U.union([ row[0], row[1], N + i ]);
-      if (isLeaf(row[0])) leafIndices.push(row[0]);
-      if (isLeaf(row[1])) leafIndices.push(row[1]);
-    });
-    leafIndices = leafIndices.sort(function(i, j) {
-      return d3.ascending(+i, +j);
-    });
-    var labels = leafIndices.map(function(i) {
-      return data.labels[i];
-    });
-    function addIfLeaf(v) {
-      if (!isLeaf(v)) return v;
-      var group = U.get(v);
-      if (!(group in groupLabels)) groupLabels[group] = groupIndex++;
-      labelToGroup[data.labels[v]] = groupLabels[group];
-      return leafIndices.indexOf(v);
-    }
-    rows.forEach(function(row, i) {
-      row[0] = addIfLeaf(row[0]);
-      row[1] = addIfLeaf(row[1]);
-    });
-    var m = labels.length;
-    rows.forEach(function(row) {
-      if (row[0] >= m) row[0] -= N - m;
-      if (row[1] >= m) row[1] -= N - m;
-    });
-    var groups = U.groups().map(function(g) {
-      return {
-        members: g,
-        _id: d3.max(g) - N + m
-      };
-    }), pairs = gd3_util.allPairs(groups), d = {};
-    pairs.forEach(function(P) {
-      var dist = subtreeDistance(P[0].members, P[1].members);
-      if (!d[P[0]._id]) d[P[0]._id] = {};
-      if (!d[P[1]._id]) d[P[1]._id] = {};
-      d[P[0]._id][P[1]._id] = dist;
-      d[P[1]._id][P[0]._id] = dist;
-    });
-    var iterations = 0;
-    while (pairs.length > 0) {
-      if (iterations > 1e4) throw new Error("This while loop shouldn't execute 10k times.");
-      iterations++;
-      var toMerge, lowest = Number.MAX_VALUE;
-      pairs.forEach(function(P, i) {
-        if (d[P[0]._id][P[1]._id] < lowest) {
-          lowest = d[P[0]._id][P[1]._id];
-          toMerge = P;
-        }
-      });
-      rows.push([ toMerge[0]._id, toMerge[1]._id, lowest, rows.length ]);
-      var idsToRemove = [ toMerge[0]._id, toMerge[1]._id ];
-      groups = groups.filter(function(G) {
-        return idsToRemove.indexOf(G._id) === -1;
-      });
-      pairs = pairs.filter(function(P) {
-        return idsToRemove.indexOf(P[0]._id) === -1 && idsToRemove.indexOf(P[1]._id) === -1;
-      });
-      var newGroup = {
-        _id: m + rows.length - 1,
-        members: d3.merge([ toMerge[0].members, toMerge[1].members ])
-      };
-      d[newGroup._id] = {};
-      groups.forEach(function(G) {
-        var dist = d3.min([ d[toMerge[0]._id][G._id], d[toMerge[1]._id][G._id] ]);
-        pairs.push([ G, newGroup ]);
-        d[G._id][newGroup._id] = dist;
-        d[newGroup._id][G._id] = dist;
-      });
-      groups.push(newGroup);
-    }
-    Z = rows.map(function(row) {
-      return row.slice(0);
-    });
-    return {
-      Z: Z,
-      labels: labels,
-      labelToGroup: labelToGroup
-    };
-  }
-  function treeFromLinkageMatrix(data) {
-    var N = data.labels.length, T = {};
-    data.Z.forEach(function(row, i) {
-      T[N + i] = {
-        children: [ row[0], row[1] ],
-        weight: row[2],
-        parent: null
-      };
-      if (!(row[0] in T)) T[row[0]] = {};
-      T[row[0]].parent = N + i;
-      if (!(row[1] in T)) T[row[1]] = {};
-      T[row[1]].parent = N + i;
-    });
-    return T;
-  }
-  function dendrogramChart(style) {
-    var update, currentDelta, cutAndUpdate, showSlider = false, useLogScale = false;
-    function chart(selection) {
-      selection.each(function(inputData) {
-        if (!inputData.Z || !inputData.labels) {
-          throw "dendrogram: Z and labels *required*.";
-        }
-        var T = treeFromLinkageMatrix(inputData);
-        data = dendrogramData(inputData, currentDelta, T);
-        var indices = data.Z.map(function(r) {
-          return r[3];
-        });
-        if (indices.length != d3.set(indices).values().length) {
-          data.Z.forEach(function(r, i) {
-            r[3] = i + "-" + r[3];
-          });
-        }
-        var height = style.height, width = style.width, treeWidth, colorScheme = style.colorScheme, colorSchemes = style.colorSchemes;
-        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("xmlns", "http://www.w3.org/2000/svg"), fig = svg.append("g"), edges = fig.append("g").attr("id", "edges"), leafGroup = fig.append("g").attr("id", "leaves");
-        svg.attr("id", "figure").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontSize);
-        var xAxis = d3.svg.axis(), xAxisGroup = fig.append("g").style({
-          stroke: style.fontColor,
-          fill: "none",
-          "stroke-width": style.strokeWidth
-        }).attr("transform", "translate(0," + height + ")");
-        if (!(colorScheme in colorSchemes)) {
-          colorScheme = "default";
-        }
-        var color = colorSchemes[colorScheme];
-        update = function(treeData) {
-          var Z = treeData.Z, labels = treeData.labels, labelToGroup = treeData.labelToGroup, n = labels.length;
-          if (!treeData.labelToGroup) {
-            labelToGroup = {};
-            labels.forEach(function(d, i) {
-              labelToGroup[d] = i;
-            });
-          }
-          function isLeaf(v) {
-            return v < n;
-          }
-          var nodeToIndex = [];
-          labels.forEach(function(n, i) {
-            nodeToIndex[i] = i;
-          });
-          var y = d3.scale.linear().domain([ 0, labels.length - 1 ]).range([ style.nodeRadius, height - style.nodeRadius ]), labelToY = d3.scale.ordinal().domain(labels).rangePoints([ style.nodeRadius, height - style.nodeRadius ]);
-          var leaves = leafGroup.selectAll("g").data(labels, function(d) {
-            return d;
-          });
-          leaves.transition().duration(style.animationSpeed).attr("transform", function(d) {
-            return "translate(0," + labelToY(d) + ")";
-          });
-          leaves.select("circle").attr("fill", function(d) {
-            return color(labelToGroup[d]);
-          });
-          var leafGs = leaves.enter().append("g").attr("transform", function(d) {
-            return "translate(0," + labelToY(d) + ")";
-          });
-          leafGs.append("circle").attr("r", style.nodeRadius).style("fill-opacity", 1e-6).attr("fill", function(d) {
-            return color(labelToGroup[d]);
-          }).transition().duration(style.animationSpeed).style("fill-opacity", 1);
-          leafGs.append("text").attr("text-anchor", "start").attr("x", style.nodeRadius + 5).attr("y", style.nodeRadius / 2).text(function(d) {
-            return d;
-          });
-          leaves.exit().transition().duration(style.animationSpeed).style("fill-opacity", 1e-6).remove();
-          var labelWidth = leafGroup.node().getBBox().width;
-          treeWidth = width - labelWidth - style.margins.left;
-          leafGroup.attr("transform", "translate(" + treeWidth + ",0)");
-          var dists = Z.map(function(row) {
-            return row[2];
-          }), xExtent = d3.extent(dists);
-          if (useLogScale) x = d3.scale.log(); else x = d3.scale.linear();
-          x.domain(xExtent).range([ treeWidth, style.margins.left ]);
-          var edgeData = [], distances = labels.map(function(_) {
-            return xExtent[0];
-          });
-          groups = labels.map(function(d) {
-            return [ labelToGroup[d] ];
-          });
-          function connectNodes(u, v, w, index) {
-            var i = nodeToIndex[u], j = nodeToIndex[v], d1 = distances[u], d2 = distances[v], g1 = groups[u], g2 = groups[v], newG = g1.length == 1 && g2.length == 1 && g1[0] == g2[0] ? g1 : g1.concat(g2);
-            edgeData.push({
-              name: "u" + index,
-              x1: x(d1),
-              x2: x(w),
-              y1: y(i),
-              y2: y(i),
-              groups: g1
-            });
-            edgeData.push({
-              name: "v" + index,
-              x1: x(d2),
-              x2: x(w),
-              y1: y(j),
-              y2: y(j),
-              groups: g2
-            });
-            edgeData.push({
-              name: "uv" + index,
-              x1: x(w),
-              x2: x(w),
-              y1: y(i),
-              y2: y(j),
-              groups: newG
-            });
-            nodeToIndex.push((i + j) / 2);
-            distances.push(w);
-            groups.push(newG);
-          }
-          Z.forEach(function(row) {
-            connectNodes(row[0], row[1], row[2], row[3]);
-          });
-          var lines = edges.selectAll("line").data(edgeData, function(d) {
-            return d.name + " " + d.ty;
-          });
-          lines.transition().duration(style.animationSpeed).attr("x1", function(d) {
-            return d.x1;
-          }).attr("x2", function(d) {
-            return d.x2;
-          }).attr("y1", function(d) {
-            return d.y1;
-          }).attr("y2", function(d) {
-            return d.y2;
-          }).attr("stroke-dasharray", function(d) {
-            if (d.groups.length == 1) {
-              return "";
-            } else {
-              return "3", "3";
-            }
-          });
-          lines.enter().append("line").attr("x1", function(d) {
-            return d.x1;
-          }).attr("x2", function(d) {
-            return d.x1;
-          }).attr("y1", function(d) {
-            return d.y1;
-          }).attr("y2", function(d) {
-            return d.y1;
-          }).attr("stroke", style.strokeColor).attr("stroke-width", style.strokeWidth).attr("stroke-dasharray", function(d) {
-            if (d.groups.length == 1) {
-              return "";
-            } else {
-              return "3", "3";
-            }
-          }).attr("fill-opacity", 1e-6).transition().duration(style.animationSpeed).attr("x2", function(d) {
-            return d.x2;
-          }).attr("y2", function(d) {
-            return d.y2;
-          }).attr("fill-opacity", 1);
-          lines.exit().transition().duration(style.animationSpeed).style("stroke-opacity", 1e-6).remove();
-          xAxis.scale(x);
-          xAxisGroup.call(xAxis);
-          xAxisGroup.selectAll("text").style({
-            "stroke-width": "0px",
-            fill: style.fontColor
-          });
-          svg.attr("height", fig.node().getBBox().height);
-        };
-        update(data);
-        if (showSlider) {
-          var U = gd3_data_structures.UnionFind(), N = inputData.labels.length, step = Math.ceil(N / 100), series = [ {
-            values: [],
-            name: "Largest component"
-          }, {
-            values: [],
-            name: "Non-singleton components"
-          } ];
-          inputData.Z.forEach(function(row, i) {
-            U.union([ row[0], row[1], N + i ]);
-            if (i % step == 0) {
-              var groups = U.groups(), largestSize = d3.max(groups, function(g) {
-                return g.length;
-              }), nonSingletons = d3.sum(groups.map(function(g) {
-                return g.length > 1;
-              }));
-              if (row[2] != 0) {
-                series[0].values.push({
-                  x: row[2],
-                  y: largestSize
-                });
-                series[1].values.push({
-                  x: row[2],
-                  y: nonSingletons
-                });
-              }
-            }
-          });
-          var allPoints = d3.merge(series.map(function(d, i) {
-            return d.values;
-          }));
-          var sliderWidth = treeWidth - style.sliderMargins.left - style.sliderMargins.right, sliderHeight = style.sliderHeight - style.sliderMargins.top - style.sliderMargins.bottom;
-          if (useLogScale) sliderX = d3.scale.log().range([ 0, sliderWidth ]); else sliderX = d3.scale.linear().range([ 0, sliderWidth ]);
-          var yExtent = d3.extent(allPoints, function(d) {
-            return d.y;
-          });
-          if (yExtent[1] - yExtent[0] > 100) sliderY = d3.scale.log().range([ sliderHeight, 0 ]); else sliderY = d3.scale.linear().range([ sliderHeight, 0 ]);
-          sliderX.domain(d3.extent(allPoints, function(d) {
-            return d.x;
-          }).reverse());
-          sliderY.domain(yExtent).nice();
-          var sliderColor = d3.scale.category10(), sliderXAxis = d3.svg.axis().scale(sliderX).orient("bottom"), sliderYAxis = d3.svg.axis().scale(sliderY).ticks(5).orient("left"), line = d3.svg.line().interpolate("basis").x(function(d) {
-            return sliderX(d.x);
-          }).y(function(d) {
-            return sliderY(d.y);
-          });
-          d3.select(this).insert("div", "svg").html("<b>Instructions</b>: Choose &delta; by mousing over the plot below and double-clicking. You can change your selection by double-clicking again.<br/><br/>");
-          var sliderSVG = d3.select(this).insert("svg", "svg").attr("width", sliderWidth + style.sliderMargins.left + style.sliderMargins.right).attr("height", sliderHeight + style.sliderMargins.top + style.sliderMargins.bottom).append("g").attr("transform", "translate(" + style.sliderMargins.left + "," + style.sliderMargins.top + ")").style("font-size", style.fontSize);
-          sliderSVG.append("rect").attr("width", sliderWidth + style.sliderMargins.left + style.sliderMargins.right).attr("height", sliderHeight + style.sliderMargins.top + style.sliderMargins.bottom).attr("fill", style.backgroundColor);
-          var lines = sliderSVG.selectAll(".point").data(series).enter().append("g").attr("class", "point");
-          lines.append("path").attr("class", "line").attr("d", function(d) {
-            return line(d.values);
-          }).style("fill", "none").style("stroke", function(d) {
-            return sliderColor(d.name);
-          });
-          sliderSVG.append("g").attr("class", "x axis").attr("transform", "translate(0," + sliderHeight + ")").call(sliderXAxis).append("text").attr("x", sliderWidth / 2).attr("dy", "30px").style("text-anchor", "middle").text("δ");
-          sliderSVG.append("g").attr("class", "y axis").call(sliderYAxis);
-          sliderSVG.selectAll(".axis path").style({
-            fill: "none",
-            stroke: "#000",
-            "shape-rendering": "crispEdges"
-          });
-          sliderSVG.selectAll(".axis line").style({
-            fill: "none",
-            stroke: "#000",
-            "shape-rendering": "crispEdges"
-          });
-          var legend = sliderSVG.append("g"), legendGroups = legend.selectAll(".legend-text").data(series).enter().append("g");
-          legendGroups.append("line").attr("x1", 0).attr("x1", 20).attr("y1", 0).attr("y2", 0).style("stroke", function(d) {
-            return sliderColor(d.name);
-          });
-          legendGroups.append("text").attr("x", 25).attr("y", 3).text(function(d) {
-            return d.name;
-          });
-          var legendWidth = legend.node().getBBox().width;
-          legendGroups.attr("transform", function(d, i) {
-            var thisX = treeWidth - legendWidth - style.sliderMargins.left, thisY = sliderY(d3.max(sliderY.domain())) + i * 15;
-            return "translate(" + thisX + "," + thisY + ")";
-          });
-          var deltaFixed = false, deltaFormat = d3.format(".5r"), deltaLine = sliderSVG.append("line").attr("y1", sliderY(d3.min(sliderY.domain()))).attr("y2", sliderY(d3.max(sliderY.domain()))).style("fill", "none").style("stroke", style.strokeColor).style("opacity", 0), delta = sliderSVG.append("text").attr("text-anchor", "start").attr("x", treeWidth - legendWidth - style.sliderMargins.left).attr("y", sliderY(d3.max(sliderY.domain())) + series.length * 15 + 5).text("δ: " + deltaFormat(d3.max(sliderX.domain())));
-          sliderSVG.on("mousemove", function() {
-            var coordinates = d3.mouse(this);
-            if (!deltaFixed && coordinates[0] > 0) {
-              deltaLine.attr("x1", coordinates[0]).attr("x2", coordinates[0]).style("opacity", 1);
-            }
-          });
-          sliderSVG.on("dblclick", function() {
-            if (!deltaFixed) {
-              currentDelta = sliderX.invert(deltaLine.attr("x1"));
-              cutAndUpdate();
-            }
-            deltaFixed = !deltaFixed;
-          });
-        }
-        cutAndUpdate = function() {
-          if (showSlider) delta.text("δ: " + deltaFormat(currentDelta));
-          update(cutDendrogram(inputData, currentDelta, T));
-        };
-      });
-    }
-    chart.update = function(treeData) {
-      update(treeData);
-      return chart;
-    };
-    chart.animationSpeed = function() {
-      return style.animationSpeed;
-    };
-    chart.showSlider = function() {
-      showSlider = true;
-      return chart;
-    };
-    chart.setDelta = function(delta) {
-      currentDelta = delta;
-      if (cutAndUpdate) cutAndUpdate(delta);
-      return chart;
-    };
-    chart.logScale = function(_) {
-      if (arguments.length) useLogScale = _;
-      return chart;
-    };
-    return chart;
-  }
-  function dendrogramStyle(style) {
-    return {
-      colorSchemes: style.colorSchemes || {
-        "default": d3.scale.category20()
-      },
-      edgeWidth: style.edgeWidth || 1.5,
-      fontColor: style.fontColor || "#333",
-      backgroundColor: "#fff",
-      fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-      fontSize: style.fontSize || 12,
-      margins: style.margins || {
-        bottom: 0,
-        left: 5,
-        right: 0,
-        top: 0
-      },
-      nodeRadius: style.nodeRadius || 10,
-      width: style.width || 1200,
-      height: style.height || 600,
-      strokeWidth: style.strokeWidth || 1,
-      strokeColor: style.strokeColor || "#333",
-      colorScheme: style.colorScheme || "default",
-      animationSpeed: style.animationSpeed || 750,
-      margins: {
-        left: 40,
-        right: 0,
-        top: 0,
-        bottom: 0
-      },
-      sliderMargins: {
-        left: 40,
-        right: 0,
-        top: 5,
-        bottom: 20
-      },
-      sliderHeight: 125
-    };
-  }
-  gd3.dendrogram = function(params) {
-    var params = params || {}, style = dendrogramStyle(params.style || {});
-    return dendrogramChart(style);
   };
   if (typeof define === "function" && define.amd) define(gd3); else if (typeof module === "object" && module.exports) module.exports = gd3;
   this.gd3 = gd3;
