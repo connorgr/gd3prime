@@ -57,7 +57,5 @@ function graphData(inputData) {
 
   defaultParse();
 
-  console.log(data);
-
   return data;
 }

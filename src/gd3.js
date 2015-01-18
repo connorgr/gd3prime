@@ -1,10 +1,11 @@
 import "start.js";
 import "core/";
 import "cna/";
+import "dendrogram/";
 import "graph/";
 import "heatmap/";
 import "mutmtx/";
+import "scatterplot/";
 import "tooltip/";
 import "transcript/";
-import "dendrogram/";
 import "end.js";

@@ -22,7 +22,7 @@ function graphChart(style) {
                 .attr('height', height)
                 .attr('width', width)
                 .style('font-family', style.fontFamily)
-                .style('font-size', style.fontFamily);
+                .style('font-size', style.fontSize);
 
       var graph = svg.append('g');
 
