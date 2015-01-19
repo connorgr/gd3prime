@@ -1689,17 +1689,18 @@
       }
     };
     function parseJSON() {
-      data.categories = data.categories;
+      data.categories = d3.set(inputData.categories ? inputData.categories : []);
       data.pts = inputData.pts.map(function(d) {
         d.x = +d.x;
         d.y = +d.y;
+        if (d.category) data.categories.add(d.category);
         if (!inputData.xScale) {
-          xScale.max = d3.max([ d.x, xScale.max ]);
-          xScale.min = d3.min([ d.x, xScale.min ]);
+          data.xScale.max = d3.max([ d.x, data.xScale.max ]);
+          data.xScale.min = d3.min([ d.x, data.xScale.min ]);
         }
         if (!inputData.yScale) {
-          yScale.max = d3.max([ d.y, yScale.max ]);
-          yScale.min = d3.min([ d.y, yScale.min ]);
+          data.yScale.max = d3.max([ d.y, data.yScale.max ]);
+          data.yScale.min = d3.min([ d.y, data.yScale.min ]);
         }
         return d;
       });
@@ -1715,12 +1716,23 @@
       selection.each(function(data) {
         data = scatterplotData(data);
         var height = style.height, width = style.width;
+        var pointColor = d3.scale.ordinal().domain(data.categories).range(style.categoryColors);
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width).attr("xmlns", "http://www.w3.org/2000/svg").style("font-family", style.fontFamily).style("font-size", style.fontSize);
-        var scatterplot = svg.append("g");
-        var x = d3.scale.linear().domain([ xScale.min, xScale.max ]).range([ 0, width ]), y = d3.scale.linear().domain([ yScale.min, yScale.max ]).range([ height, 0 ]);
-        var xAxis = d3.svg.axis().scale(xScale).orient("bottom"), yAxis = d3.svg.axis().scale(yScale).orient("left");
+        var scatterplot = svg.append("g").attr("transform", "translate(" + style.margins.left + "," + style.margins.top + ")");
+        var x = d3.scale.linear().domain([ data.xScale.min, data.xScale.max ]).range([ 0, width - style.margins.left - style.margins.right ]), y = d3.scale.linear().domain([ data.yScale.min, data.yScale.max ]).range([ height - style.margins.top - style.margins.bottom, 0 ]);
+        var xAxis = d3.svg.axis().scale(x).orient("bottom"), yAxis = d3.svg.axis().scale(y).orient("left");
+        var axisStyle = {
+          stroke: "black",
+          fill: "none",
+          "shape-rendering": "crispEdges",
+          "stroke-width": "1px"
+        }, axisG = scatterplot.append("g"), xAxisRender = axisG.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis), yAxisRender = axisG.append("g").attr("class", "y axis").call(yAxis);
+        axisG.selectAll(".tick text").style("fill", "black").style("font-size", "10px");
+        axisG.selectAll("path").style(axisStyle);
         scatterplot.selectAll(".point").data(data.pts).enter().append("path").attr("class", "point").attr("d", d3.svg.symbol().type("circle")).attr("transform", function(d) {
           return "translate(" + x(d.x) + "," + y(d.y) + ")";
+        }).style("fill", function(d) {
+          return pointColor(d.category);
         });
       });
     }
@@ -1728,17 +1740,19 @@
   }
   function scatterplotStyle(style) {
     return {
+      categoryColors: d3.scale.category10().range(),
+      categoryShapes: [ "circle", "diamond", "cross", "triangle-down", "square", "triangle-up" ],
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       fontSize: style.fontSize || 12,
-      height: style.height || 200,
+      height: style.height || 300,
       legendFontSize: style.legendFontSize || 11,
       legendScaleWidth: style.legendScaleWidth || 30,
       legendWidth: style.legendWidth || 75,
       margins: style.margins || {
-        bottom: 0,
-        left: 0,
-        right: 0,
-        top: 0
+        bottom: 50,
+        left: 25,
+        right: 15,
+        top: 15
       },
       width: style.width || 300
     };

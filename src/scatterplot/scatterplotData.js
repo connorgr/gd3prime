@@ -12,19 +12,21 @@ function scatterplotData(inputData) {
   //          optionally {x: Number, y: Number, category: String}
   // title = String
   function parseJSON() {
-    data.categories = data.categories;
+    data.categories = d3.set(inputData.categories ? inputData.categories : []);
     data.pts = inputData.pts.map(function(d) {
       d.x = +(d.x); // safety sanitation
       d.y = +(d.y);
 
+      if(d.category) data.categories.add(d.category);
+
       // include range tests to save a loop
       if (!inputData.xScale) {
-        xScale.max = d3.max([d.x, xScale.max]);
-        xScale.min = d3.min([d.x, xScale.min]);
+        data.xScale.max = d3.max([d.x, data.xScale.max]);
+        data.xScale.min = d3.min([d.x, data.xScale.min]);
       }
       if (!inputData.yScale) {
-        yScale.max = d3.max([d.y, yScale.max]);
-        yScale.min = d3.min([d.y, yScale.min]);
+        data.yScale.max = d3.max([d.y, data.yScale.max]);
+        data.yScale.min = d3.min([d.y, data.yScale.min]);
       }
 
       return d;

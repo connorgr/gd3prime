@@ -14,13 +14,10 @@
     <script>
 
     d3.json('testData/example-scatterplot.json', function(data) {
-      var style = {
-        nodeColor : ['rgb(38, 125, 255)','rgb(237, 14, 28)']
-      };
-        d3.select('#test')
-            .datum(data)
-            .call(gd3.graph({style:style})
-            );
+      console.log(data);
+      d3.select('#test')
+          .datum(data)
+          .call(gd3.scatterplot());
     });
     </script>
   </body>
