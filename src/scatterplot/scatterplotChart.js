@@ -5,8 +5,8 @@ function scatterplotChart(style) {
     selection.each(function(data) {
       data = scatterplotData(data);
 
-      var height = style.height,
-          width = style.width;
+      var height = style.height - style.margins.top - style.margins.bottom,
+          width = style.width - style.margins.left - style.margins.right;
 
       var pointColor = d3.scale.ordinal().domain(data.categories).range(style.categoryColors);
 
@@ -15,8 +15,8 @@ function scatterplotChart(style) {
           .data([data])
           .enter()
             .append('svg')
-                .attr('height', height)
-                .attr('width', width)
+                .attr('height', style.height)
+                .attr('width', style.width)
                 .attr('xmlns', 'http://www.w3.org/2000/svg')
                 .style('font-family', style.fontFamily)
                 .style('font-size', style.fontSize);
@@ -24,8 +24,8 @@ function scatterplotChart(style) {
       var scatterplot = svg.append('g').attr('transform', 'translate('+style.margins.left+','+style.margins.top+')');
 
       // Construct x and y scales
-      var x = d3.scale.linear().domain([data.xScale.min, data.xScale.max]).range([0, width - style.margins.left - style.margins.right]),
-          y = d3.scale.linear().domain([data.yScale.min, data.yScale.max]).range([height - style.margins.top - style.margins.bottom, 0]);
+      var x = d3.scale.linear().domain([data.xScale.min, data.xScale.max]).range([0, width]),
+          y = d3.scale.linear().domain([data.yScale.min, data.yScale.max]).range([height, 0]);
 
       // Construct x and y axis
       var xAxis = d3.svg.axis().scale(x).orient('bottom'),
