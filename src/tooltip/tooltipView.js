@@ -51,7 +51,16 @@ function tooltipView(style) {
         scrollTop  = document.documentElement.scrollTop || document.body.scrollTop,
         scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
 
-    nodel.html(content).style({ opacity: 1, 'pointer-events': 'all' });
+    var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right;">X</span>';
+
+    nodel.html(xout + content).style({ opacity: 1, 'pointer-events': 'all' });
+
+    nodel.select('.gd3-tooltip-xout')
+      .on('click', function () {
+        // Activate tipObejcts.on('click') and tipObjects.on('mouseover')
+        sticky = sticky ? false : true;
+        view.hide();
+      });
 
     nodel.selectAll('*').style('display', 'block');
 

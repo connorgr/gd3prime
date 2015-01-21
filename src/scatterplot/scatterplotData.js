@@ -3,7 +3,9 @@ function scatterplotData(inputData) {
     categories: [],
     pts: [],
     title: '',
+    xLabel: '',
     xScale: { max: Number.NEGATIVE_INFINITY, min: Number.POSITIVE_INFINITY },
+    yLabel: '',
     yScale: { max: Number.NEGATIVE_INFINITY, min: Number.POSITIVE_INFINITY }
   }
 
@@ -33,6 +35,9 @@ function scatterplotData(inputData) {
     });
 
     data.title = inputData.title;
+
+    data.xLabel = inputData.xLabel;
+    data.yLabel = inputData.yLabel;
 
     if (inputData.xScale) data.xScale = inputData.xScale;
     if (inputData.yScale) data.yScale = inputData.yScale;

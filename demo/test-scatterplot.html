@@ -14,10 +14,13 @@
     <script>
 
     d3.json('testData/example-scatterplot.json', function(data) {
-      console.log(data);
+      var style = {
+        margins : { bottom: 50, left: 35, right: 60, top: 14},
+        width: 350
+      }
       d3.select('#test')
           .datum(data)
-          .call(gd3.scatterplot());
+          .call(gd3.scatterplot({style:style}));
     });
     </script>
   </body>
