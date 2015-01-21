@@ -2039,10 +2039,19 @@
     });
   };
   gd3.tooltip.datum = function(d) {
-    if (!d.type) return new gd3.tooltip.text(d.toString()); else if (d.type == "image") return new gd3.tooltip.image(d.src, d.title); else if (d.type == "link") return new gd3.tooltip.link(d.href, d.body); else if (d.type == "table") return new gd3.tooltip.table(d.table); else if (d.type == "text") return new gd3.tooltip.text(d.text); else if (d.type == "vote") return new gd3.tooltip.vote(d.downvoteFn, d.upvoteFn, d.voteCount); else return new gd3.tooltip.text(d.toString());
+    var elem = null;
+    if (!d.type) elem = new gd3.tooltip.text(d.toString()); else if (d.type == "image") elem = new gd3.tooltip.image(d.src, d.title); else if (d.type == "link") elem = new gd3.tooltip.link(d.href, d.body); else if (d.type == "table") elem = new gd3.tooltip.table(d.table); else if (d.type == "text") elem = new gd3.tooltip.text(d.text); else if (d.type == "vote") elem = new gd3.tooltip.vote(d.downvoteFn, d.upvoteFn, d.voteCount);
+    if (elem == null) return new gd3.tooltip.text(d.toString());
+    return elem.showSummary(d.defaultHidden);
   };
   gd3.tooltip.element = gd3_tooltipElement;
   function gd3_tooltipElement() {}
+  gd3_tooltipElement.prototype.summaryElement = false;
+  gd3_tooltipElement.prototype.showSummary = function(state) {
+    state = state || false;
+    this.summaryElement = state;
+    return this;
+  };
   gd3.tooltip.image = gd3_tooltipImage;
   function gd3_tooltipImage(src, title) {
     if (!this instanceof gd3_tooltipImage) return new gd3_tooltipImage(src, title);
