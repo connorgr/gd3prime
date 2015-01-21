@@ -1679,10 +1679,12 @@
       categories: [],
       pts: [],
       title: "",
+      xLabel: "",
       xScale: {
         max: Number.NEGATIVE_INFINITY,
         min: Number.POSITIVE_INFINITY
       },
+      yLabel: "",
       yScale: {
         max: Number.NEGATIVE_INFINITY,
         min: Number.POSITIVE_INFINITY
@@ -1705,6 +1707,8 @@
         return d;
       });
       data.title = inputData.title;
+      data.xLabel = inputData.xLabel;
+      data.yLabel = inputData.yLabel;
       if (inputData.xScale) data.xScale = inputData.xScale;
       if (inputData.yScale) data.yScale = inputData.yScale;
     }
@@ -1715,6 +1719,10 @@
     function chart(selection) {
       selection.each(function(data) {
         data = scatterplotData(data);
+        function makeShape(d) {
+          var category = d.category, hasCategory = data.categories.has(category), shape = hasCategory ? style.categoryShapes[data.categories.values().indexOf(category)] : "circle", pt = d3.svg.symbol().type(shape);
+          return pt.size(style.pointSize * style.pointSize)();
+        }
         var height = style.height - style.margins.top - style.margins.bottom, width = style.width - style.margins.left - style.margins.right;
         var pointColor = d3.scale.ordinal().domain(data.categories).range(style.categoryColors);
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", style.height).attr("width", style.width).attr("xmlns", "http://www.w3.org/2000/svg").style("font-family", style.fontFamily).style("font-size", style.fontSize);
@@ -1726,10 +1734,19 @@
           fill: "none",
           "shape-rendering": "crispEdges",
           "stroke-width": "1px"
-        }, axisG = scatterplot.append("g"), xAxisRender = axisG.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis), yAxisRender = axisG.append("g").attr("class", "y axis").call(yAxis);
-        axisG.selectAll(".tick text").style("fill", "black").style("font-size", "10px");
+        }, axisG = scatterplot.append("g").attr("class", "gd3-scatterplot-axis"), xAxisRender = axisG.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis), xAxisLabel = axisG.append("text").attr("text-anchor", "middle").attr("x", x(x.domain()[1]) / 2).attr("y", height + xAxisRender.node().getBBox().height + style.axisFontSize).style("font-size", style.axisFontSize).text(data.xLabel), yAxisRender = axisG.append("g").attr("class", "y axis").call(yAxis), yAxisLabel = axisG.append("text").attr("text-anchor", "middle").attr("transform", "rotate(-90)").attr("x", -y(y.domain()[0]) / 2).attr("y", -yAxisRender.node().getBBox().width).text(data.yLabel);
+        axisG.selectAll(".tick text").style("fill", "black").style("font-size", style.axisFontSize);
         axisG.selectAll("path").style(axisStyle);
-        scatterplot.selectAll(".point").data(data.pts).enter().append("path").attr("class", "point").attr("d", d3.svg.symbol().type("circle")).attr("transform", function(d) {
+        scatterplot.append("text").attr("text-anchor", "middle").attr("x", x(x.domain()[1]) / 2).style("font-size", style.titleFontSize).style("font-weight", "bold").text(data.title);
+        var legendW = style.margins.right - style.legendPadding.left - style.legendPadding.right, legend = scatterplot.append("g").attr("class", "gd3-scatterplot-legend").attr("transform", "translate(" + (width + style.legendPadding.left) + ",0)"), legendCategories = legend.selectAll(".category").data(data.categories.values()).enter().append("g").attr("class", "category");
+        legendCategories.each(function(d, i) {
+          var thisEl = d3.select(this), shapeR = style.pointSize / 2, shape = thisEl.append("path").attr("d", makeShape).attr("transform", "translate(" + shapeR + "," + -shapeR + ")").style("fill", function(d) {
+            return pointColor(d);
+          }), text = thisEl.append("text").attr("x", style.pointSize + 1).text(d);
+          thisEl.attr("transform", "translate(0," + i * (style.legendFontSize + 2) + ")");
+        });
+        var pointsGroup = scatterplot.append("g").attr("class", "gd3-scatterplot-points");
+        pointsGroup.selectAll(".point").data(data.pts).enter().append("path").attr("class", "point").attr("d", makeShape).attr("transform", function(d) {
           return "translate(" + x(d.x) + "," + y(d.y) + ")";
         }).style("fill", function(d) {
           return pointColor(d.category);
@@ -1740,6 +1757,7 @@
   }
   function scatterplotStyle(style) {
     return {
+      axisFontSize: style.axisFontSize || style.fontSize || 12,
       categoryColors: d3.scale.category10().range(),
       categoryShapes: [ "circle", "diamond", "cross", "triangle-down", "square", "triangle-up" ],
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
@@ -1748,13 +1766,21 @@
       legendFontSize: style.legendFontSize || 11,
       legendScaleWidth: style.legendScaleWidth || 30,
       legendWidth: style.legendWidth || 75,
+      pointSize: style.pointSize || 7,
+      titleFontSize: style.titleFontSize || 14,
+      width: style.width || 300,
       margins: style.margins || {
         bottom: 50,
-        left: 25,
+        left: 35,
         right: 15,
-        top: 15
+        top: style.titleFontSize || 14
       },
-      width: style.width || 300
+      legendPadding: {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: style.pointSize || 7
+      }
     };
   }
   gd3.scatterplot = function(params) {
@@ -1806,9 +1832,14 @@
       var args = Array.prototype.slice.call(arguments);
       if (args[args.length - 1] instanceof SVGElement) target = args.pop();
       var content = html.apply(this, args), poffset = offset.apply(this, args), dir = direction.apply(this, args), nodel = d3.select(node), i = directions.length, coords, scrollTop = document.documentElement.scrollTop || document.body.scrollTop, scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
-      nodel.html(content).style({
+      var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right;">X</span>';
+      nodel.html(xout + content).style({
         opacity: 1,
         "pointer-events": "all"
+      });
+      nodel.select(".gd3-tooltip-xout").on("click", function() {
+        sticky = sticky ? false : true;
+        view.hide();
       });
       nodel.selectAll("*").style("display", "block");
       while (i--) nodel.classed(directions[i], false);
