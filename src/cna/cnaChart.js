@@ -145,7 +145,7 @@ function cnaChart(style) {
             return normalize(d.end, minSegmentX, maxSegmentX) - normalize(d.start, minSegmentX, maxSegmentX);
           })
           .attr('height', style.horizontalBarHeight)
-          .attr('id', function (d, i) { return "interval-" + i; });
+          .attr('id', function (d, i) { return "interval-" + i; })
 
       //segments.call(gd3.annotation());
 
@@ -225,6 +225,16 @@ function cnaChart(style) {
       verticalBar.attr('height', height - style.geneHeight);
       return height;
     });
+
+      segs.on("mouseover", function(d){
+        gd3.dispatch.sample(d.sample);
+      });
+
+      gd3.dispatch.on("sample.cna", function(sample){
+        console.log(sample)
+        // segs.filter(function(d){ return d.sample == sample; })
+          // .attr("stroke-width", 1000)
+      })
 
     });//end selection.each()
   }

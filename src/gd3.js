@@ -2,6 +2,7 @@ import "start.js";
 import "core/";
 import "cna/";
 import "dendrogram/";
+import "dispatch/";
 import "graph/";
 import "heatmap/";
 import "mutmtx/";

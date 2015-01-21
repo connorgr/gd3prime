@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>GD3 Example Voting through Tooltips</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+
+a {
+  color: steelblue;
+}
+a:visited {
+  color: steelblue;
+}
+
+    </style>
+  </head>
+  <body>
+    <script src="../bower_components/d3/d3.min.js"></script>
+    <script src="../gd3.js"></script>
+    <script>
+    var body = d3.select('body');
+    var style = {
+      width: 800
+    }
+
+    // Add the mutation matrix
+    var mutmtx = body.append('div').attr('id', 'mutmtxtest');
+    d3.json('testData/example2-mutation-matrix.json', function(mutData) {
+      d3.json('testData/exampleAnnotations.json', function(annData) {
+        mutData.annotations = annData;
+        body.append("h3").text("Mutation matrix")
+        body.append('div').attr('id', '#mutmtxtest')
+          .datum(mutData)
+          .call(gd3.mutationMatrix({style:style}));
+        var sampleNames = mutData.samples.map(function(d){ return d.name; })
+
+        // Add the transcript plot
+        d3.json('testData/example2-transcript.json', function(data) {
+
+          var styling = {
+            height: 180,
+            width: 345
+          };
+
+          var sampleTypes = {},
+              params = {},
+              vizData = [];
+
+          params.style=styling;
+
+          var categories = ['BLCA', 'BRCA', 'COADREAD', 'GBM', 'HNSC', 'LUAD', 'LUSC', 'OV', 'SCNAH'];
+          for (gKey in Object.keys(data)) {
+            var gene = Object.keys(data)[gKey],
+                transcriptList = Object.keys(data[gene]);
+
+            for (tKey in transcriptList) {
+              var transcript = transcriptList[tKey],
+                  domains = data[gene][transcript].domains,
+                  length = data[gene][transcript].length,
+                  mutations = data[gene][transcript].mutations;
+
+              var mKeys = Object.keys(mutations);
+              for(mKey in mKeys) {
+                var m = mKeys[mKey],
+                    cancer = mutations[m].cancer;
+                sampleTypes[cancer] = 0;
+              }
+
+              vizData.push({gene: gene, transcript: transcript, domains: domains, length: length, mutations: mutations, mutationCategories: categories, proteinDomainDB: 'PFAM'});
+
+            }
+          }
+          sampleTypes = Object.keys(sampleTypes);
+          params.sampleTypes = sampleTypes;
+
+
+        body.append("h3").text("Transcript plot")
+          body.append("div")
+              .datum(vizData[1])
+              .call(gd3.transcript(params));
+
+
+            d3.json('testData/example-cna.json', function(data) {
+              body.append("h3").text("CNA browser");
+              body.append("div")
+                .datum(data.ARID1A)
+                .call(gd3.cna());
+            });
+        });
+
+      });
+    });
+
+
+    </script>
+  </body>
+</html>
