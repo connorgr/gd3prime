@@ -22,4 +22,8 @@ gd3_tooltipImagePrototype.render = function(selection) {
       img = selection.append('img')
         .attr('src', this.src);
   if(this.title) img.attr('alt', this.title);
+
+  img.attr('data-summaryElement', this.summaryElement);
+  if(this.summaryElement) img.style('display', 'none').style('visibility', 'hidden');
+  return img;
 }

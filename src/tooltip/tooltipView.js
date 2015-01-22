@@ -32,13 +32,24 @@ function tooltipView(style) {
     node = node.node();
 
     var tipObjects = selection.selectAll('.gd3-tipobj')
-        .on('click', function() { sticky = sticky ? false : true; })
+        .on('click', function() {
+            sticky = sticky ? false : true;
+            if(sticky) view.render();
+            else view.hide();
+        })
         .on('mouseover', view.render )
         .on('mouseout', view.hide );
   } // end view
 
   view.render = function() {
-    if (sticky) return;
+    if (sticky) {
+      d3.select(node).selectAll('*').each(function() {
+        var thisEl = d3.select(this),
+            isSummaryElement = thisEl.attr('data-summaryElement');
+        if(isSummaryElement) thisEl.style('display', 'block').style('visibility', 'visible');
+      });
+      return;
+    }
     var args = Array.prototype.slice.call(arguments);
     if(args[args.length - 1] instanceof SVGElement) target = args.pop();
 
@@ -78,6 +89,12 @@ function tooltipView(style) {
     if (sticky) return;
     var nodel = d3.select(node);
     nodel.style({ opacity: 0, 'pointer-events': 'none' });
+
+    d3.select(node).selectAll('*').each(function() {
+        var thisEl = d3.select(this),
+            isSummaryElement = thisEl.attr('data-summaryElement');
+        if(isSummaryElement) thisEl.style('display', 'none').style('visibility', 'hidden');
+      });
     return view;
   }
 

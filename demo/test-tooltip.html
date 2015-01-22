@@ -191,6 +191,35 @@ a:visited {
     body.append('br');
     body.append('hr');
 
+    body.append('p').text('Test show-on-click functionality for tooltips');
+
+    var svg_hideTest = body.append('svg');
+
+    svg_hideTest.append('rect')
+        .attr('width', 20)
+        .attr('height', 20)
+        .attr('class', 'gd3-tipobj')
+        .style('fill', 'steelblue');
+    svg_hideTest.append('circle')
+            .attr('cx', 35)
+            .attr('cy',10)
+            .attr('r', 10)
+            .attr('class', 'gd3-tipobj')
+            .style('fill', 'crimson');
+
+    var hiddenData = [
+          [{ type: 'text', text: 'The title would go here.'},
+            { type: 'link', href: 'https://google.com', body: 'Google link test'},
+            { type: 'text', text: 'Hidden text', defaultHidden: true }
+          ].map(gd3.tooltip.datum),
+          [{ type: 'text', text: 'El título estaría aquí.'},
+            { type: 'link', href: 'https://google.com', body: 'Google link test'},
+            { type: 'text', text: 'Texto escondido', defaultHidden: true }
+          ].map(gd3.tooltip.datum)
+        ];
+
+    svg_hideTest.call(gd3.tooltip.make().useData(hiddenData));
+
     </script>
   </body>
 </html>
