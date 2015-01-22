@@ -2,6 +2,7 @@
   var gd3 = {
     version: "0.2.1"
   };
+  gd3.dispatch = d3.dispatch("sample");
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -38,6 +39,13 @@
         }
       }
       return pairs;
+    },
+    selectionSize: function(selection) {
+      var n = 0;
+      selection.each(function() {
+        ++n;
+      });
+      return n;
     }
   };
   var gd3_data_structures = {
@@ -265,6 +273,28 @@
           bgMask.attr("height", height);
           verticalBar.attr("height", height - style.geneHeight);
           return height;
+        });
+        segs.attr({
+          "stroke-width": 1,
+          stroke: "black",
+          "stroke-opacity": 0
+        }).on("mouseover", function(d) {
+          gd3.dispatch.sample({
+            sample: d.sample,
+            opacity: 1
+          });
+        }).on("mouseout", function(d) {
+          gd3.dispatch.sample({
+            sample: d.sample,
+            opacity: 0
+          });
+        });
+        gd3.dispatch.on("sample.cna", function(d) {
+          var opacity = d.opacity, sample = d.sample;
+          segs.attr("stroke-opacity", 0);
+          segs.filter(function(d) {
+            return d.sample == sample;
+          }).attr("stroke-opacity", opacity);
         });
       });
     }
@@ -1608,6 +1638,7 @@
             var activeRows = data.matrix.columnIdToActiveRows[colId];
             return activeRows.map(function(rowId) {
               return {
+                colId: colId,
                 row: rowId,
                 cell: data.matrix.cells[[ rowId, colId ].join()]
               };
@@ -1619,6 +1650,42 @@
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType];
             if (glyph && glyph != null) {
               thisCell.append("path").attr("class", "gd3mutmtx-cellClyph").attr("d", d3.svg.symbol().type(glyph).size(colWidth * colWidth)).attr("transform", "translate(" + colWidth / 2 + "," + (y + style.rowHeight / 2) + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("stroke-width", .5);
+            }
+          });
+          var columnNames = columns.selectAll("text");
+          var rects = columns.select("g.mutmtx-sampleMutationCells").selectAll("g").selectAll("rect").attr({
+            "stroke-width": 1,
+            stroke: "black",
+            "stroke-opacity": 0
+          });
+          columns.select("g.mutmtx-sampleMutationCells").selectAll("g").on("mouseover", function(d) {
+            gd3.dispatch.sample({
+              sample: data.maps.columnIdToLabel[d.colId],
+              over: true
+            });
+          }).on("mouseout", function(d) {
+            gd3.dispatch.sample({
+              sample: data.maps.columnIdToLabel[d.colId],
+              over: false
+            });
+          });
+          gd3.dispatch.on("sample.mutmtx", function(d) {
+            var over = d.over, sample = d.sample, affectedColumns = columnNames.filter(function(d) {
+              return data.maps.columnIdToLabel[d] == sample;
+            });
+            if (gd3_util.selectionSize(affectedColumns)) {
+              rects.attr("stroke-opacity", 0);
+              rects.filter(function(d) {
+                return data.maps.columnIdToLabel[d.colId] == sample;
+              }).attr("stroke-opacity", over ? 1 : 0);
+              columnNames.style({
+                opacity: over ? .25 : 1,
+                "font-weight": "normal"
+              });
+              affectedColumns.style({
+                opacity: 1,
+                "font-weight": over ? "bold" : "normal"
+              });
             }
           });
         }
@@ -1673,119 +1740,6 @@
   gd3.mutationMatrix = function(params) {
     var params = params || {}, style = mutmtxStyle(params.style || {});
     return mutmtxChart(style);
-  };
-  function scatterplotData(inputData) {
-    var data = {
-      categories: [],
-      pts: [],
-      title: "",
-      xLabel: "",
-      xScale: {
-        max: Number.NEGATIVE_INFINITY,
-        min: Number.POSITIVE_INFINITY
-      },
-      yLabel: "",
-      yScale: {
-        max: Number.NEGATIVE_INFINITY,
-        min: Number.POSITIVE_INFINITY
-      }
-    };
-    function parseJSON() {
-      data.categories = d3.set(inputData.categories ? inputData.categories : []);
-      data.pts = inputData.pts.map(function(d) {
-        d.x = +d.x;
-        d.y = +d.y;
-        if (d.category) data.categories.add(d.category);
-        if (!inputData.xScale) {
-          data.xScale.max = d3.max([ d.x, data.xScale.max ]);
-          data.xScale.min = d3.min([ d.x, data.xScale.min ]);
-        }
-        if (!inputData.yScale) {
-          data.yScale.max = d3.max([ d.y, data.yScale.max ]);
-          data.yScale.min = d3.min([ d.y, data.yScale.min ]);
-        }
-        return d;
-      });
-      data.title = inputData.title;
-      data.xLabel = inputData.xLabel;
-      data.yLabel = inputData.yLabel;
-      if (inputData.xScale) data.xScale = inputData.xScale;
-      if (inputData.yScale) data.yScale = inputData.yScale;
-    }
-    parseJSON();
-    return data;
-  }
-  function scatterplotChart(style) {
-    function chart(selection) {
-      selection.each(function(data) {
-        data = scatterplotData(data);
-        function makeShape(d) {
-          var category = d.category, hasCategory = data.categories.has(category), shape = hasCategory ? style.categoryShapes[data.categories.values().indexOf(category)] : "circle", pt = d3.svg.symbol().type(shape);
-          return pt.size(style.pointSize * style.pointSize)();
-        }
-        var height = style.height - style.margins.top - style.margins.bottom, width = style.width - style.margins.left - style.margins.right;
-        var pointColor = d3.scale.ordinal().domain(data.categories).range(style.categoryColors);
-        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", style.height).attr("width", style.width).attr("xmlns", "http://www.w3.org/2000/svg").style("font-family", style.fontFamily).style("font-size", style.fontSize);
-        var scatterplot = svg.append("g").attr("transform", "translate(" + style.margins.left + "," + style.margins.top + ")");
-        var x = d3.scale.linear().domain([ data.xScale.min, data.xScale.max ]).range([ 0, width ]), y = d3.scale.linear().domain([ data.yScale.min, data.yScale.max ]).range([ height, 0 ]);
-        var xAxis = d3.svg.axis().scale(x).orient("bottom"), yAxis = d3.svg.axis().scale(y).orient("left");
-        var axisStyle = {
-          stroke: "black",
-          fill: "none",
-          "shape-rendering": "crispEdges",
-          "stroke-width": "1px"
-        }, axisG = scatterplot.append("g").attr("class", "gd3-scatterplot-axis"), xAxisRender = axisG.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis), xAxisLabel = axisG.append("text").attr("text-anchor", "middle").attr("x", x(x.domain()[1]) / 2).attr("y", height + xAxisRender.node().getBBox().height + style.axisFontSize).style("font-size", style.axisFontSize).text(data.xLabel), yAxisRender = axisG.append("g").attr("class", "y axis").call(yAxis), yAxisLabel = axisG.append("text").attr("text-anchor", "middle").attr("transform", "rotate(-90)").attr("x", -y(y.domain()[0]) / 2).attr("y", -yAxisRender.node().getBBox().width).text(data.yLabel);
-        axisG.selectAll(".tick text").style("fill", "black").style("font-size", style.axisFontSize);
-        axisG.selectAll("path").style(axisStyle);
-        scatterplot.append("text").attr("text-anchor", "middle").attr("x", x(x.domain()[1]) / 2).style("font-size", style.titleFontSize).style("font-weight", "bold").text(data.title);
-        var legendW = style.margins.right - style.legendPadding.left - style.legendPadding.right, legend = scatterplot.append("g").attr("class", "gd3-scatterplot-legend").attr("transform", "translate(" + (width + style.legendPadding.left) + ",0)"), legendCategories = legend.selectAll(".category").data(data.categories.values()).enter().append("g").attr("class", "category");
-        legendCategories.each(function(d, i) {
-          var thisEl = d3.select(this), shapeR = style.pointSize / 2, shape = thisEl.append("path").attr("d", makeShape).attr("transform", "translate(" + shapeR + "," + -shapeR + ")").style("fill", function(d) {
-            return pointColor(d);
-          }), text = thisEl.append("text").attr("x", style.pointSize + 1).text(d);
-          thisEl.attr("transform", "translate(0," + i * (style.legendFontSize + 2) + ")");
-        });
-        var pointsGroup = scatterplot.append("g").attr("class", "gd3-scatterplot-points");
-        pointsGroup.selectAll(".point").data(data.pts).enter().append("path").attr("class", "point").attr("d", makeShape).attr("transform", function(d) {
-          return "translate(" + x(d.x) + "," + y(d.y) + ")";
-        }).style("fill", function(d) {
-          return pointColor(d.category);
-        });
-      });
-    }
-    return chart;
-  }
-  function scatterplotStyle(style) {
-    return {
-      axisFontSize: style.axisFontSize || style.fontSize || 12,
-      categoryColors: d3.scale.category10().range(),
-      categoryShapes: [ "circle", "diamond", "cross", "triangle-down", "square", "triangle-up" ],
-      fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-      fontSize: style.fontSize || 12,
-      height: style.height || 300,
-      legendFontSize: style.legendFontSize || 11,
-      legendScaleWidth: style.legendScaleWidth || 30,
-      legendWidth: style.legendWidth || 75,
-      pointSize: style.pointSize || 7,
-      titleFontSize: style.titleFontSize || 14,
-      width: style.width || 300,
-      margins: style.margins || {
-        bottom: 50,
-        left: 35,
-        right: 15,
-        top: style.titleFontSize || 14
-      },
-      legendPadding: {
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: style.pointSize || 7
-      }
-    };
-  }
-  gd3.scatterplot = function(params) {
-    var params = params || {}, style = scatterplotStyle(params.style || {});
-    return scatterplotChart(style);
   };
   function tooltipStyle(style) {
     return {
@@ -2083,43 +2037,6 @@
   gd3_tooltipTextPrototype.render = function(selection) {
     selection.append("span").text(this.text);
   };
-  gd3.tooltip.vote = gd3_tooltipVote;
-  function gd3_tooltipVote(downvoteFn, upvoteFn, voteCount) {
-    if (!this instanceof gd3_tooltipVote) return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount);
-    this.downvoteFn = downvoteFn;
-    this.upvoteFn = upvoteFn;
-    this.voteCount = voteCount;
-    return this;
-  }
-  var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElement();
-  gd3_tooltipVotePrototype.toString = function() {
-    return this.voteCount + " votes";
-  };
-  gd3_tooltipVotePrototype.render = function(selection) {
-    var votingArea = selection.append("span"), downVote = votingArea.append("span").text("▼"), voteCount = votingArea.append("span").text(this.voteCount), upVote = votingArea.append("span").text("▲");
-    votingArea.selectAll("span").style({
-      display: "inline-block"
-    });
-    downVote.on("click", function(d) {
-      downVote.classed("gd3-vote-active", true);
-      upVote.classed("gd3-vote-active", false);
-      this.downVoteFn(d);
-    });
-    upVote.on("click", function(d) {
-      downVote.classed("gd3-vote-active", false);
-      upVote.classed("gd3-vote-active", true);
-      this.upvoteFn(d);
-    });
-    var voteGlyphStyle = {
-      cursor: "pointer",
-      "-moz-user-select": "none",
-      "-ms-user-select": "none",
-      "-o-user-select": "none",
-      "-webkit-user-select": "none"
-    };
-    downVote.style(voteGlyphStyle);
-    upVote.style(voteGlyphStyle);
-  };
   gd3.tooltip.link = gd3_tooltipLink;
   function gd3_tooltipLink(href, body) {
     if (!this instanceof gd3_tooltipLink) return new gd3_tooltipLink(href, body);
@@ -2408,6 +2325,26 @@
             "stroke-width": 1
           }).call(dragSlider);
         }
+        var allMutations = mutationsG.selectAll("path").on("mouseover", function(d) {
+          gd3.dispatch.sample({
+            sample: d.sample,
+            over: true
+          });
+        }).on("mouseout", function(d) {
+          gd3.dispatch.sample({
+            sample: d.sample,
+            over: false
+          });
+        });
+        gd3.dispatch.on("sample.transcript", function(d) {
+          var over = d.over, sample = d.sample, affectedMutations = allMutations.filter(function(d) {
+            return d.sample == sample;
+          });
+          if (gd3_util.selectionSize(affectedMutations)) {
+            allMutations.style("opacity", over ? .25 : 1);
+            affectedMutations.style("opacity", 1);
+          }
+        });
       });
     }
     function showScrollers(val) {

@@ -1,12 +1,12 @@
 import "start.js";
+import "dispatch/";
 import "core/";
 import "cna/";
 import "dendrogram/";
-import "dispatch/";
 import "graph/";
 import "heatmap/";
 import "mutmtx/";
-import "scatterplot/";
+// import "scatterplot/";
 import "tooltip/";
 import "transcript/";
 import "end.js";

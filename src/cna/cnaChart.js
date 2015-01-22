@@ -226,16 +226,21 @@ function cnaChart(style) {
       return height;
     });
 
-      segs.on("mouseover", function(d){
-        gd3.dispatch.sample(d.sample);
+      // Set up dispatch
+      segs.attr({"stroke-width": 1, "stroke": "black", "stroke-opacity": 0})
+        .on("mouseover", function(d){
+          gd3.dispatch.sample({ sample: d.sample, opacity: 1});
+        }).on("mouseout", function(d){
+          gd3.dispatch.sample({ sample: d.sample, opacity: 0});
+        });
+
+      gd3.dispatch.on("sample.cna", function(d){
+        var opacity = d.opacity,
+            sample = d.sample;
+        segs.attr("stroke-opacity", 0)
+        segs.filter(function(d){ return d.sample == sample; })
+          .attr("stroke-opacity", opacity)
       });
-
-      gd3.dispatch.on("sample.cna", function(sample){
-        console.log(sample)
-        // segs.filter(function(d){ return d.sample == sample; })
-          // .attr("stroke-width", 1000)
-      })
-
     });//end selection.each()
   }
   return chart;
