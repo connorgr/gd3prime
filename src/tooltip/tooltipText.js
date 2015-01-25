@@ -19,6 +19,6 @@ gd3_tooltipTextPrototype.toString = function() {
 gd3_tooltipTextPrototype.render = function(selection) {
   var text = selection.append('span').text(this.text);
   text.attr('data-summaryElement', this.summaryElement);
-  if(this.summaryElement) text.style('display', 'none').style('visibility', 'hidden');
+  if(this.summaryElement) text.style('display', 'none');
   return text;
 }

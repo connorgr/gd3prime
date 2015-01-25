@@ -1815,6 +1815,7 @@
         "font-family": style.fontFamily,
         "font-size": style.fontSize,
         "line-height": style.lineHeight,
+        overflow: "hidden",
         position: "absolute",
         top: 0,
         opacity: 0,
@@ -1829,16 +1830,26 @@
       }).on("mouseover", view.render).on("mouseout", view.hide);
     }
     view.render = function() {
+      function positionTooltip() {
+        var poffset = offset.apply(this, args), coords, dir = direction.apply(this, args), i = directions.length, nodel = d3.select(node), scrollTop = document.documentElement.scrollTop || document.body.scrollTop, scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+        while (i--) nodel.classed(directions[i], false);
+        coords = direction_callbacks.get(dir).apply(this);
+        nodel.classed(dir, true).style({
+          top: coords.top + poffset[0] + scrollTop + "px",
+          left: coords.left + poffset[1] + scrollLeft + "px"
+        });
+      }
       if (sticky) {
         d3.select(node).selectAll("*").each(function() {
           var thisEl = d3.select(this), isSummaryElement = thisEl.attr("data-summaryElement");
-          if (isSummaryElement) thisEl.style("display", "block").style("visibility", "visible");
+          if (isSummaryElement) thisEl.style("display", "block");
         });
+        positionTooltip();
         return;
       }
       var args = Array.prototype.slice.call(arguments);
       if (args[args.length - 1] instanceof SVGElement) target = args.pop();
-      var content = html.apply(this, args), poffset = offset.apply(this, args), dir = direction.apply(this, args), nodel = d3.select(node), i = directions.length, coords, scrollTop = document.documentElement.scrollTop || document.body.scrollTop, scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+      var content = html.apply(this, args), nodel = d3.select(node);
       var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right;">X</span>';
       nodel.html(xout + content).style({
         opacity: 1,
@@ -1848,13 +1859,12 @@
         sticky = sticky ? false : true;
         view.hide();
       });
-      nodel.selectAll("*").style("display", "block");
-      while (i--) nodel.classed(directions[i], false);
-      coords = direction_callbacks.get(dir).apply(this);
-      nodel.classed(dir, true).style({
-        top: coords.top + poffset[0] + scrollTop + "px",
-        left: coords.left + poffset[1] + scrollLeft + "px"
-      });
+      function renderTest() {
+        var thisEl = d3.select(this), display = thisEl.style("display"), render = display == "none" ? "none" : "block";
+        return render;
+      }
+      nodel.selectAll("*").style("display", renderTest);
+      positionTooltip();
       return view;
     };
     view.hide = function() {
@@ -1866,7 +1876,7 @@
       });
       d3.select(node).selectAll("*").each(function() {
         var thisEl = d3.select(this), isSummaryElement = thisEl.attr("data-summaryElement");
-        if (isSummaryElement) thisEl.style("display", "none").style("visibility", "hidden");
+        if (isSummaryElement) thisEl.style("display", "none");
       });
       return view;
     };
@@ -2097,7 +2107,7 @@
   gd3_tooltipTextPrototype.render = function(selection) {
     var text = selection.append("span").text(this.text);
     text.attr("data-summaryElement", this.summaryElement);
-    if (this.summaryElement) text.style("display", "none").style("visibility", "hidden");
+    if (this.summaryElement) text.style("display", "none");
     return text;
   };
   gd3.tooltip.vote = gd3_tooltipVote;

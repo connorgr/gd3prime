@@ -193,7 +193,7 @@ a:visited {
 
     body.append('p').text('Test show-on-click functionality for tooltips');
 
-    var svg_hideTest = body.append('svg');
+    var svg_hideTest = body.append('svg').style('margin-left', '100px');
 
     svg_hideTest.append('rect')
         .attr('width', 20)
@@ -209,8 +209,11 @@ a:visited {
 
     var hiddenData = [
           [{ type: 'text', text: 'The title would go here.'},
+            { type: 'text', text: 'More text.'},
             { type: 'link', href: 'https://google.com', body: 'Google link test'},
-            { type: 'text', text: 'Hidden text', defaultHidden: true }
+            { type: 'text', text: 'Hidden text', defaultHidden: true },
+            { type: 'text', text: 'Not hidden text', defaultHidden: false },
+            { type: 'text', text: 'Even more hidden text', defaultHidden: true }
           ].map(gd3.tooltip.datum),
           [{ type: 'text', text: 'El título estaría aquí.'},
             { type: 'link', href: 'https://google.com', body: 'Google link test'},

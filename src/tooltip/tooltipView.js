@@ -22,6 +22,7 @@ function tooltipView(style) {
       'font-family': style.fontFamily,
       'font-size': style.fontSize,
       'line-height': style.lineHeight,
+      overflow: 'hidden',
       position: 'absolute',
       top: 0,
       opacity: 0,
@@ -42,25 +43,38 @@ function tooltipView(style) {
   } // end view
 
   view.render = function() {
+    function positionTooltip() {
+      // Obtain location information
+      var poffset = offset.apply(this, args),
+          coords,
+          dir     = direction.apply(this, args),
+          i       = directions.length,
+          nodel = d3.select(node),
+          scrollTop  = document.documentElement.scrollTop || document.body.scrollTop,
+          scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+
+      while(i--) nodel.classed(directions[i], false);
+      coords = direction_callbacks.get(dir).apply(this);
+      nodel.classed(dir, true).style({
+        top: (coords.top +  poffset[0]) + scrollTop + 'px',
+        left: (coords.left + poffset[1]) + scrollLeft + 'px'
+      });
+    }
+
     if (sticky) {
       d3.select(node).selectAll('*').each(function() {
         var thisEl = d3.select(this),
             isSummaryElement = thisEl.attr('data-summaryElement');
-        if(isSummaryElement) thisEl.style('display', 'block').style('visibility', 'visible');
+        if(isSummaryElement) thisEl.style('display', 'block');
       });
+      positionTooltip();
       return;
     }
     var args = Array.prototype.slice.call(arguments);
     if(args[args.length - 1] instanceof SVGElement) target = args.pop();
 
     var content = html.apply(this, args),
-        poffset = offset.apply(this, args),
-        dir     = direction.apply(this, args),
-        nodel   = d3.select(node),
-        i       = directions.length,
-        coords,
-        scrollTop  = document.documentElement.scrollTop || document.body.scrollTop,
-        scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+        nodel   = d3.select(node);
 
     var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right;">X</span>';
 
@@ -73,14 +87,17 @@ function tooltipView(style) {
         view.hide();
       });
 
-    nodel.selectAll('*').style('display', 'block');
+    // Show only the elements that are not already hidden
+    function renderTest() {
+      var thisEl = d3.select(this),
+          display = thisEl.style('display'),
+          render = display == 'none' ? 'none' : 'block';
 
-    while(i--) nodel.classed(directions[i], false);
-    coords = direction_callbacks.get(dir).apply(this);
-    nodel.classed(dir, true).style({
-      top: (coords.top +  poffset[0]) + scrollTop + 'px',
-      left: (coords.left + poffset[1]) + scrollLeft + 'px'
-    });
+      return render;
+    }
+    nodel.selectAll('*').style('display', renderTest);
+
+    positionTooltip();
 
     return view;
   }
@@ -93,7 +110,7 @@ function tooltipView(style) {
     d3.select(node).selectAll('*').each(function() {
         var thisEl = d3.select(this),
             isSummaryElement = thisEl.attr('data-summaryElement');
-        if(isSummaryElement) thisEl.style('display', 'none').style('visibility', 'hidden');
+        if(isSummaryElement) thisEl.style('display', 'none');
       });
     return view;
   }
