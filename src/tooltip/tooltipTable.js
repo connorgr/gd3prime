@@ -29,6 +29,6 @@ gd3_tooltipTablePrototype.render = function(selection) {
   });
 
   table.attr('data-summaryElement', this.summaryElement);
-  if(this.summaryElement) table.style('display', 'none').style('visibility', 'hidden');
+  if(this.summaryElement) table.style('display', 'none');
   return table;
 }

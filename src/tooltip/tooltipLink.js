@@ -25,6 +25,6 @@ gd3_tooltipLinkPrototype.render = function(selection) {
   else a.text(thisTooltip.body.toString());
 
   a.attr('data-summaryElement', this.summaryElement);
-  if(this.summaryElement) a.style('display', 'none').style('visibility', 'hidden');
+  if(this.summaryElement) a.style('display', 'none');
   return a;
 }
