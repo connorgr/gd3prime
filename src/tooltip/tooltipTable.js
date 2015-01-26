@@ -27,4 +27,8 @@ gd3_tooltipTablePrototype.render = function(selection) {
     if(d.render) d.render(d3.select(this));
     else d3.select(this).text(d.toString());
   });
+
+  table.attr('data-summaryElement', this.summaryElement);
+  if(this.summaryElement) table.style('display', 'none').style('visibility', 'hidden');
+  return table;
 }

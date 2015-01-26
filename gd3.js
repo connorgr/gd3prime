@@ -1769,6 +1769,7 @@
         "font-family": style.fontFamily,
         "font-size": style.fontSize,
         "line-height": style.lineHeight,
+        overflow: "hidden",
         position: "absolute",
         top: 0,
         opacity: 0,
@@ -1779,13 +1780,30 @@
       node = node.node();
       var tipObjects = selection.selectAll(".gd3-tipobj").on("click", function() {
         sticky = sticky ? false : true;
+        if (sticky) view.render(); else view.hide();
       }).on("mouseover", view.render).on("mouseout", view.hide);
     }
     view.render = function() {
-      if (sticky) return;
+      function positionTooltip() {
+        var poffset = offset.apply(this, args), coords, dir = direction.apply(this, args), i = directions.length, nodel = d3.select(node), scrollTop = document.documentElement.scrollTop || document.body.scrollTop, scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+        while (i--) nodel.classed(directions[i], false);
+        coords = direction_callbacks.get(dir).apply(this);
+        nodel.classed(dir, true).style({
+          top: coords.top + poffset[0] + scrollTop + "px",
+          left: coords.left + poffset[1] + scrollLeft + "px"
+        });
+      }
+      if (sticky) {
+        d3.select(node).selectAll("*").each(function() {
+          var thisEl = d3.select(this), isSummaryElement = thisEl.attr("data-summaryElement");
+          if (isSummaryElement) thisEl.style("display", "block");
+        });
+        positionTooltip();
+        return;
+      }
       var args = Array.prototype.slice.call(arguments);
       if (args[args.length - 1] instanceof SVGElement) target = args.pop();
-      var content = html.apply(this, args), poffset = offset.apply(this, args), dir = direction.apply(this, args), nodel = d3.select(node), i = directions.length, coords, scrollTop = document.documentElement.scrollTop || document.body.scrollTop, scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+      var content = html.apply(this, args), nodel = d3.select(node);
       var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right;">X</span>';
       nodel.html(xout + content).style({
         opacity: 1,
@@ -1795,13 +1813,12 @@
         sticky = sticky ? false : true;
         view.hide();
       });
-      nodel.selectAll("*").style("display", "block");
-      while (i--) nodel.classed(directions[i], false);
-      coords = direction_callbacks.get(dir).apply(this);
-      nodel.classed(dir, true).style({
-        top: coords.top + poffset[0] + scrollTop + "px",
-        left: coords.left + poffset[1] + scrollLeft + "px"
-      });
+      function renderTest() {
+        var thisEl = d3.select(this), display = thisEl.style("display"), render = display == "none" ? "none" : "block";
+        return render;
+      }
+      nodel.selectAll("*").style("display", renderTest);
+      positionTooltip();
       return view;
     };
     view.hide = function() {
@@ -1810,6 +1827,10 @@
       nodel.style({
         opacity: 0,
         "pointer-events": "none"
+      });
+      d3.select(node).selectAll("*").each(function() {
+        var thisEl = d3.select(this), isSummaryElement = thisEl.attr("data-summaryElement");
+        if (isSummaryElement) thisEl.style("display", "none");
       });
       return view;
     };
@@ -2022,6 +2043,9 @@
     var thisTooltip = this;
     img = selection.append("img").attr("src", this.src);
     if (this.title) img.attr("alt", this.title);
+    img.attr("data-summaryElement", this.summaryElement);
+    if (this.summaryElement) img.style("display", "none").style("visibility", "hidden");
+    return img;
   };
   gd3.tooltip.text = gd3_tooltipText;
   function gd3_tooltipText(text) {
@@ -2035,7 +2059,50 @@
     return this.text;
   };
   gd3_tooltipTextPrototype.render = function(selection) {
-    selection.append("span").text(this.text);
+    var text = selection.append("span").text(this.text);
+    text.attr("data-summaryElement", this.summaryElement);
+    if (this.summaryElement) text.style("display", "none");
+    return text;
+  };
+  gd3.tooltip.vote = gd3_tooltipVote;
+  function gd3_tooltipVote(downvoteFn, upvoteFn, voteCount) {
+    if (!this instanceof gd3_tooltipVote) return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount);
+    this.downvoteFn = downvoteFn;
+    this.upvoteFn = upvoteFn;
+    this.voteCount = voteCount;
+    return this;
+  }
+  var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElement();
+  gd3_tooltipVotePrototype.toString = function() {
+    return this.voteCount + " votes";
+  };
+  gd3_tooltipVotePrototype.render = function(selection) {
+    var votingArea = selection.append("span"), downVote = votingArea.append("span").text("▼"), voteCount = votingArea.append("span").text(this.voteCount), upVote = votingArea.append("span").text("▲");
+    votingArea.selectAll("span").style({
+      display: "inline-block"
+    });
+    downVote.on("click", function(d) {
+      downVote.classed("gd3-vote-active", true);
+      upVote.classed("gd3-vote-active", false);
+      this.downVoteFn(d);
+    });
+    upVote.on("click", function(d) {
+      downVote.classed("gd3-vote-active", false);
+      upVote.classed("gd3-vote-active", true);
+      this.upvoteFn(d);
+    });
+    var voteGlyphStyle = {
+      cursor: "pointer",
+      "-moz-user-select": "none",
+      "-ms-user-select": "none",
+      "-o-user-select": "none",
+      "-webkit-user-select": "none"
+    };
+    downVote.style(voteGlyphStyle);
+    upVote.style(voteGlyphStyle);
+    votingArea.attr("data-summaryElement", this.summaryElement);
+    if (this.summaryElement) votingArea.style("display", "none").style("visibility", "hidden");
+    return votingArea;
   };
   gd3.tooltip.link = gd3_tooltipLink;
   function gd3_tooltipLink(href, body) {
@@ -2053,6 +2120,9 @@
     var thisTooltip = this;
     a = selection.append("a").attr("href", this.href);
     if (thisTooltip.body.render) thisTooltip.body.render(a); else a.text(thisTooltip.body.toString());
+    a.attr("data-summaryElement", this.summaryElement);
+    if (this.summaryElement) a.style("display", "none").style("visibility", "hidden");
+    return a;
   };
   gd3.tooltip.table = gd3_tooltipTable;
   function gd3_tooltipTable(array) {
@@ -2073,6 +2143,9 @@
     cells.each(function(d) {
       if (d.render) d.render(d3.select(this)); else d3.select(this).text(d.toString());
     });
+    table.attr("data-summaryElement", this.summaryElement);
+    if (this.summaryElement) table.style("display", "none").style("visibility", "hidden");
+    return table;
   };
   function transcriptData(data) {
     function parseCancer(cdata) {

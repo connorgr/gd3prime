@@ -23,4 +23,8 @@ gd3_tooltipLinkPrototype.render = function(selection) {
       .attr('href', this.href);
   if(thisTooltip.body.render) thisTooltip.body.render(a);
   else a.text(thisTooltip.body.toString());
+
+  a.attr('data-summaryElement', this.summaryElement);
+  if(this.summaryElement) a.style('display', 'none').style('visibility', 'hidden');
+  return a;
 }
