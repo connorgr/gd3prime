@@ -50,6 +50,6 @@ gd3_tooltipVotePrototype.render = function(selection) {
   upVote.style(voteGlyphStyle);
 
   votingArea.attr('data-summaryElement', this.summaryElement);
-  if(this.summaryElement) votingArea.style('display', 'none').style('visibility', 'hidden');
+  if(this.summaryElement) votingArea.style('display', 'none');
   return votingArea;
 }
