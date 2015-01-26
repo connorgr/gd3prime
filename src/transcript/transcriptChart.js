@@ -414,6 +414,30 @@ function transcriptChart(style) {
             .call(dragSlider);
       } // end renderScrollers()
 
+      // Add dispatch to increase the size of mutations with
+      // from the same sample on mouseover
+      var allMutations = mutationsG.selectAll("path")
+        .on("mouseover", function(d){
+          gd3.dispatch.sample({ sample: d.sample, over: true});
+        }).on("mouseout", function(d){
+          gd3.dispatch.sample({ sample: d.sample, over: false});
+        });
+
+      gd3.dispatch.on("sample.transcript", function(d){
+        var over = d.over, // flag if mouseover or mouseout
+            sample = d.sample,
+            // Identify the given sample's mutations
+            affectedMutations = allMutations.filter(function(d){
+              return d.sample == sample;
+            });
+
+        // Only if there is a mutation in this sample do we update
+        // the plot
+        if (gd3_util.selectionSize(affectedMutations)){
+          allMutations.style("opacity", over ? 0.25 : 1);
+          affectedMutations.style("opacity", 1);
+        }
+      })
     }); // End selection
   }
 

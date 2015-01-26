@@ -145,7 +145,7 @@ function cnaChart(style) {
             return normalize(d.end, minSegmentX, maxSegmentX) - normalize(d.start, minSegmentX, maxSegmentX);
           })
           .attr('height', style.horizontalBarHeight)
-          .attr('id', function (d, i) { return "interval-" + i; });
+          .attr('id', function (d, i) { return "interval-" + i; })
 
       //segments.call(gd3.annotation());
 
@@ -226,6 +226,21 @@ function cnaChart(style) {
       return height;
     });
 
+      // Set up dispatch
+      segs.attr({"stroke-width": 1, "stroke": "black", "stroke-opacity": 0})
+        .on("mouseover", function(d){
+          gd3.dispatch.sample({ sample: d.sample, opacity: 1});
+        }).on("mouseout", function(d){
+          gd3.dispatch.sample({ sample: d.sample, opacity: 0});
+        });
+
+      gd3.dispatch.on("sample.cna", function(d){
+        var opacity = d.opacity,
+            sample = d.sample;
+        segs.attr("stroke-opacity", 0)
+        segs.filter(function(d){ return d.sample == sample; })
+          .attr("stroke-opacity", opacity)
+      });
     });//end selection.each()
   }
   return chart;

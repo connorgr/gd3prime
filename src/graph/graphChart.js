@@ -243,6 +243,11 @@ function graphChart(style) {
               .text(category);
         });
       }
+
+      // Add dispatch
+      link.on("click", function(d){
+        gd3.dispatch.interaction({ source: d.source.name, target: d.target.name });
+      })
     });
   }
 
