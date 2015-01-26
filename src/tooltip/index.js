@@ -4,7 +4,7 @@ import "tooltipElement";
 
 import "tooltipImage";
 import "tooltipText";
-// import "tooltipVote";
+import "tooltipVote";
 
 import "tooltipLink";
 import "tooltipTable";
