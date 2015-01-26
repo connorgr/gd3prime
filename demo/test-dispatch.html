@@ -18,10 +18,26 @@ a:visited {
     </style>
   </head>
   <body>
+    <h2>Sample linking</h2>
+    <div id="samples"></div>
+    <hr/>
+    <h2>Form update</h2>
+    <div id="form-linking">
+      <form style='float:right;margin-right:40%'>
+        <b>Form</b><br/><br/>
+        <select id="protein1"><option>--choose protein--</option></select>
+        <br/><br/>
+        <select id="protein2"><option>--choose protein--</option></select>
+        <br/><br/>
+        <input id="pmid" placeholder="PMID">
+        <br/><br/>
+        <textarea id="comments" placeholder="Enter any comments"></textarea>
+      </form>
+    </div>
     <script src="../bower_components/d3/d3.min.js"></script>
     <script src="../gd3.js"></script>
     <script>
-    var body = d3.select('body');
+    var body = d3.select('#samples');
     var style = {
       width: 800
     }
@@ -92,6 +108,27 @@ a:visited {
         });
 
       });
+    });
+
+    d3.json('testData/example-graph.json', function(data) {
+        var style = {
+          nodeColor : ['rgb(38, 125, 255)','rgb(237, 14, 28)']
+        };
+        d3.select('#form-linking')
+            .datum(data)
+            .call(gd3.graph({style:style}));
+
+        d3.selectAll("select")
+          .selectAll(".option")
+          .data(data.nodes).enter()
+          .append("option")
+          .attr('value', function(d){ return d.name; })
+          .text(function(d){ return d.name; });
+    });
+
+    gd3.dispatch.on("interaction.graph", function(d){
+      d3.select("select#protein1").property('value', d.source);
+      d3.select("select#protein2").property('value', d.target);
     });
 
 
