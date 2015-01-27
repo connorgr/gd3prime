@@ -1802,7 +1802,7 @@
     };
   }
   function tooltipView(style) {
-    var direction = d3_tip_direction, offset = d3_tip_offset, html = d3_tip_html, node = undefined, sticky = false, svg = null, point = null, target = null;
+    var clickCount = 0, clickEvents = {}, direction = d3_tip_direction, offset = d3_tip_offset, html = d3_tip_html, node = undefined, sticky = false, svg = null, point = null, target = null;
     function view(selection) {
       svg = selection;
       point = selection.node().createSVGPoint();
@@ -1864,6 +1864,13 @@
         return render;
       }
       nodel.selectAll("*").style("display", renderTest);
+      var clickEventObjs = nodel.selectAll(".clickEventObj");
+      if (clickEventObjs.empty() == false) {
+        clickEventObjs.each(function() {
+          var thisEl = d3.select(this), clickIndex = thisEl.attr("data-click"), clickEvent = clickEvents[clickIndex];
+          thisEl.on("click", clickEvent);
+        });
+      }
       positionTooltip();
       return view;
     };
@@ -1919,14 +1926,28 @@
       }
       var ghostNode = document.createElement("div"), nodel = d3.select(ghostNode);
       var dimensionality = depth(data);
+      function registerClickEvent(selection) {
+        if (selection.on("click")) {
+          selection.attr("data-click", clickCount).classed("clickEventObj", true);
+          clickEvents[clickCount] = selection.on("click");
+          clickCount = clickCount + 1;
+        }
+      }
       if (dimensionality == 0) {
-        data.render(nodel);
+        var selection = data.render(nodel);
+        registerClickEvent(selection);
         html = nodel.html();
         html = html == null ? html : d3.functor(html);
         d3.select(ghostNode).remove();
       } else if (dimensionality == 1) {
         data.forEach(function(d) {
-          d.render(nodel);
+          var selection = d.render(nodel);
+          registerClickEvent(selection);
+          if (selection.selectAll("*").empty() == false) {
+            selection.selectAll("*").each(function() {
+              registerClickEvent(d3.select(this));
+            });
+          }
         });
         html = nodel.html();
         html = html == null ? html : d3.functor(html);
@@ -1936,7 +1957,13 @@
         data.forEach(function(d) {
           nodel.selectAll("*").remove();
           d.forEach(function(datum) {
-            datum.render(nodel);
+            var selection = datum.render(nodel);
+            registerClickEvent(selection);
+            if (selection.selectAll("*").empty() == false) {
+              selection.selectAll("*").each(function() {
+                registerClickEvent(d3.select(this));
+              });
+            }
           });
           htmls.push(nodel.html());
         });
@@ -2090,7 +2117,7 @@
     img = selection.append("img").attr("src", this.src);
     if (this.title) img.attr("alt", this.title);
     img.attr("data-summaryElement", this.summaryElement);
-    if (this.summaryElement) img.style("display", "none").style("visibility", "hidden");
+    if (this.summaryElement) img.style("display", "none");
     return img;
   };
   gd3.tooltip.text = gd3_tooltipText;
@@ -2111,31 +2138,31 @@
     return text;
   };
   gd3.tooltip.vote = gd3_tooltipVote;
+  var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElement();
   function gd3_tooltipVote(downvoteFn, upvoteFn, voteCount) {
     if (!this instanceof gd3_tooltipVote) return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount);
-    this.downvoteFn = downvoteFn;
-    this.upvoteFn = upvoteFn;
-    this.voteCount = voteCount;
+    gd3_tooltipVotePrototype.downvoteFn = downvoteFn;
+    gd3_tooltipVotePrototype.upvoteFn = upvoteFn;
+    gd3_tooltipVotePrototype.voteCount = voteCount;
     return this;
   }
-  var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElement();
   gd3_tooltipVotePrototype.toString = function() {
     return this.voteCount + " votes";
   };
   gd3_tooltipVotePrototype.render = function(selection) {
-    var votingArea = selection.append("span"), downVote = votingArea.append("span").text("▼"), voteCount = votingArea.append("span").text(this.voteCount), upVote = votingArea.append("span").text("▲");
+    var votingArea = selection.append("span"), downVote = votingArea.append("span").text("▼").attr("class", "gd3-tooltip-dvote"), voteCount = votingArea.append("span").text(this.voteCount), upVote = votingArea.append("span").text("▲").attr("class", "gd3-tooltip-uvote");
     votingArea.selectAll("span").style({
       display: "inline-block"
     });
     downVote.on("click", function(d) {
       downVote.classed("gd3-vote-active", true);
       upVote.classed("gd3-vote-active", false);
-      this.downVoteFn(d);
+      gd3_tooltipVotePrototype.downvoteFn(d);
     });
     upVote.on("click", function(d) {
       downVote.classed("gd3-vote-active", false);
       upVote.classed("gd3-vote-active", true);
-      this.upvoteFn(d);
+      gd3_tooltipVotePrototype.upvoteFn(d);
     });
     var voteGlyphStyle = {
       cursor: "pointer",
@@ -2147,7 +2174,7 @@
     downVote.style(voteGlyphStyle);
     upVote.style(voteGlyphStyle);
     votingArea.attr("data-summaryElement", this.summaryElement);
-    if (this.summaryElement) votingArea.style("display", "none").style("visibility", "hidden");
+    if (this.summaryElement) votingArea.style("display", "none");
     return votingArea;
   };
   gd3.tooltip.link = gd3_tooltipLink;
@@ -2167,7 +2194,7 @@
     a = selection.append("a").attr("href", this.href);
     if (thisTooltip.body.render) thisTooltip.body.render(a); else a.text(thisTooltip.body.toString());
     a.attr("data-summaryElement", this.summaryElement);
-    if (this.summaryElement) a.style("display", "none").style("visibility", "hidden");
+    if (this.summaryElement) a.style("display", "none");
     return a;
   };
   gd3.tooltip.table = gd3_tooltipTable;
@@ -2190,7 +2217,7 @@
       if (d.render) d.render(d3.select(this)); else d3.select(this).text(d.toString());
     });
     table.attr("data-summaryElement", this.summaryElement);
-    if (this.summaryElement) table.style("display", "none").style("visibility", "hidden");
+    if (this.summaryElement) table.style("display", "none");
     return table;
   };
   function transcriptData(data) {

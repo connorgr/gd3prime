@@ -1,5 +1,7 @@
 function tooltipView(style) {
-  var direction = d3_tip_direction,
+  var clickCount = 0,
+      clickEvents = {},
+      direction = d3_tip_direction,
       offset    = d3_tip_offset,
       html      = d3_tip_html,
       node      = undefined,
@@ -61,6 +63,7 @@ function tooltipView(style) {
       });
     }
 
+    // if the node is sticky (i.e., has been clicked, or otherwise frozen)
     if (sticky) {
       d3.select(node).selectAll('*').each(function() {
         var thisEl = d3.select(this),
@@ -70,6 +73,7 @@ function tooltipView(style) {
       positionTooltip();
       return;
     }
+
     var args = Array.prototype.slice.call(arguments);
     if(args[args.length - 1] instanceof SVGElement) target = args.pop();
 
@@ -96,6 +100,16 @@ function tooltipView(style) {
       return render;
     }
     nodel.selectAll('*').style('display', renderTest);
+
+    var clickEventObjs = nodel.selectAll('.clickEventObj');
+    if (clickEventObjs.empty() == false) {
+      clickEventObjs.each(function() {
+        var thisEl = d3.select(this),
+            clickIndex = thisEl.attr('data-click'),
+            clickEvent = clickEvents[clickIndex];
+        thisEl.on('click', clickEvent);
+      });
+    }
 
     positionTooltip();
 
@@ -169,14 +183,33 @@ function tooltipView(style) {
 
     var dimensionality = depth(data);
 
+    function registerClickEvent(selection) {
+      if(selection.on('click')) {
+        selection.attr('data-click', clickCount).classed('clickEventObj', true);
+        clickEvents[clickCount] = selection.on('click');
+        clickCount = clickCount + 1;
+      }
+    }
+
     // Alter the rendering behavior based on the dimensionality of data
     if(dimensionality == 0) {
-      data.render(nodel);
+      var selection = data.render(nodel);
+      // register click events if any exist
+      registerClickEvent(selection);
+
       html = nodel.html();
       html = html == null ? html : d3.functor(html);
       d3.select(ghostNode).remove();
     } else if (dimensionality == 1) {
-      data.forEach(function(d) { d.render(nodel); });
+      data.forEach(function(d) {
+        var selection = d.render(nodel);
+
+        // register click events if any exist
+        registerClickEvent(selection);
+        if(selection.selectAll('*').empty() == false) {
+          selection.selectAll('*').each(function() { registerClickEvent(d3.select(this)); });
+        }
+      });
       html = nodel.html();
       html = html == null ? html : d3.functor(html);
       d3.select(ghostNode).remove();
@@ -184,7 +217,15 @@ function tooltipView(style) {
       var htmls = [];
       data.forEach(function(d) {
         nodel.selectAll('*').remove();
-        d.forEach(function(datum) { datum.render(nodel); });
+        d.forEach(function(datum) {
+          var selection = datum.render(nodel);
+
+          // register click events if any exist
+          registerClickEvent(selection);
+          if(selection.selectAll('*').empty() == false) {
+            selection.selectAll('*').each(function() { registerClickEvent(d3.select(this)); });
+          }
+        });
         htmls.push(nodel.html());
       });
       html = d3.functor(function(d,i) { return htmls[i]; });
