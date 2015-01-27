@@ -2141,9 +2141,9 @@
   var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElement();
   function gd3_tooltipVote(downvoteFn, upvoteFn, voteCount) {
     if (!this instanceof gd3_tooltipVote) return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount);
-    gd3_tooltipVotePrototype.downvoteFn = downvoteFn;
-    gd3_tooltipVotePrototype.upvoteFn = upvoteFn;
-    gd3_tooltipVotePrototype.voteCount = voteCount;
+    this.downvoteFn = downvoteFn;
+    this.upvoteFn = upvoteFn;
+    this.voteCount = voteCount;
     return this;
   }
   gd3_tooltipVotePrototype.toString = function() {
@@ -2154,15 +2154,16 @@
     votingArea.selectAll("span").style({
       display: "inline-block"
     });
+    var downVoteFn = this.downVoteFn, thisVote = this;
     downVote.on("click", function(d) {
       downVote.classed("gd3-vote-active", true);
       upVote.classed("gd3-vote-active", false);
-      gd3_tooltipVotePrototype.downvoteFn(d);
+      thisVote.downvoteFn(d);
     });
     upVote.on("click", function(d) {
       downVote.classed("gd3-vote-active", false);
       upVote.classed("gd3-vote-active", true);
-      gd3_tooltipVotePrototype.upvoteFn(d);
+      thisVote.upvoteFn(d);
     });
     var voteGlyphStyle = {
       cursor: "pointer",
