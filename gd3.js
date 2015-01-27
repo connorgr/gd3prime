@@ -1840,6 +1840,7 @@
         });
       }
       if (sticky) {
+        if (d3.event.type != "click") return;
         d3.select(node).selectAll("*").each(function() {
           var thisEl = d3.select(this), isSummaryElement = thisEl.attr("data-summaryElement");
           if (isSummaryElement) thisEl.style("display", "block");
@@ -1850,7 +1851,7 @@
       var args = Array.prototype.slice.call(arguments);
       if (args[args.length - 1] instanceof SVGElement) target = args.pop();
       var content = html.apply(this, args), nodel = d3.select(node);
-      var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right;">X</span>';
+      var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px">X</span><br />';
       nodel.html(xout + content).style({
         opacity: 1,
         "pointer-events": "all"
@@ -1860,7 +1861,12 @@
         view.hide();
       });
       function renderTest() {
-        var thisEl = d3.select(this), display = thisEl.style("display"), render = display == "none" ? "none" : "block";
+        var thisEl = d3.select(this), display = thisEl.style("display");
+        render = display == "none" ? "none" : "block";
+        var base = "gd3-tooltip-", isVote = thisEl.classed(base + "votecount") || thisEl.classed(base + "dvote") || thisEl.classed(base + "uvote");
+        if (isVote) {
+          return display;
+        }
         return render;
       }
       nodel.selectAll("*").style("display", renderTest);
@@ -2150,7 +2156,8 @@
     return this.voteCount + " votes";
   };
   gd3_tooltipVotePrototype.render = function(selection) {
-    var votingArea = selection.append("span"), downVote = votingArea.append("span").text("▼").attr("class", "gd3-tooltip-dvote"), voteCount = votingArea.append("span").text(this.voteCount), upVote = votingArea.append("span").text("▲").attr("class", "gd3-tooltip-uvote");
+    var votingArea = selection.append("span").attr("class", "gd3-tooltip-vote"), downVote = votingArea.append("span").text("▼").attr("class", "gd3-tooltip-dvote"), voteCount = votingArea.append("span").text(this.voteCount).attr("class", "gd3-tooltip-votecount"), upVote = votingArea.append("span").text("▲").attr("class", "gd3-tooltip-uvote");
+    votingArea.style("display", "block");
     votingArea.selectAll("span").style({
       display: "inline-block"
     });

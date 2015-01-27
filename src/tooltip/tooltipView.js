@@ -65,6 +65,9 @@ function tooltipView(style) {
 
     // if the node is sticky (i.e., has been clicked, or otherwise frozen)
     if (sticky) {
+      // If the event isn't a click event, don't do anything
+      if(d3.event.type != 'click') return;
+
       d3.select(node).selectAll('*').each(function() {
         var thisEl = d3.select(this),
             isSummaryElement = thisEl.attr('data-summaryElement');
@@ -80,7 +83,7 @@ function tooltipView(style) {
     var content = html.apply(this, args),
         nodel   = d3.select(node);
 
-    var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right;">X</span>';
+    var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px">X</span><br />';
 
     nodel.html(xout + content).style({ opacity: 1, 'pointer-events': 'all' });
 
@@ -94,8 +97,14 @@ function tooltipView(style) {
     // Show only the elements that are not already hidden
     function renderTest() {
       var thisEl = d3.select(this),
-          display = thisEl.style('display'),
+          display = thisEl.style('display');
           render = display == 'none' ? 'none' : 'block';
+
+      var base = 'gd3-tooltip-',
+          isVote = thisEl.classed(base+'votecount') || thisEl.classed(base+'dvote') || thisEl.classed(base+'uvote');
+      if(isVote) {
+        return display;
+      }
 
       return render;
     }

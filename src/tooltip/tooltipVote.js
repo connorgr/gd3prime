@@ -18,11 +18,12 @@ gd3_tooltipVotePrototype.toString = function() {
 };
 
 gd3_tooltipVotePrototype.render = function(selection) {
-  var votingArea = selection.append('span'),
+  var votingArea = selection.append('span').attr('class', 'gd3-tooltip-vote'),
       downVote = votingArea.append('span').text('▼').attr('class', 'gd3-tooltip-dvote'),
-      voteCount = votingArea.append('span').text(this.voteCount),
+      voteCount = votingArea.append('span').text(this.voteCount).attr('class', 'gd3-tooltip-votecount'),
       upVote = votingArea.append('span').text('▲').attr('class', 'gd3-tooltip-uvote');
 
+  votingArea.style('display', 'block');
   votingArea.selectAll('span').style({
     display: 'inline-block'
   });
