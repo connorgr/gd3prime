@@ -9,6 +9,7 @@ function tooltipStyle(style) {
     height: style.height || 200,
     lineHeight: style.lineHeight || 1,
     padding: style.padding || '5px',
+    voteActiveColor: style.voteActiveColor || '#ff0000',
     width: style.width || 500,
   };
 }

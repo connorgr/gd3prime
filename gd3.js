@@ -1798,6 +1798,7 @@
       height: style.height || 200,
       lineHeight: style.lineHeight || 1,
       padding: style.padding || "5px",
+      voteActiveColor: style.voteActiveColor || "#ff0000",
       width: style.width || 500
     };
   }
@@ -1927,6 +1928,7 @@
       return view;
     };
     view.useData = function(data) {
+      console.log("useData");
       function depth(d) {
         return Array.isArray(d) ? depth(d[0]) + 1 : 0;
       }
@@ -2145,7 +2147,7 @@
   };
   gd3.tooltip.vote = gd3_tooltipVote;
   var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElement();
-  function gd3_tooltipVote(downvoteFn, upvoteFn, voteCount) {
+  function gd3_tooltipVote(downvoteFn, upvoteFn, voteCount, activeColor) {
     if (!this instanceof gd3_tooltipVote) return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount);
     this.downvoteFn = downvoteFn;
     this.upvoteFn = upvoteFn;
@@ -2163,14 +2165,38 @@
     });
     var downVoteFn = this.downVoteFn, thisVote = this;
     downVote.on("click", function(d) {
-      downVote.classed("gd3-vote-active", true);
-      upVote.classed("gd3-vote-active", false);
-      thisVote.downvoteFn(d);
+      var downVote = d3.select(this), upVote = d3.select(this.parentNode).select(".gd3-tooltip-uvote"), voteCount = d3.select(this.parentNode).select(".gd3-tooltip-votecount");
+      var voteMod = 1;
+      upVote.style("color", null);
+      if (downVote.classed("gd3-vote-active") == true) {
+        downVote.classed("gd3-vote-active", false);
+        voteMod = -1;
+        downVote.style("color", null);
+      } else {
+        if (upVote.classed("gd3-vote-active") == true) voteMod = voteMod + 1;
+        downVote.classed("gd3-vote-active", true);
+        upVote.classed("gd3-vote-active", false);
+        downVote.style("color", "goldenrod");
+      }
+      voteCount.text(parseInt(voteCount.text()) - voteMod);
+      thisVote.downvoteFn(d, downVote.classed("gd3-vote-active"));
     });
     upVote.on("click", function(d) {
-      downVote.classed("gd3-vote-active", false);
-      upVote.classed("gd3-vote-active", true);
-      thisVote.upvoteFn(d);
+      var downVote = d3.select(this.parentNode).select(".gd3-tooltip-dvote"), upVote = d3.select(this), voteCount = d3.select(this.parentNode).select(".gd3-tooltip-votecount");
+      var voteMod = 1;
+      downVote.style("color", null);
+      if (upVote.classed("gd3-vote-active") == true) {
+        upVote.classed("gd3-vote-active", false);
+        voteMod = -1;
+        upVote.style("color", null);
+      } else {
+        if (downVote.classed("gd3-vote-active") == true) voteMod = voteMod + 1;
+        downVote.classed("gd3-vote-active", false);
+        upVote.classed("gd3-vote-active", true);
+        upVote.style("color", "goldenrod");
+      }
+      voteCount.text(parseInt(voteCount.text()) + voteMod);
+      thisVote.upvoteFn(d, upVote.classed("gd3-vote-active"));
     });
     var voteGlyphStyle = {
       cursor: "pointer",
