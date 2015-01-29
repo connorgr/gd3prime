@@ -281,7 +281,6 @@ function mutmtxChart(style) {
       if(drawSortingMenu) drawSortingMenu();
 
       // If a dispatch is triggered for sorting a mutation matrix... do it!
-      // todo: finish this, mdml look here
       gd3.dispatch.on('sort.mutmtx', function(d) {
         console.log('hi');
       });

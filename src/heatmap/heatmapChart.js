@@ -336,7 +336,7 @@ function heatmapChart(style) {
         heatmap.attr('transform', 'translate(' + (maxLabelWidth+style.labelMargins.right) +',0)');
       }
 
-      gd3.dispatch.on('sort.mutmtx', function(d) {
+      gd3.dispatch.on('sort.heatmap', function(d) {
         data.sortColumns(d.columnLabels);
         heatmapCells.transition().attr('x', function(d, i) {
           return data.xs.indexOf(d.x) * style.cellWidth;
