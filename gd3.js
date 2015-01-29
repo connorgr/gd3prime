@@ -2519,6 +2519,8 @@
           activatingMutations.each(getYs(activatingYs));
           inactivatingMutations.each(getYs(inactivatingYs));
           var minActivatingY = d3.min(activatingYs), maxInactivatingY = d3.max(inactivatingYs);
+          var showActivatingScroller = minActivatingY < 0, showInactivatingScroller = maxInactivatingY > height;
+          if (!showActivatingScroller && !showInactivatingScroller) return;
           var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) + 1.1 * style.symbolWidth : 0, maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY - style.symbolWidth : 0;
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
           gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
@@ -2559,18 +2561,26 @@
             thisEl.style("fill", "url(#gradient)");
           }
           sG.append("rect").attr("x", 0).attr("y", 0).attr("width", 15).attr("height", style.height).style("fill", "#fff");
-          sG.append("line").attr("x1", 6).attr("y1", 10).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2 + 10).style("stroke", "#ccc").style("stroke-width", 1);
-          sG.append("line").attr("x1", 6).attr("y1", style.height / 2 + style.transcriptBarHeight / 2 + 10).attr("x2", 6).attr("y2", style.height - 10).style("stroke", "#ccc").style("stroke-width", 1);
+          if (showActivatingScroller) {
+            sG.append("line").attr("x1", 6).attr("y1", 10).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2 + 10).style("stroke", "#ccc").style("stroke-width", 1);
+          }
+          if (showInactivatingScroller) {
+            sG.append("line").attr("x1", 6).attr("y1", style.height / 2 + style.transcriptBarHeight / 2 + 10).attr("x2", 6).attr("y2", style.height - 10).style("stroke", "#ccc").style("stroke-width", 1);
+          }
           var sliderBounds = [ {
             min: style.height / 2 - style.transcriptBarHeight / 2 + 4,
             max: 6,
-            loc: "top"
+            loc: "top",
+            show: showActivatingScroller
           }, {
             min: style.height / 2 + style.transcriptBarHeight + 4,
             max: style.height - 6,
-            loc: "bottom"
+            loc: "bottom",
+            show: showInactivatingScroller
           } ];
-          sG.selectAll("circle").data(sliderBounds).enter().append("circle").attr("r", 5).attr("cx", 6).attr("cy", function(d) {
+          sG.selectAll("circle").data(sliderBounds.filter(function(d) {
+            return d.show;
+          })).enter().append("circle").attr("r", 5).attr("cx", 6).attr("cy", function(d) {
             return d.min;
           }).style({
             "box-shadow": "0px 0px 5px 0px rgba(0,0,0,0.75)",

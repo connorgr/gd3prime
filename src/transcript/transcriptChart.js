@@ -281,6 +281,11 @@ function transcriptChart(style) {
         var minActivatingY = d3.min(activatingYs),
             maxInactivatingY = d3.max(inactivatingYs);
 
+        // Only render the scrollers if there are mutations off the page
+        var showActivatingScroller = minActivatingY < 0,
+            showInactivatingScroller = maxInactivatingY > height;
+        if (!showActivatingScroller && !showInactivatingScroller) return;
+
         // Determine scrolling max offset for both activating and inactivating mutations
         var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY)+1.1*style.symbolWidth : 0,
             maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY-style.symbolWidth : 0;
@@ -312,6 +317,7 @@ function transcriptChart(style) {
                     .on('dragstart', dragStart)
                     .on('drag', dragMove)
                     .on('dragend', dragEnd);
+
         function dragStart(d) {
           d3.event.sourceEvent.stopPropagation();
           var thisEl = d3.select(this);
@@ -372,34 +378,40 @@ function transcriptChart(style) {
             .style('fill', '#fff');
 
         // Add slider tracks
-        sG.append('line')
-            .attr('x1', 6)
-            .attr('y1', 10)
-            .attr('x2', 6)
-            .attr('y2', style.height/2 - style.transcriptBarHeight/2 + 10)
-            .style('stroke', '#ccc')
-            .style('stroke-width', 1);
-        sG.append('line')
-            .attr('x1', 6)
-            .attr('y1', style.height/2 + style.transcriptBarHeight/2 + 10)
-            .attr('x2', 6)
-            .attr('y2', style.height - 10)
-            .style('stroke', '#ccc')
-            .style('stroke-width', 1);
+        if (showActivatingScroller){
+          sG.append('line')
+              .attr('x1', 6)
+              .attr('y1', 10)
+              .attr('x2', 6)
+              .attr('y2', style.height/2 - style.transcriptBarHeight/2 + 10)
+              .style('stroke', '#ccc')
+              .style('stroke-width', 1);
+        }
+        if (showInactivatingScroller){
+          sG.append('line')
+              .attr('x1', 6)
+              .attr('y1', style.height/2 + style.transcriptBarHeight/2 + 10)
+              .attr('x2', 6)
+              .attr('y2', style.height - 10)
+              .style('stroke', '#ccc')
+              .style('stroke-width', 1);
+        }
 
         // Set up drag circles
         var sliderBounds = [
           { min: style.height/2 - style.transcriptBarHeight/2 + 4,
             max: 6,
-            loc: 'top'
+            loc: 'top',
+            show: showActivatingScroller
           },
           { min: style.height/2 + style.transcriptBarHeight + 4,
             max: style.height - 6,
-            loc: 'bottom'
+            loc: 'bottom',
+            show: showInactivatingScroller
           }
         ];
         sG.selectAll('circle')
-            .data(sliderBounds)
+            .data(sliderBounds.filter(function(d){ return d.show; }))
             .enter()
             .append('circle')
             .attr('r', 5)
@@ -412,6 +424,7 @@ function transcriptChart(style) {
               'stroke-width': 1
             })
             .call(dragSlider);
+
       } // end renderScrollers()
 
       // Add dispatch to increase the size of mutations with

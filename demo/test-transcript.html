@@ -8,11 +8,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
-    <div id="test"></div>
+    <div id="test1"></div>
+    <div id="test2"></div>
+    <div id="test3"></div>
     <script src="../bower_components/d3/d3.min.js"></script>
     <script src="../gd3.js"></script>
     <script>
-    console.log(gd3);
 
     d3.json('testData/example2-transcript.json', function(data) {
 
@@ -52,8 +53,29 @@
       sampleTypes = Object.keys(sampleTypes);
       params.sampleTypes = sampleTypes;
 
-      d3.select('#test')
+      // Draw STAG1 where no scrollbar should appear
+      d3.select('#test1')
+        .append('h3')
+        .html(vizData[1].gene + " <small>" + vizData[1].transcript + "</small>");
+      d3.select('#test1')
           .datum(vizData[1])
+          .call(gd3.transcript(params));
+
+      // Draw BRAF where an activating (top) scrollbar should appear
+      d3.select('#test2')
+        .append('h3')
+        .html(vizData[5].gene + " <small>" + vizData[5].transcript + "</small>");
+      d3.select('#test2')
+          .datum(vizData[5])
+          .call(gd3.transcript(params));
+
+      // Draw ARID1A where both inactivating (bottom) and activating (top)
+      // scrollbars should appear
+      d3.select('#test3')
+        .append('h3')
+        .html(vizData[6].gene + " <small>" + vizData[6].transcript + "</small>");
+      d3.select('#test3')
+          .datum(vizData[6])
           .call(gd3.transcript(params));
     });
     </script>
