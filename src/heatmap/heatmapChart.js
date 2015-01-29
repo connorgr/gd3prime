@@ -335,7 +335,7 @@ function heatmapChart(style) {
       }
 
       gd3.dispatch.on('sort.mutmtx', function(d) {
-        data.sortColumns(d.columnIdOrder);
+        data.sortColumns(d.columnLabels);
         heatmapCells.transition().attr('x', function(d, i) { return data.xs.indexOf(d.x) * style.cellWidth; });
         annotationXLabelsG.selectAll('text').attr('y', function(d, i) { return -data.xs.indexOf(d) * style.cellWidth; });
       });

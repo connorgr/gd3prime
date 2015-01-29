@@ -1001,17 +1001,6 @@
     }
     defaultParse();
     data.sortColumns = function(columnIds) {
-      columnIds = columnIds.map(function(c) {
-        var x = null, i = 0;
-        for (i; i < data.xs.length; i++) {
-          if (c.indexOf(data.xs[i]) > 1) x = data.xs[i];
-          break;
-        }
-        return x;
-      });
-      columnIds = columnIds.filter(function(d) {
-        return d != null;
-      });
       data.xs.sort(function(a, b) {
         return columnIds.indexOf(a) - columnIds.indexOf(b);
       });
@@ -1204,7 +1193,7 @@
           heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
         }
         gd3.dispatch.on("sort.mutmtx", function(d) {
-          data.sortColumns(d.columnIdOrder);
+          data.sortColumns(d.columnLabels);
           heatmapCells.transition().attr("x", function(d, i) {
             return data.xs.indexOf(d.x) * style.cellWidth;
           });
@@ -1635,8 +1624,11 @@
                   data.reorderColumns(sortingOptionsData);
                   renderMenu();
                   rerenderMutationMatrix(true);
+                  var orderedLabels = data.ids.columns.map(function(d) {
+                    return data.maps.columnIdToLabel[d];
+                  });
                   gd3.dispatch.sort({
-                    columnIdOrder: data.ids.columns
+                    columnLabels: orderedLabels
                   });
                 });
               });

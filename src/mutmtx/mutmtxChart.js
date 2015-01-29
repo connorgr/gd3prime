@@ -515,7 +515,10 @@ function mutmtxChart(style) {
                               renderMenu();
                               rerenderMutationMatrix(true);
 
-                              gd3.dispatch.sort({columnIdOrder: data.ids.columns});
+                              var orderedLabels = data.ids.columns.map(function(d) {
+                                return data.maps.columnIdToLabel[d];
+                              });
+                              gd3.dispatch.sort({columnLabels: orderedLabels});
                             });
                       });
           });
@@ -640,7 +643,7 @@ function mutmtxChart(style) {
             rects.attr("stroke-opacity", 0);
             rects.filter(function(d){ return data.maps.columnIdToLabel[d.colId] == sample; })
               .attr("stroke-opacity", over ? 1 : 0);
-            
+
             // Highlight the sample name
             columnNames.style({ "opacity": over ? 0.25 : 1, "font-weight": "normal"});
             affectedColumns.style({"opacity": 1, "font-weight": over ? "bold" : "normal"});
