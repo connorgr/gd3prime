@@ -280,6 +280,12 @@ function mutmtxChart(style) {
       }
       if(drawSortingMenu) drawSortingMenu();
 
+      // If a dispatch is triggered for sorting a mutation matrix... do it!
+      // todo: finish this, mdml look here
+      gd3.dispatch.on('sort.mutmtx', function(d) {
+        console.log('hi');
+      });
+
 
       // Legend should be a DIV d3 selection
       function drawLegendFn(legend) {
@@ -518,6 +524,7 @@ function mutmtxChart(style) {
                               var orderedLabels = data.ids.columns.map(function(d) {
                                 return data.maps.columnIdToLabel[d];
                               });
+
                               gd3.dispatch.sort({columnLabels: orderedLabels});
                             });
                       });
@@ -649,11 +656,8 @@ function mutmtxChart(style) {
             affectedColumns.style({"opacity": 1, "font-weight": over ? "bold" : "normal"});
           }
         })
-
-        // columns.selectAll('rect').each(function() {
-        //   d3.select(this).call(gd3.annotation())
-        // });
       }
+
     });
   }
 
