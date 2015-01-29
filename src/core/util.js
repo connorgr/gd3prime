@@ -28,6 +28,10 @@ var gd3_util = {
       }
     }
     return pairs;
+  },
+  selectionSize: function(selection){
+    var n = 0;
+    selection.each(function() { ++n; });
+    return n;
   }
-
 }

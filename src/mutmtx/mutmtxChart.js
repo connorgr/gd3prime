@@ -572,7 +572,7 @@ function mutmtxChart(style) {
             .data(function(colId){
               var activeRows = data.matrix.columnIdToActiveRows[colId];
               return activeRows.map(function(rowId){
-                return {row:rowId, cell:data.matrix.cells[[rowId, colId].join()]}
+                return {colId: colId, row:rowId, cell:data.matrix.cells[[rowId, colId].join()]}
               });
             })
             .enter()
@@ -603,6 +603,46 @@ function mutmtxChart(style) {
                 .style('stroke-width', .5);
           }
         });
+
+        ///////////////////////////////////////////////////////////////////////
+        // Add dispatch to outline mutations in the same sample
+        // onmouseover
+
+        // Select the sample names and the mutations, and give each of the
+        // mutations a hidden stroke
+        var columnNames = columns.selectAll("text");
+        var rects = columns.select('g.mutmtx-sampleMutationCells')
+          .selectAll("g")
+          .selectAll("rect")
+          .attr({"stroke-width": 1, "stroke": "black", "stroke-opacity": 0})
+
+        // Define the dispatch events
+        columns.select('g.mutmtx-sampleMutationCells')
+          .selectAll('g')
+          .on("mouseover", function(d){
+            gd3.dispatch.sample({ sample: data.maps.columnIdToLabel[d.colId], over: true});
+          }).on("mouseout", function(d){
+            gd3.dispatch.sample({ sample: data.maps.columnIdToLabel[d.colId], over: false});
+          });
+
+        gd3.dispatch.on("sample.mutmtx", function(d){
+          var over = d.over, // flag if mouseover or mouseout
+              sample = d.sample,
+              affectedColumns = columnNames.filter(function(d){
+                return data.maps.columnIdToLabel[d] == sample;
+              });
+
+          if (gd3_util.selectionSize(affectedColumns)){
+            // Show the small stroke around each of the sample's mutations
+            rects.attr("stroke-opacity", 0);
+            rects.filter(function(d){ return data.maps.columnIdToLabel[d.colId] == sample; })
+              .attr("stroke-opacity", over ? 1 : 0);
+            
+            // Highlight the sample name
+            columnNames.style({ "opacity": over ? 0.25 : 1, "font-weight": "normal"});
+            affectedColumns.style({"opacity": 1, "font-weight": over ? "bold" : "normal"});
+          }
+        })
 
         // columns.selectAll('rect').each(function() {
         //   d3.select(this).call(gd3.annotation())

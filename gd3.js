@@ -2,6 +2,7 @@
   var gd3 = {
     version: "0.2.1"
   };
+  gd3.dispatch = d3.dispatch("sample", "interaction");
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -38,6 +39,13 @@
         }
       }
       return pairs;
+    },
+    selectionSize: function(selection) {
+      var n = 0;
+      selection.each(function() {
+        ++n;
+      });
+      return n;
     }
   };
   var gd3_data_structures = {
@@ -265,6 +273,28 @@
           bgMask.attr("height", height);
           verticalBar.attr("height", height - style.geneHeight);
           return height;
+        });
+        segs.attr({
+          "stroke-width": 1,
+          stroke: "black",
+          "stroke-opacity": 0
+        }).on("mouseover", function(d) {
+          gd3.dispatch.sample({
+            sample: d.sample,
+            opacity: 1
+          });
+        }).on("mouseout", function(d) {
+          gd3.dispatch.sample({
+            sample: d.sample,
+            opacity: 0
+          });
+        });
+        gd3.dispatch.on("sample.cna", function(d) {
+          var opacity = d.opacity, sample = d.sample;
+          segs.attr("stroke-opacity", 0);
+          segs.filter(function(d) {
+            return d.sample == sample;
+          }).attr("stroke-opacity", opacity);
         });
       });
     }
@@ -887,6 +917,12 @@
             thisEl.append("text").attr("x", 16).attr("y", (i + 1) * style.legendFontSize + titleHeight + scaleHeight).style("font-size", style.legendFontSize).text(category);
           });
         }
+        link.on("click", function(d) {
+          gd3.dispatch.interaction({
+            source: d.source.name,
+            target: d.target.name
+          });
+        });
       });
     }
     chart.clickAnchorsNodes = function(state) {
@@ -1608,6 +1644,7 @@
             var activeRows = data.matrix.columnIdToActiveRows[colId];
             return activeRows.map(function(rowId) {
               return {
+                colId: colId,
                 row: rowId,
                 cell: data.matrix.cells[[ rowId, colId ].join()]
               };
@@ -1619,6 +1656,42 @@
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType];
             if (glyph && glyph != null) {
               thisCell.append("path").attr("class", "gd3mutmtx-cellClyph").attr("d", d3.svg.symbol().type(glyph).size(colWidth * colWidth)).attr("transform", "translate(" + colWidth / 2 + "," + (y + style.rowHeight / 2) + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("stroke-width", .5);
+            }
+          });
+          var columnNames = columns.selectAll("text");
+          var rects = columns.select("g.mutmtx-sampleMutationCells").selectAll("g").selectAll("rect").attr({
+            "stroke-width": 1,
+            stroke: "black",
+            "stroke-opacity": 0
+          });
+          columns.select("g.mutmtx-sampleMutationCells").selectAll("g").on("mouseover", function(d) {
+            gd3.dispatch.sample({
+              sample: data.maps.columnIdToLabel[d.colId],
+              over: true
+            });
+          }).on("mouseout", function(d) {
+            gd3.dispatch.sample({
+              sample: data.maps.columnIdToLabel[d.colId],
+              over: false
+            });
+          });
+          gd3.dispatch.on("sample.mutmtx", function(d) {
+            var over = d.over, sample = d.sample, affectedColumns = columnNames.filter(function(d) {
+              return data.maps.columnIdToLabel[d] == sample;
+            });
+            if (gd3_util.selectionSize(affectedColumns)) {
+              rects.attr("stroke-opacity", 0);
+              rects.filter(function(d) {
+                return data.maps.columnIdToLabel[d.colId] == sample;
+              }).attr("stroke-opacity", over ? 1 : 0);
+              columnNames.style({
+                opacity: over ? .25 : 1,
+                "font-weight": "normal"
+              });
+              affectedColumns.style({
+                opacity: 1,
+                "font-weight": over ? "bold" : "normal"
+              });
             }
           });
         }
@@ -2505,6 +2578,26 @@
             "stroke-width": 1
           }).call(dragSlider);
         }
+        var allMutations = mutationsG.selectAll("path").on("mouseover", function(d) {
+          gd3.dispatch.sample({
+            sample: d.sample,
+            over: true
+          });
+        }).on("mouseout", function(d) {
+          gd3.dispatch.sample({
+            sample: d.sample,
+            over: false
+          });
+        });
+        gd3.dispatch.on("sample.transcript", function(d) {
+          var over = d.over, sample = d.sample, affectedMutations = allMutations.filter(function(d) {
+            return d.sample == sample;
+          });
+          if (gd3_util.selectionSize(affectedMutations)) {
+            allMutations.style("opacity", over ? .25 : 1);
+            affectedMutations.style("opacity", 1);
+          }
+        });
       });
     }
     function showScrollers(val) {

@@ -1,4 +1,5 @@
 import "start.js";
+import "dispatch/";
 import "core/";
 import "cna/";
 import "dendrogram/";
