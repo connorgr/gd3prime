@@ -138,6 +138,8 @@ function heatmapChart(style) {
       });
       svg.call(zoom);
 
+      var annotationCellsG,
+          annotationCategoryCellsG;
       function renderAnnotationsFn() {
         if (!data.annotations) return;
         var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
@@ -175,7 +177,7 @@ function heatmapChart(style) {
         annotationCellsG.attr('transform', 'translate(0,' + verticalOffset + ')');
 
         // Draw annotation cells
-        var annotationCategoryCellsG = annotationCellsG.selectAll('g')
+        annotationCategoryCellsG = annotationCellsG.selectAll('g')
             .data(data.annotations.categories)
             .enter()
             .append('g')
@@ -336,8 +338,25 @@ function heatmapChart(style) {
 
       gd3.dispatch.on('sort.mutmtx', function(d) {
         data.sortColumns(d.columnLabels);
-        heatmapCells.transition().attr('x', function(d, i) { return data.xs.indexOf(d.x) * style.cellWidth; });
-        annotationXLabelsG.selectAll('text').attr('y', function(d, i) { return -data.xs.indexOf(d) * style.cellWidth; });
+        heatmapCells.transition().attr('x', function(d, i) {
+          return data.xs.indexOf(d.x) * style.cellWidth;
+        });
+
+        // update x labels if they exist
+        if(annotationXLabelsG) {
+          annotationXLabelsG.selectAll('text').transition()
+              .attr('y', function(d, i) {
+                return -data.xs.indexOf(d) * style.cellWidth;
+              });
+        }
+
+        // update annotation cells if they exist
+        if(annotationCategoryCellsG) {
+          annotationCategoryCellsG.each(function(d) {
+            d3.select(this).selectAll('rect').transition()
+                .attr('x', function(d) { return data.xs.indexOf(d)*style.cellWidth; });
+          });
+        }
       });
 
     });

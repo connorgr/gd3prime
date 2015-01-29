@@ -1096,6 +1096,7 @@
           }
         });
         svg.call(zoom);
+        var annotationCellsG, annotationCategoryCellsG;
         function renderAnnotationsFn() {
           if (!data.annotations) return;
           var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
@@ -1113,7 +1114,7 @@
             heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
           }
           annotationCellsG.attr("transform", "translate(0," + verticalOffset + ")");
-          var annotationCategoryCellsG = annotationCellsG.selectAll("g").data(data.annotations.categories).enter().append("g").attr("transform", function(d, i) {
+          annotationCategoryCellsG = annotationCellsG.selectAll("g").data(data.annotations.categories).enter().append("g").attr("transform", function(d, i) {
             var y = i * (style.annotationCellHeight + style.annotationCategorySpacing);
             return "translate(0," + y + ")";
           });
@@ -1197,9 +1198,18 @@
           heatmapCells.transition().attr("x", function(d, i) {
             return data.xs.indexOf(d.x) * style.cellWidth;
           });
-          annotationXLabelsG.selectAll("text").attr("y", function(d, i) {
-            return -data.xs.indexOf(d) * style.cellWidth;
-          });
+          if (annotationXLabelsG) {
+            annotationXLabelsG.selectAll("text").transition().attr("y", function(d, i) {
+              return -data.xs.indexOf(d) * style.cellWidth;
+            });
+          }
+          if (annotationCategoryCellsG) {
+            annotationCategoryCellsG.each(function(d) {
+              d3.select(this).selectAll("rect").transition().attr("x", function(d) {
+                return data.xs.indexOf(d) * style.cellWidth;
+              });
+            });
+          }
         });
       });
     }
