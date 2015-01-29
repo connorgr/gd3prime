@@ -497,7 +497,7 @@ function mutmtxChart(style) {
                         if(i != 1 && i != 3) return;
                         d3.select(this).style('cursor','pointer')
                             .on('mouseover', function() {
-                              d3.select(this).style('color', 'red')
+                              d3.select(this).style('color', 'red');
                             })
                             .on('mouseout', function() {
                               d3.select(this).style('color', style.fontColor);
@@ -514,6 +514,8 @@ function mutmtxChart(style) {
                               data.reorderColumns(sortingOptionsData);
                               renderMenu();
                               rerenderMutationMatrix(true);
+
+                              gd3.dispatch.sort({columnIdOrder: data.ids.columns});
                             });
                       });
           });

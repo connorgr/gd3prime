@@ -294,8 +294,9 @@ function heatmapChart(style) {
             .text(data.name);
       }
 
+      var annotationXLabelsG;
       function renderXLabelsFn() {
-        var annotationXLabelsG = heatmap.append('g').attr('class', 'gd3annotationXLabels');
+        annotationXLabelsG = heatmap.append('g').attr('class', 'gd3annotationXLabels');
         // Position the x labels correctly
         var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
         annotationXLabelsG.attr('transform', 'translate(0,'+verticalOffset+')');
@@ -332,6 +333,13 @@ function heatmapChart(style) {
         // move the heatmap over
         heatmap.attr('transform', 'translate(' + (maxLabelWidth+style.labelMargins.right) +',0)');
       }
+
+      gd3.dispatch.on('sort.mutmtx', function(d) {
+        data.sortColumns(d.columnIdOrder);
+        heatmapCells.transition().attr('x', function(d, i) { return data.xs.indexOf(d.x) * style.cellWidth; });
+        annotationXLabelsG.selectAll('text').attr('y', function(d, i) { return -data.xs.indexOf(d) * style.cellWidth; });
+      });
+
     });
   }
 

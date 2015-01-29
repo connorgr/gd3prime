@@ -50,5 +50,24 @@ function heatmapData(inputData) {
 
   defaultParse();
 
+  data.sortColumns = function (columnIds) {
+    // process columnIDs, not terribly fast
+    columnIds = columnIds.map(function(c) {
+      var x = null,
+          i = 0;
+      for(i; i < data.xs.length; i++) {
+        if(c.indexOf(data.xs[i]) > 1) x = data.xs[i];
+        break;
+      }
+
+      return x;
+    });
+
+    columnIds = columnIds.filter(function(d) { return d != null; });
+
+    // we now have the ordering of column Ids
+    data.xs.sort(function(a,b) { return columnIds.indexOf(a) - columnIds.indexOf(b); });
+  }
+
   return data;
 }

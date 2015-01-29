@@ -2,7 +2,7 @@
   var gd3 = {
     version: "0.2.1"
   };
-  gd3.dispatch = d3.dispatch("sample", "interaction");
+  gd3.dispatch = d3.dispatch("sample", "interaction", "sort");
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -1000,6 +1000,22 @@
       }
     }
     defaultParse();
+    data.sortColumns = function(columnIds) {
+      columnIds = columnIds.map(function(c) {
+        var x = null, i = 0;
+        for (i; i < data.xs.length; i++) {
+          if (c.indexOf(data.xs[i]) > 1) x = data.xs[i];
+          break;
+        }
+        return x;
+      });
+      columnIds = columnIds.filter(function(d) {
+        return d != null;
+      });
+      data.xs.sort(function(a, b) {
+        return columnIds.indexOf(a) - columnIds.indexOf(b);
+      });
+    };
     return data;
   }
   function heatmapChart(style) {
@@ -1162,8 +1178,9 @@
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.maxCellValue);
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth / 2).attr("y", textY + style.annotationLabelFontSize + 2).style("font-size", style.annotationLabelFontSize).text(data.name);
         }
+        var annotationXLabelsG;
         function renderXLabelsFn() {
-          var annotationXLabelsG = heatmap.append("g").attr("class", "gd3annotationXLabels");
+          annotationXLabelsG = heatmap.append("g").attr("class", "gd3annotationXLabels");
           var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
           annotationXLabelsG.attr("transform", "translate(0," + verticalOffset + ")");
           annotationXLabelsG.selectAll("text").data(data.xs).enter().append("text").attr("y", function(d, i) {
@@ -1186,6 +1203,15 @@
           yLabels.attr("x", maxLabelWidth);
           heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
         }
+        gd3.dispatch.on("sort.mutmtx", function(d) {
+          data.sortColumns(d.columnIdOrder);
+          heatmapCells.transition().attr("x", function(d, i) {
+            return data.xs.indexOf(d.x) * style.cellWidth;
+          });
+          annotationXLabelsG.selectAll("text").attr("y", function(d, i) {
+            return -data.xs.indexOf(d) * style.cellWidth;
+          });
+        });
       });
     }
     chart.showAnnotations = function(state) {
@@ -1608,6 +1634,9 @@
                   data.reorderColumns(sortingOptionsData);
                   renderMenu();
                   rerenderMutationMatrix(true);
+                  gd3.dispatch.sort({
+                    columnIdOrder: data.ids.columns
+                  });
                 });
               });
             });
