@@ -586,6 +586,7 @@ function mutmtxChart(style) {
               y = style.rowHeight*data.ids.rows.indexOf(d.row);
 
           thisCell.append('rect')
+              .attr('data-column-id', d.colId)
               .attr('x', 0)
               .attr('y', y)
               .attr('height', style.rowHeight)

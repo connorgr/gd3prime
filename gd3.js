@@ -1306,7 +1306,8 @@
         return d3.ascending(c1First, c2First);
       }
       function sortByName(c1, c2) {
-        return d3.ascending(data.labels.columns[c1], data.labels.columns[c2]);
+        var c1Label = data.maps.columnIdToLabel[c1], c2Label = data.maps.columnIdToLabel[c2];
+        return d3.ascending(c1Label, c2Label);
       }
       function sortByColumnCategory(c1, c2) {
         return d3.ascending(data.maps.columnIdToCategory[c1], data.maps.columnIdToCategory[c2]);
@@ -1681,7 +1682,7 @@
           }).enter().append("g");
           cells.each(function(d) {
             var thisCell = d3.select(this), y = style.rowHeight * data.ids.rows.indexOf(d.row);
-            thisCell.append("rect").attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colCategoryToColor[d.cell.dataset]);
+            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colCategoryToColor[d.cell.dataset]);
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType];
             if (glyph && glyph != null) {
               thisCell.append("path").attr("class", "gd3mutmtx-cellClyph").attr("d", d3.svg.symbol().type(glyph).size(colWidth * colWidth)).attr("transform", "translate(" + colWidth / 2 + "," + (y + style.rowHeight / 2) + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("stroke-width", .5);
