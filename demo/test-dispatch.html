@@ -141,18 +141,27 @@ a:visited {
     body.append('h1').text('Sorting dispatch test');
     var sortMutMtx = body.append('div'),
         breaker = body.append('br').append('br');
-        sortHeatmap = body.append('div');
+        sortHeatmap = body.append('div'),
+        sortHeatmap2 = body.append('div');
 
     d3.json('testData/example2-mutation-matrix.json', function(data) {
       d3.json('testData/exampleAnnotations.json', function(annData) {
         data.annotations = annData;
         sortMutMtx.datum(data).call(gd3.mutationMatrix({style:style}));
       });
-    });d3.json('testData/example-heatmap.json', function(data) {
+    });
+    d3.json('testData/example-heatmap.json', function(data) {
       d3.json('testData/exampleAnnotations.json', function(adata) {
         data.annotations = adata;
         var hStyle = {height: 260, width: 800};
         sortHeatmap.datum(data).call(gd3.heatmap({style:hStyle}));
+      });
+    });
+    d3.json('testData/example-heatmap.json', function(data) {
+      d3.json('testData/exampleAnnotations.json', function(adata) {
+        data.annotations = adata;
+        var hStyle = {height: 260, width: 800};
+        sortHeatmap2.datum(data).call(gd3.heatmap({style:hStyle}));
       });
     });
 

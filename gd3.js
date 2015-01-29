@@ -1529,7 +1529,8 @@
         }
         if (drawSortingMenu) drawSortingMenu();
         gd3.dispatch.on("sort.mutmtx", function(d) {
-          console.log("hi");
+          console.log(d);
+          sortingOptionsData = d.sortingOptionsData;
         });
         function drawLegendFn(legend) {
           legend.style("font-size", style.fontSize + "px");
@@ -1641,7 +1642,8 @@
                     return data.maps.columnIdToLabel[d];
                   });
                   gd3.dispatch.sort({
-                    columnLabels: orderedLabels
+                    columnLabels: orderedLabels,
+                    sortingOptionsData: sortingOptionsData
                   });
                 });
               });

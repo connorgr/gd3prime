@@ -282,7 +282,8 @@ function mutmtxChart(style) {
 
       // If a dispatch is triggered for sorting a mutation matrix... do it!
       gd3.dispatch.on('sort.mutmtx', function(d) {
-        console.log('hi');
+        console.log(d);
+        sortingOptionsData = d.sortingOptionsData;
       });
 
 
@@ -524,7 +525,7 @@ function mutmtxChart(style) {
                                 return data.maps.columnIdToLabel[d];
                               });
 
-                              gd3.dispatch.sort({columnLabels: orderedLabels});
+                              gd3.dispatch.sort({columnLabels: orderedLabels, sortingOptionsData: sortingOptionsData });
                             });
                       });
           });
