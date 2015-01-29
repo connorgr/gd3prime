@@ -1747,6 +1747,119 @@
     var params = params || {}, style = mutmtxStyle(params.style || {});
     return mutmtxChart(style);
   };
+  function scatterplotData(inputData) {
+    var data = {
+      categories: [],
+      pts: [],
+      title: "",
+      xLabel: "",
+      xScale: {
+        max: Number.NEGATIVE_INFINITY,
+        min: Number.POSITIVE_INFINITY
+      },
+      yLabel: "",
+      yScale: {
+        max: Number.NEGATIVE_INFINITY,
+        min: Number.POSITIVE_INFINITY
+      }
+    };
+    function parseJSON() {
+      data.categories = d3.set(inputData.categories ? inputData.categories : []);
+      data.pts = inputData.pts.map(function(d) {
+        d.x = +d.x;
+        d.y = +d.y;
+        if (d.category) data.categories.add(d.category);
+        if (!inputData.xScale) {
+          data.xScale.max = d3.max([ d.x, data.xScale.max ]);
+          data.xScale.min = d3.min([ d.x, data.xScale.min ]);
+        }
+        if (!inputData.yScale) {
+          data.yScale.max = d3.max([ d.y, data.yScale.max ]);
+          data.yScale.min = d3.min([ d.y, data.yScale.min ]);
+        }
+        return d;
+      });
+      data.title = inputData.title;
+      data.xLabel = inputData.xLabel;
+      data.yLabel = inputData.yLabel;
+      if (inputData.xScale) data.xScale = inputData.xScale;
+      if (inputData.yScale) data.yScale = inputData.yScale;
+    }
+    parseJSON();
+    return data;
+  }
+  function scatterplotChart(style) {
+    function chart(selection) {
+      selection.each(function(data) {
+        data = scatterplotData(data);
+        function makeShape(d) {
+          var category = d.category, hasCategory = data.categories.has(category), shape = hasCategory ? style.categoryShapes[data.categories.values().indexOf(category)] : "circle", pt = d3.svg.symbol().type(shape);
+          return pt.size(style.pointSize * style.pointSize)();
+        }
+        var height = style.height - style.margins.top - style.margins.bottom, width = style.width - style.margins.left - style.margins.right;
+        var pointColor = d3.scale.ordinal().domain(data.categories).range(style.categoryColors);
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", style.height).attr("width", style.width).attr("xmlns", "http://www.w3.org/2000/svg").style("font-family", style.fontFamily).style("font-size", style.fontSize);
+        var scatterplot = svg.append("g").attr("transform", "translate(" + style.margins.left + "," + style.margins.top + ")");
+        var x = d3.scale.linear().domain([ data.xScale.min, data.xScale.max ]).range([ 0, width ]), y = d3.scale.linear().domain([ data.yScale.min, data.yScale.max ]).range([ height, 0 ]);
+        var xAxis = d3.svg.axis().scale(x).orient("bottom"), yAxis = d3.svg.axis().scale(y).orient("left");
+        var axisStyle = {
+          stroke: "black",
+          fill: "none",
+          "shape-rendering": "crispEdges",
+          "stroke-width": "1px"
+        }, axisG = scatterplot.append("g").attr("class", "gd3-scatterplot-axis"), xAxisRender = axisG.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis), xAxisLabel = axisG.append("text").attr("text-anchor", "middle").attr("x", x(x.domain()[1]) / 2).attr("y", height + xAxisRender.node().getBBox().height + style.axisFontSize).style("font-size", style.axisFontSize).text(data.xLabel), yAxisRender = axisG.append("g").attr("class", "y axis").call(yAxis), yAxisLabel = axisG.append("text").attr("text-anchor", "middle").attr("transform", "rotate(-90)").attr("x", -y(y.domain()[0]) / 2).attr("y", -yAxisRender.node().getBBox().width).text(data.yLabel);
+        axisG.selectAll(".tick text").style("fill", "black").style("font-size", style.axisFontSize);
+        axisG.selectAll("path").style(axisStyle);
+        scatterplot.append("text").attr("text-anchor", "middle").attr("x", x(x.domain()[1]) / 2).style("font-size", style.titleFontSize).style("font-weight", "bold").text(data.title);
+        var legendW = style.margins.right - style.legendPadding.left - style.legendPadding.right, legend = scatterplot.append("g").attr("class", "gd3-scatterplot-legend").attr("transform", "translate(" + (width + style.legendPadding.left) + ",0)"), legendCategories = legend.selectAll(".category").data(data.categories.values()).enter().append("g").attr("class", "category");
+        legendCategories.each(function(d, i) {
+          var thisEl = d3.select(this), shapeR = style.pointSize / 2, shape = thisEl.append("path").attr("d", makeShape).attr("transform", "translate(" + shapeR + "," + -shapeR + ")").style("fill", function(d) {
+            return pointColor(d);
+          }), text = thisEl.append("text").attr("x", style.pointSize + 1).text(d);
+          thisEl.attr("transform", "translate(0," + i * (style.legendFontSize + 2) + ")");
+        });
+        var pointsGroup = scatterplot.append("g").attr("class", "gd3-scatterplot-points");
+        pointsGroup.selectAll(".point").data(data.pts).enter().append("path").attr("class", "point").attr("d", makeShape).attr("transform", function(d) {
+          return "translate(" + x(d.x) + "," + y(d.y) + ")";
+        }).style("fill", function(d) {
+          return pointColor(d.category);
+        });
+      });
+    }
+    return chart;
+  }
+  function scatterplotStyle(style) {
+    return {
+      axisFontSize: style.axisFontSize || style.fontSize || 12,
+      categoryColors: d3.scale.category10().range(),
+      categoryShapes: [ "circle", "diamond", "cross", "triangle-down", "square", "triangle-up" ],
+      fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+      fontSize: style.fontSize || 12,
+      height: style.height || 300,
+      legendFontSize: style.legendFontSize || 11,
+      legendScaleWidth: style.legendScaleWidth || 30,
+      legendWidth: style.legendWidth || 75,
+      pointSize: style.pointSize || 7,
+      titleFontSize: style.titleFontSize || 14,
+      width: style.width || 300,
+      margins: style.margins || {
+        bottom: 50,
+        left: 35,
+        right: 15,
+        top: style.titleFontSize || 14
+      },
+      legendPadding: {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: style.pointSize || 7
+      }
+    };
+  }
+  gd3.scatterplot = function(params) {
+    var params = params || {}, style = scatterplotStyle(params.style || {});
+    return scatterplotChart(style);
+  };
   function tooltipStyle(style) {
     return {
       background: style.background || "rgba(0, 0, 0, 0.75)",
@@ -1758,11 +1871,12 @@
       height: style.height || 200,
       lineHeight: style.lineHeight || 1,
       padding: style.padding || "5px",
+      voteActiveColor: style.voteActiveColor || "#ff0000",
       width: style.width || 500
     };
   }
   function tooltipView(style) {
-    var direction = d3_tip_direction, offset = d3_tip_offset, html = d3_tip_html, node = undefined, sticky = false, svg = null, point = null, target = null;
+    var clickCount = 0, clickEvents = {}, direction = d3_tip_direction, offset = d3_tip_offset, html = d3_tip_html, node = undefined, sticky = false, svg = null, point = null, target = null;
     function view(selection) {
       svg = selection;
       point = selection.node().createSVGPoint();
@@ -1800,6 +1914,7 @@
         });
       }
       if (sticky) {
+        if (d3.event.type != "click") return;
         d3.select(node).selectAll("*").each(function() {
           var thisEl = d3.select(this), isSummaryElement = thisEl.attr("data-summaryElement");
           if (isSummaryElement) thisEl.style("display", "block");
@@ -1810,7 +1925,7 @@
       var args = Array.prototype.slice.call(arguments);
       if (args[args.length - 1] instanceof SVGElement) target = args.pop();
       var content = html.apply(this, args), nodel = d3.select(node);
-      var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right;">X</span>';
+      var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px">X</span><br />';
       nodel.html(xout + content).style({
         opacity: 1,
         "pointer-events": "all"
@@ -1820,10 +1935,22 @@
         view.hide();
       });
       function renderTest() {
-        var thisEl = d3.select(this), display = thisEl.style("display"), render = display == "none" ? "none" : "block";
+        var thisEl = d3.select(this), display = thisEl.style("display");
+        render = display == "none" ? "none" : "block";
+        var base = "gd3-tooltip-", isVote = thisEl.classed(base + "votecount") || thisEl.classed(base + "dvote") || thisEl.classed(base + "uvote");
+        if (isVote) {
+          return display;
+        }
         return render;
       }
       nodel.selectAll("*").style("display", renderTest);
+      var clickEventObjs = nodel.selectAll(".clickEventObj");
+      if (clickEventObjs.empty() == false) {
+        clickEventObjs.each(function() {
+          var thisEl = d3.select(this), clickIndex = thisEl.attr("data-click"), clickEvent = clickEvents[clickIndex];
+          thisEl.on("click", clickEvent);
+        });
+      }
       positionTooltip();
       return view;
     };
@@ -1874,19 +2001,34 @@
       return view;
     };
     view.useData = function(data) {
+      console.log("useData");
       function depth(d) {
         return Array.isArray(d) ? depth(d[0]) + 1 : 0;
       }
       var ghostNode = document.createElement("div"), nodel = d3.select(ghostNode);
       var dimensionality = depth(data);
+      function registerClickEvent(selection) {
+        if (selection.on("click")) {
+          selection.attr("data-click", clickCount).classed("clickEventObj", true);
+          clickEvents[clickCount] = selection.on("click");
+          clickCount = clickCount + 1;
+        }
+      }
       if (dimensionality == 0) {
-        data.render(nodel);
+        var selection = data.render(nodel);
+        registerClickEvent(selection);
         html = nodel.html();
         html = html == null ? html : d3.functor(html);
         d3.select(ghostNode).remove();
       } else if (dimensionality == 1) {
         data.forEach(function(d) {
-          d.render(nodel);
+          var selection = d.render(nodel);
+          registerClickEvent(selection);
+          if (selection.selectAll("*").empty() == false) {
+            selection.selectAll("*").each(function() {
+              registerClickEvent(d3.select(this));
+            });
+          }
         });
         html = nodel.html();
         html = html == null ? html : d3.functor(html);
@@ -1896,7 +2038,13 @@
         data.forEach(function(d) {
           nodel.selectAll("*").remove();
           d.forEach(function(datum) {
-            datum.render(nodel);
+            var selection = datum.render(nodel);
+            registerClickEvent(selection);
+            if (selection.selectAll("*").empty() == false) {
+              selection.selectAll("*").each(function() {
+                registerClickEvent(d3.select(this));
+              });
+            }
           });
           htmls.push(nodel.html());
         });
@@ -2069,6 +2217,72 @@
     text.attr("data-summaryElement", this.summaryElement);
     if (this.summaryElement) text.style("display", "none");
     return text;
+  };
+  gd3.tooltip.vote = gd3_tooltipVote;
+  var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElement();
+  function gd3_tooltipVote(downvoteFn, upvoteFn, voteCount, activeColor) {
+    if (!this instanceof gd3_tooltipVote) return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount);
+    this.downvoteFn = downvoteFn;
+    this.upvoteFn = upvoteFn;
+    this.voteCount = voteCount;
+    return this;
+  }
+  gd3_tooltipVotePrototype.toString = function() {
+    return this.voteCount + " votes";
+  };
+  gd3_tooltipVotePrototype.render = function(selection) {
+    var votingArea = selection.append("span").attr("class", "gd3-tooltip-vote"), downVote = votingArea.append("span").text("▼").attr("class", "gd3-tooltip-dvote"), voteCount = votingArea.append("span").text(this.voteCount).attr("class", "gd3-tooltip-votecount"), upVote = votingArea.append("span").text("▲").attr("class", "gd3-tooltip-uvote");
+    votingArea.style("display", "block");
+    votingArea.selectAll("span").style({
+      display: "inline-block"
+    });
+    var downVoteFn = this.downVoteFn, thisVote = this;
+    downVote.on("click", function(d) {
+      var downVote = d3.select(this), upVote = d3.select(this.parentNode).select(".gd3-tooltip-uvote"), voteCount = d3.select(this.parentNode).select(".gd3-tooltip-votecount");
+      var voteMod = 1;
+      upVote.style("color", null);
+      if (downVote.classed("gd3-vote-active") == true) {
+        downVote.classed("gd3-vote-active", false);
+        voteMod = -1;
+        downVote.style("color", null);
+      } else {
+        if (upVote.classed("gd3-vote-active") == true) voteMod = voteMod + 1;
+        downVote.classed("gd3-vote-active", true);
+        upVote.classed("gd3-vote-active", false);
+        downVote.style("color", "goldenrod");
+      }
+      voteCount.text(parseInt(voteCount.text()) - voteMod);
+      thisVote.downvoteFn(d, downVote.classed("gd3-vote-active"));
+    });
+    upVote.on("click", function(d) {
+      var downVote = d3.select(this.parentNode).select(".gd3-tooltip-dvote"), upVote = d3.select(this), voteCount = d3.select(this.parentNode).select(".gd3-tooltip-votecount");
+      var voteMod = 1;
+      downVote.style("color", null);
+      if (upVote.classed("gd3-vote-active") == true) {
+        upVote.classed("gd3-vote-active", false);
+        voteMod = -1;
+        upVote.style("color", null);
+      } else {
+        if (downVote.classed("gd3-vote-active") == true) voteMod = voteMod + 1;
+        downVote.classed("gd3-vote-active", false);
+        upVote.classed("gd3-vote-active", true);
+        upVote.style("color", "goldenrod");
+      }
+      voteCount.text(parseInt(voteCount.text()) + voteMod);
+      thisVote.upvoteFn(d, upVote.classed("gd3-vote-active"));
+    });
+    var voteGlyphStyle = {
+      cursor: "pointer",
+      "-moz-user-select": "none",
+      "-ms-user-select": "none",
+      "-o-user-select": "none",
+      "-webkit-user-select": "none"
+    };
+    downVote.style(voteGlyphStyle);
+    upVote.style(voteGlyphStyle);
+    votingArea.attr("data-summaryElement", this.summaryElement);
+    if (this.summaryElement) votingArea.style("display", "none");
+    return votingArea;
   };
   gd3.tooltip.link = gd3_tooltipLink;
   function gd3_tooltipLink(href, body) {

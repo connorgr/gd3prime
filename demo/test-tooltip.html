@@ -23,6 +23,19 @@ a:visited {
     <script src="../gd3.js"></script>
     <script>
 
+    function testDownvote(d) {
+      console.log('voted down');
+    }
+    function testUpvote(d) {
+      console.log('voted up');
+    }
+    function testDownvoteVariant(d) {
+      console.log('voted down 2');
+    }
+    function testUpvoteVariant(d) {
+      console.log('voted up 2');
+    }
+
     var body = d3.select('body');
 
     var style = {
@@ -73,7 +86,7 @@ a:visited {
         testImg = new gd3.tooltip.image(imgSrc, 'Google\'s logo'),
         testLink = new gd3.tooltip.link('https://google.com', 'Google Link\n'),
         testLinkImg = new gd3.tooltip.link('https://google.com', testImg),
-        testVote = new gd3.tooltip.vote(null,null,80);
+        testVote = new gd3.tooltip.vote(testDownvote,testUpvote,80);
 
     testText.render(body);
     body.append('br');
@@ -181,7 +194,7 @@ a:visited {
 
         var testMutmtxData = [];
         cols.each(function(d,i) {
-          testMutmtxData.push( [{ type: 'text', text: 'Number ' + i }].map(gd3.tooltip.datum) );
+          testMutmtxData.push( [{ type: 'text', text: 'Number ' + i }, { type: 'vote', downvoteFn: testDownvote, upvoteFn: testUpvote, voteCount: 111 }].map(gd3.tooltip.datum) );
         });
 
         mutmtx.select('svg').call(gd3.tooltip.make().useData(testMutmtxData));
@@ -211,6 +224,7 @@ a:visited {
           [{ type: 'text', text: 'The title would go here.'},
             { type: 'text', text: 'More text.'},
             { type: 'link', href: 'https://google.com', body: 'Google link test'},
+            { type: 'vote', downvoteFn: testDownvoteVariant, upvoteFn: testUpvoteVariant, voteCount: 0 },
             { type: 'text', text: 'Hidden text', defaultHidden: true },
             { type: 'text', text: 'Not hidden text', defaultHidden: false },
             { type: 'text', text: 'Even more hidden text', defaultHidden: true }

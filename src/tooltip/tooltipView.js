@@ -1,5 +1,7 @@
 function tooltipView(style) {
-  var direction = d3_tip_direction,
+  var clickCount = 0,
+      clickEvents = {},
+      direction = d3_tip_direction,
       offset    = d3_tip_offset,
       html      = d3_tip_html,
       node      = undefined,
@@ -61,7 +63,11 @@ function tooltipView(style) {
       });
     }
 
+    // if the node is sticky (i.e., has been clicked, or otherwise frozen)
     if (sticky) {
+      // If the event isn't a click event, don't do anything
+      if(d3.event.type != 'click') return;
+
       d3.select(node).selectAll('*').each(function() {
         var thisEl = d3.select(this),
             isSummaryElement = thisEl.attr('data-summaryElement');
@@ -70,13 +76,14 @@ function tooltipView(style) {
       positionTooltip();
       return;
     }
+
     var args = Array.prototype.slice.call(arguments);
     if(args[args.length - 1] instanceof SVGElement) target = args.pop();
 
     var content = html.apply(this, args),
         nodel   = d3.select(node);
 
-    var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right;">X</span>';
+    var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px">X</span><br />';
 
     nodel.html(xout + content).style({ opacity: 1, 'pointer-events': 'all' });
 
@@ -90,12 +97,28 @@ function tooltipView(style) {
     // Show only the elements that are not already hidden
     function renderTest() {
       var thisEl = d3.select(this),
-          display = thisEl.style('display'),
+          display = thisEl.style('display');
           render = display == 'none' ? 'none' : 'block';
+
+      var base = 'gd3-tooltip-',
+          isVote = thisEl.classed(base+'votecount') || thisEl.classed(base+'dvote') || thisEl.classed(base+'uvote');
+      if(isVote) {
+        return display;
+      }
 
       return render;
     }
     nodel.selectAll('*').style('display', renderTest);
+
+    var clickEventObjs = nodel.selectAll('.clickEventObj');
+    if (clickEventObjs.empty() == false) {
+      clickEventObjs.each(function() {
+        var thisEl = d3.select(this),
+            clickIndex = thisEl.attr('data-click'),
+            clickEvent = clickEvents[clickIndex];
+        thisEl.on('click', clickEvent);
+      });
+    }
 
     positionTooltip();
 
@@ -160,6 +183,7 @@ function tooltipView(style) {
 
   // use the given data to generate an HTML string and proceed as normal
   view.useData = function(data) {
+    console.log('useData');
     function depth(d) {
       return Array.isArray(d) ? depth(d[0])+1 : 0;
     }
@@ -169,14 +193,33 @@ function tooltipView(style) {
 
     var dimensionality = depth(data);
 
+    function registerClickEvent(selection) {
+      if(selection.on('click')) {
+        selection.attr('data-click', clickCount).classed('clickEventObj', true);
+        clickEvents[clickCount] = selection.on('click');
+        clickCount = clickCount + 1;
+      }
+    }
+
     // Alter the rendering behavior based on the dimensionality of data
     if(dimensionality == 0) {
-      data.render(nodel);
+      var selection = data.render(nodel);
+      // register click events if any exist
+      registerClickEvent(selection);
+
       html = nodel.html();
       html = html == null ? html : d3.functor(html);
       d3.select(ghostNode).remove();
     } else if (dimensionality == 1) {
-      data.forEach(function(d) { d.render(nodel); });
+      data.forEach(function(d) {
+        var selection = d.render(nodel);
+
+        // register click events if any exist
+        registerClickEvent(selection);
+        if(selection.selectAll('*').empty() == false) {
+          selection.selectAll('*').each(function() { registerClickEvent(d3.select(this)); });
+        }
+      });
       html = nodel.html();
       html = html == null ? html : d3.functor(html);
       d3.select(ghostNode).remove();
@@ -184,7 +227,15 @@ function tooltipView(style) {
       var htmls = [];
       data.forEach(function(d) {
         nodel.selectAll('*').remove();
-        d.forEach(function(datum) { datum.render(nodel); });
+        d.forEach(function(datum) {
+          var selection = datum.render(nodel);
+
+          // register click events if any exist
+          registerClickEvent(selection);
+          if(selection.selectAll('*').empty() == false) {
+            selection.selectAll('*').each(function() { registerClickEvent(d3.select(this)); });
+          }
+        });
         htmls.push(nodel.html());
       });
       html = d3.functor(function(d,i) { return htmls[i]; });
