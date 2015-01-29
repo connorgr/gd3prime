@@ -904,8 +904,9 @@
           });
           colorScaleRect.attr("fill", "url(#" + gradientId + ")");
           var scaleHeight = scaleG.node().getBBox().height + 4, edgeKeys = legend.append("g").selectAll("g").data(data.edgeCategories).enter().append("g").style("cursor", "pointer").on("click", function(category) {
-            var catEdges = d3.selectAll("." + instanceIDConst + "-" + category), opacity = catEdges.style("opacity");
-            catEdges.style("opacity", opacity == 0 ? 1 : 0);
+            var catEdges = d3.selectAll("." + instanceIDConst + "-" + category), visible = catEdges.style("opacity") == 1;
+            d3.select(this).style("opacity", visible ? .5 : 1);
+            catEdges.style("opacity", visible ? 0 : 1);
           }).on("mouseover", function() {
             d3.select(this).selectAll("text").style("fill", "red");
           }).on("mouseout", function() {
