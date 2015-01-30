@@ -352,6 +352,18 @@ function mutmtxChart(style) {
                 .style('font-size', style.fontSize)
                 .style('margin-right', function(d,i) {
                     return i == categories.length - 1 ? '0px' : '10px';
+                })
+                .on('click', function(d) {
+                  var filtering = categoriesToFilter;
+                  if(categoriesToFilter.indexOf(d) > -1) {
+                    filtering.splice(filtering.indexOf(d), 1);
+                    d3.select(this).style('opacity', 1);
+                  } else {
+                    filtering.push(d);
+                    d3.select(this).style('opacity', 0.2);
+                  }
+                  console.log(filtering);
+                  gd3.dispatch.filterCategory( { categories: filtering });
                 });
         // Append the color blocks
         categoryLegendKeys.append('div')
@@ -379,12 +391,25 @@ function mutmtxChart(style) {
               .data(cellTypesData)
               .enter()
               .append('div')
+                  .style('cursor', 'pointer')
                   .style('display', 'inline-block')
                   .style('font-family', style.fontFamily)
                   .style('font-size', style.fontSize)
                   .style('margin-right', function(d,i) {
                       return i == cellTypesData.length - 1 ? '0px' : '10px';
-                  });
+                  })
+                  .on('click', function(d) {
+                    var filtering = typesToFilter;
+                    if(typesToFilter.indexOf(d) > -1) {
+                      filtering.splice(filtering.indexOf(d), 1);
+                      d3.select(this).style('opacity', 1);
+                    } else {
+                      filtering.push(d);
+                      d3.select(this).style('opacity', 0.2);
+                    }
+                    console.log(filtering);
+                    gd3.dispatch.filterType( { types: filtering });
+                  });;
 
           cellTypeLegendKeys.append('svg')
               .attr('height', style.fontSize + 'px')
@@ -403,7 +428,7 @@ function mutmtxChart(style) {
                   .attr('transform','translate('+(style.fontSize/2)+','+(style.fontSize/2)+')')
                   .style('fill', style.glyphColor)
                   .style('stroke', style.glyphStrokeColor)
-                  .style('strokew-width', .5);
+                  .style('strokew-width', .5)
               });
 
           cellTypeLegendKeys.append('span')

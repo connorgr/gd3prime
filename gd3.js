@@ -1587,6 +1587,19 @@
           categories = Object.keys(categories).sort();
           var categoryLegendKeys = columnCategories.selectAll("div").data(categories).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
             return i == categories.length - 1 ? "0px" : "10px";
+          }).on("click", function(d) {
+            var filtering = categoriesToFilter;
+            if (categoriesToFilter.indexOf(d) > -1) {
+              filtering.splice(filtering.indexOf(d), 1);
+              d3.select(this).style("opacity", 1);
+            } else {
+              filtering.push(d);
+              d3.select(this).style("opacity", .2);
+            }
+            console.log(filtering);
+            gd3.dispatch.filterCategory({
+              categories: filtering
+            });
           });
           categoryLegendKeys.append("div").style("background", function(d) {
             return colCategoryToColor[d];
@@ -1602,8 +1615,21 @@
           categoryLegendKeys.style("width", d3.max(categoryLegendKeyWidths) + "px").style("min-width", d3.max(categoryLegendKeyWidths) + "px");
           if (Object.keys(data.maps.cellTypeToGlyph).length > 1) {
             var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
-            var cellTypeLegendKeys = cellTypes.selectAll("div").data(cellTypesData).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
+            var cellTypeLegendKeys = cellTypes.selectAll("div").data(cellTypesData).enter().append("div").style("cursor", "pointer").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
               return i == cellTypesData.length - 1 ? "0px" : "10px";
+            }).on("click", function(d) {
+              var filtering = typesToFilter;
+              if (typesToFilter.indexOf(d) > -1) {
+                filtering.splice(filtering.indexOf(d), 1);
+                d3.select(this).style("opacity", 1);
+              } else {
+                filtering.push(d);
+                d3.select(this).style("opacity", .2);
+              }
+              console.log(filtering);
+              gd3.dispatch.filterType({
+                types: filtering
+              });
             });
             cellTypeLegendKeys.append("svg").attr("height", style.fontSize + "px").attr("width", style.fontSize + "px").style("background", d3color(0)).style("margin-right", "2px").each(function(type) {
               var glyph = data.maps.cellTypeToGlyph[type];
