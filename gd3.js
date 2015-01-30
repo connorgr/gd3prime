@@ -1072,6 +1072,7 @@
           thisEl.style("stroke", "#000").style("stroke-width", 1);
         }).on("mouseout", function() {
           guidelines.attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", 0);
+          if (renderLegend) legendRefLine.style("opacity", 0);
           d3.select(this).style("stroke", "none");
         });
         var legendG = svg.append("g");
