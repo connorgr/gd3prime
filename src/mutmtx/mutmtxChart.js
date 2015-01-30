@@ -280,7 +280,6 @@ function mutmtxChart(style) {
       }
       if(drawSortingMenu) drawSortingMenu();
 
-
       // Legend should be a DIV d3 selection
       function drawLegendFn(legend) {
         legend.style('font-size', style.fontSize + 'px')
@@ -497,7 +496,7 @@ function mutmtxChart(style) {
                         if(i != 1 && i != 3) return;
                         d3.select(this).style('cursor','pointer')
                             .on('mouseover', function() {
-                              d3.select(this).style('color', 'red')
+                              d3.select(this).style('color', 'red');
                             })
                             .on('mouseout', function() {
                               d3.select(this).style('color', style.fontColor);
@@ -514,6 +513,12 @@ function mutmtxChart(style) {
                               data.reorderColumns(sortingOptionsData);
                               renderMenu();
                               rerenderMutationMatrix(true);
+
+                              var orderedLabels = data.ids.columns.map(function(d) {
+                                return data.maps.columnIdToLabel[d];
+                              });
+
+                              gd3.dispatch.sort({columnLabels: orderedLabels, sortingOptionsData: sortingOptionsData });
                             });
                       });
           });
@@ -590,6 +595,7 @@ function mutmtxChart(style) {
               y = style.rowHeight*data.ids.rows.indexOf(d.row);
 
           thisCell.append('rect')
+              .attr('data-column-id', d.colId)
               .attr('x', 0)
               .attr('y', y)
               .attr('height', style.rowHeight)
@@ -649,11 +655,8 @@ function mutmtxChart(style) {
             affectedColumns.style({"opacity": 1, "font-weight": over ? "bold" : "normal"});
           }
         })
-
-        // columns.selectAll('rect').each(function() {
-        //   d3.select(this).call(gd3.annotation())
-        // });
       }
+
     });
   }
 

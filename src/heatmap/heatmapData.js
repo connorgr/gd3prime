@@ -50,5 +50,9 @@ function heatmapData(inputData) {
 
   defaultParse();
 
+  data.sortColumns = function (columnIds) {
+    data.xs.sort(function(a,b) { return columnIds.indexOf(a) - columnIds.indexOf(b); });
+  }
+
   return data;
 }

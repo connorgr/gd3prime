@@ -8,6 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
 
+* {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
+
 a {
   color: steelblue;
 }
@@ -130,6 +134,31 @@ a:visited {
       d3.select("select#protein1").property('value', d.source);
       d3.select("select#protein2").property('value', d.target);
     });
+
+
+
+    body.append('hr');
+    body.append('h1').text('Sorting dispatch test');
+    var sortMutMtx = body.append('div'),
+        breaker = body.append('br').append('br');
+        sortHeatmap = body.append('div'),
+        sortHeatmap2 = body.append('div');
+
+    d3.json('testData/example2-mutation-matrix.json', function(data) {
+      d3.json('testData/exampleAnnotations.json', function(annData) {
+        data.annotations = annData;
+        sortMutMtx.datum(data).call(gd3.mutationMatrix({style:style}));
+      });
+    });
+    d3.json('testData/example-heatmap.json', function(data) {
+      d3.json('testData/exampleAnnotations.json', function(adata) {
+        data.annotations = adata;
+        var hStyle = {height: 260, width: 800};
+        sortHeatmap.datum(data).call(gd3.heatmap({style:hStyle}));
+      });
+    });
+
+    body.append('hr');
 
 
     </script>

@@ -2,7 +2,7 @@
   var gd3 = {
     version: "0.2.1"
   };
-  gd3.dispatch = d3.dispatch("sample", "interaction");
+  gd3.dispatch = d3.dispatch("sample", "interaction", "sort");
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -1001,6 +1001,11 @@
       }
     }
     defaultParse();
+    data.sortColumns = function(columnIds) {
+      data.xs.sort(function(a, b) {
+        return columnIds.indexOf(a) - columnIds.indexOf(b);
+      });
+    };
     return data;
   }
   function heatmapChart(style) {
@@ -1092,6 +1097,7 @@
           }
         });
         svg.call(zoom);
+        var annotationCellsG, annotationCategoryCellsG;
         function renderAnnotationsFn() {
           if (!data.annotations) return;
           var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
@@ -1109,7 +1115,7 @@
             heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
           }
           annotationCellsG.attr("transform", "translate(0," + verticalOffset + ")");
-          var annotationCategoryCellsG = annotationCellsG.selectAll("g").data(data.annotations.categories).enter().append("g").attr("transform", function(d, i) {
+          annotationCategoryCellsG = annotationCellsG.selectAll("g").data(data.annotations.categories).enter().append("g").attr("transform", function(d, i) {
             var y = i * (style.annotationCellHeight + style.annotationCategorySpacing);
             return "translate(0," + y + ")";
           });
@@ -1163,8 +1169,9 @@
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.maxCellValue);
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth / 2).attr("y", textY + style.annotationLabelFontSize + 2).style("font-size", style.annotationLabelFontSize).text(data.name);
         }
+        var annotationXLabelsG;
         function renderXLabelsFn() {
-          var annotationXLabelsG = heatmap.append("g").attr("class", "gd3annotationXLabels");
+          annotationXLabelsG = heatmap.append("g").attr("class", "gd3annotationXLabels");
           var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
           annotationXLabelsG.attr("transform", "translate(0," + verticalOffset + ")");
           annotationXLabelsG.selectAll("text").data(data.xs).enter().append("text").attr("y", function(d, i) {
@@ -1187,6 +1194,24 @@
           yLabels.attr("x", maxLabelWidth);
           heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
         }
+        gd3.dispatch.on("sort.heatmap", function(d) {
+          data.sortColumns(d.columnLabels);
+          heatmapCells.transition().attr("x", function(d, i) {
+            return data.xs.indexOf(d.x) * style.cellWidth;
+          });
+          if (annotationXLabelsG) {
+            annotationXLabelsG.selectAll("text").transition().attr("y", function(d, i) {
+              return -data.xs.indexOf(d) * style.cellWidth;
+            });
+          }
+          if (annotationCategoryCellsG) {
+            annotationCategoryCellsG.each(function(d) {
+              d3.select(this).selectAll("rect").transition().attr("x", function(d) {
+                return data.xs.indexOf(d) * style.cellWidth;
+              });
+            });
+          }
+        });
       });
     }
     chart.showAnnotations = function(state) {
@@ -1281,7 +1306,8 @@
         return d3.ascending(c1First, c2First);
       }
       function sortByName(c1, c2) {
-        return d3.ascending(data.labels.columns[c1], data.labels.columns[c2]);
+        var c1Label = data.maps.columnIdToLabel[c1], c2Label = data.maps.columnIdToLabel[c2];
+        return d3.ascending(c1Label, c2Label);
       }
       function sortByColumnCategory(c1, c2) {
         return d3.ascending(data.maps.columnIdToCategory[c1], data.maps.columnIdToCategory[c2]);
@@ -1609,6 +1635,13 @@
                   data.reorderColumns(sortingOptionsData);
                   renderMenu();
                   rerenderMutationMatrix(true);
+                  var orderedLabels = data.ids.columns.map(function(d) {
+                    return data.maps.columnIdToLabel[d];
+                  });
+                  gd3.dispatch.sort({
+                    columnLabels: orderedLabels,
+                    sortingOptionsData: sortingOptionsData
+                  });
                 });
               });
             });
@@ -1657,7 +1690,7 @@
           }).enter().append("g");
           cells.each(function(d) {
             var thisCell = d3.select(this), y = style.rowHeight * data.ids.rows.indexOf(d.row);
-            thisCell.append("rect").attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colCategoryToColor[d.cell.dataset]);
+            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colCategoryToColor[d.cell.dataset]);
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType];
             if (glyph && glyph != null) {
               thisCell.append("path").attr("class", "gd3mutmtx-cellClyph").attr("d", d3.svg.symbol().type(glyph).size(colWidth * colWidth)).attr("transform", "translate(" + colWidth / 2 + "," + (y + style.rowHeight / 2) + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("stroke-width", .5);

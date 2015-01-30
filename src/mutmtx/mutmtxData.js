@@ -52,7 +52,11 @@ function mutmtxData(inputData) {
     }
     // Sort by the name of the column
     function sortByName(c1,c2) {
-      return d3.ascending(data.labels.columns[c1],data.labels.columns[c2]);
+      var c1Label = data.maps.columnIdToLabel[c1],
+          c2Label = data.maps.columnIdToLabel[c2];
+
+      return d3.ascending(c1Label, c2Label);
+      //return d3.ascending(data.labels.columns[c1],data.labels.columns[c2]);
     }
     // Sort by the column category (i.e, color)
     function sortByColumnCategory(c1,c2) {
