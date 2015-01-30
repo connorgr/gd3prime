@@ -2453,13 +2453,15 @@
         for (var i = 0; i < data.get("mutationCategories").length; i++) {
           sampleTypeToColor[data.get("mutationCategories")[i]] = d3color(i);
         }
-        var height = style.height, width = style.width;
+        console.log(style.scollbarWidth);
+        var height = style.height, scrollbarWidth = showScrollers ? style.scollbarWidth : 0, width = style.width - scrollbarWidth - style.margin.left - style.margin.right;
+        console.log(style.width, width, scrollbarWidth);
         var mutationResolution = Math.floor(width / style.symbolWidth);
-        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width);
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width + scrollbarWidth + style.margin.left + style.margin.right);
         var start = 0, stop = data.get("length");
         var x = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(style.numXTicks).tickSize(0).tickPadding(style.xTickPadding);
-        var tG = svg.append("g");
+        var tG = svg.append("g").attr("transform", "translate(" + (style.margin.left + scrollbarWidth) + ",0)");
         var transcriptAxis = tG.append("g").attr("class", "xaxis").attr("transform", "translate(0," + (style.height / 2 + style.transcriptBarHeight + 6) + ")").style("font-family", style.fontFamily).style("font-size", "12px").style("fill", "#000").call(xAxis);
         var transcriptBar = tG.append("rect").attr("height", style.transcriptBarHeight).attr("width", x(stop) - x(start)).attr("x", x(start)).attr("y", height / 2).style("fill", "#ccc");
         var zoom = d3.behavior.zoom().x(x).scaleExtent([ 1, 100 ]).on("zoom", function() {
@@ -2570,7 +2572,6 @@
           });
         }
         function renderScrollers() {
-          tG.attr("transform", "translate(20,0)");
           var sG = svg.append("g");
           var activatingYs = [], inactivatingYs = [];
           function getYs(transforms) {
@@ -2690,7 +2691,12 @@
       symbolWidth: style.symbolWidth || 20,
       transcriptBarHeight: style.transcriptBarHeight || 20,
       width: style.width || 500,
-      xTickPadding: style.xTickPadding || 1.25
+      xTickPadding: style.xTickPadding || 1.25,
+      scollbarWidth: style.scrollbarWidth || 15,
+      margin: style.margin || {
+        left: 5,
+        right: 5
+      }
     };
   }
   gd3.transcript = function(params) {

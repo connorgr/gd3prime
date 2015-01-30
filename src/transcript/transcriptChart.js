@@ -13,10 +13,11 @@ function transcriptChart(style) {
       for (var i = 0; i < data.get('mutationCategories').length; i++) {
         sampleTypeToColor[data.get('mutationCategories')[i]] = d3color(i);
       }
-
+      console.log(style.scollbarWidth)
       var height = style.height,
-          width = style.width;
-
+          scrollbarWidth = showScrollers ? style.scollbarWidth : 0,
+          width = style.width - scrollbarWidth - style.margin.left - style.margin.right;
+      console.log(style.width, width, scrollbarWidth)
       // max number of mutations that can fit along the axis
       var mutationResolution = Math.floor(width / style.symbolWidth);
 
@@ -26,7 +27,7 @@ function transcriptChart(style) {
           .enter()
             .append('svg')
                 .attr('height', height)
-                .attr('width', width);
+                .attr('width', width + scrollbarWidth + style.margin.left + style.margin.right);
 
       // x scale for the entire visualization based on transcript length
       var start = 0,
@@ -43,7 +44,8 @@ function transcriptChart(style) {
               .tickPadding(style.xTickPadding);
 
       // Group for all transcript visualization components other than sliders to live in
-      var tG = svg.append('g');
+      var tG = svg.append('g')
+        .attr('transform', 'translate(' + (style.margin.left + scrollbarWidth) + ',0)');
 
       // Append the axis to the canvas
       var transcriptAxis = tG.append('g')
@@ -258,9 +260,6 @@ function transcriptChart(style) {
 
 
       function renderScrollers () {
-        // Make room for the sliders
-        tG.attr('transform', 'translate(20,0)');
-
         // Add a group for sliders
         var sG = svg.append('g');
 

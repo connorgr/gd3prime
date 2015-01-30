@@ -6,6 +6,8 @@ function transcriptStyle(style) {
     symbolWidth: style.symbolWidth || 20,
     transcriptBarHeight: style.transcriptBarHeight || 20,
     width: style.width || 500,
-    xTickPadding: style.xTickPadding || 1.25
+    xTickPadding: style.xTickPadding || 1.25,
+    scollbarWidth: style.scrollbarWidth || 15,
+    margin: style.margin || { left: 5, right: 5 }
   };
 }
