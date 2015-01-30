@@ -286,8 +286,8 @@ function transcriptChart(style) {
         if (!showActivatingScroller && !showInactivatingScroller) return;
 
         // Determine scrolling max offset for both activating and inactivating mutations
-        var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY)+1.1*style.symbolWidth : 0,
-            maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY-style.symbolWidth : 0;
+        var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY)+style.symbolWidth : style.transcriptBarHeight,
+            maxInactivatingOffset = maxInactivatingY > height ? maxInactivatingY-style.symbolWidth : style.transcriptBarHeight;
 
         // create drag slider gradient
         // Define the gradient
@@ -324,46 +324,50 @@ function transcriptChart(style) {
         }
 
         function dragMove(d) {
-          console.log(d)
           var thisEl = d3.select(this),
               higher = d.loc == 'top' ? d.max : d.min, // lesser/upper canvas y bound value
               lower = higher == d.max ? d.min : d.max;
 
-          // Scroll only if the dragger is within the bounds of the track
+          // Set the y-value, stopping it at the upper and lower bounds
+          // of the scrollbar
           if(d3.event.y > lower) {
-            thisEl.attr('cy', lower);
+            var y = lower;
           } else if (d3.event.y < higher) {
-            thisEl.attr('cy', higher);
+            var y = higher;
           } else {
-            thisEl.attr('cy', d3.event.y);
-            var activeG = d.loc == 'top' ? activatingG : inactivatingG,
-                activeM = d.loc == 'top' ? activatingMutations : inactivatingMutations;
-
-            // Decide scroll amount
-            var scrollDomain = lower - higher,
-                scrollNow = d3.event.y - higher,
-                scrollPercent = d.loc == 'top' ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
-
-            // Calculate scroll adjustment if top or bottom
-            var offset = d.loc == 'top' ? maxActivatingOffset : -1*maxInactivatingOffset,
-                adjust = offset * scrollPercent;
-
-            activeG.attr('transform', 'translate(0,'+adjust+')');
-            activeM.each(function() {
-              var thisEl = d3.select(this),
-                  transform = thisEl.attr('transform');
-              if (transform) {
-                var y = parseFloat(transform.split(',')[1].split(')')[0]);
-                if(d.loc =='top') {
-                  thisEl.style('opacity', y+adjust > lower ? 0 : 1);
-                } else {
-                  thisEl.style('opacity', y+adjust < higher ? 0 : 1);
-                }
-              }
-
-            });
-
+            var y = d3.event.y;
           }
+
+          // Scroll only if the dragger is within the bounds of the track
+          thisEl.attr('cy', y);
+          var activeG = d.loc == 'top' ? activatingG : inactivatingG,
+              activeM = d.loc == 'top' ? activatingMutations : inactivatingMutations;
+
+          // Decide scroll amount
+          var scrollDomain = lower - higher,
+              scrollNow = y - higher,
+              scrollPercent = d.loc == 'top' ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
+
+          // Calculate scroll adjustment if top or bottom
+          var offset = d.loc == 'top' ? maxActivatingOffset : -1*maxInactivatingOffset,
+              adjust = offset * scrollPercent;
+
+          // Move the mutations, and hide the ones that are moving into
+          // out of the (in)activating viewport into the other viewport
+          activeG.attr('transform', 'translate(0,'+adjust+')');
+          activeM.each(function() {
+            var thisEl = d3.select(this),
+                transform = thisEl.attr('transform');
+            if (transform) {
+              var y = parseFloat(transform.split(',')[1].split(')')[0]);
+              if(d.loc =='top') {
+                thisEl.style('opacity', y+adjust > lower ? 0 : 1);
+              } else {
+                thisEl.style('opacity', y+adjust < higher ? 0 : 1);
+              }
+            }
+
+          });
         }
         function dragEnd(d) {
           var thisEl = d3.select(this);

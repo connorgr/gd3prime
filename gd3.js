@@ -2453,9 +2453,7 @@
         for (var i = 0; i < data.get("mutationCategories").length; i++) {
           sampleTypeToColor[data.get("mutationCategories")[i]] = d3color(i);
         }
-        console.log(style.scollbarWidth);
         var height = style.height, scrollbarWidth = showScrollers ? style.scollbarWidth : 0, width = style.width - scrollbarWidth - style.margin.left - style.margin.right;
-        console.log(style.width, width, scrollbarWidth);
         var mutationResolution = Math.floor(width / style.symbolWidth);
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width + scrollbarWidth + style.margin.left + style.margin.right);
         var start = 0, stop = data.get("length");
@@ -2588,7 +2586,7 @@
           var minActivatingY = d3.min(activatingYs), maxInactivatingY = d3.max(inactivatingYs);
           var showActivatingScroller = minActivatingY < 0, showInactivatingScroller = maxInactivatingY > height;
           if (!showActivatingScroller && !showInactivatingScroller) return;
-          var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) + 1.1 * style.symbolWidth : 0, maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY - style.symbolWidth : 0;
+          var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) + style.symbolWidth : style.transcriptBarHeight, maxInactivatingOffset = maxInactivatingY > height ? maxInactivatingY - style.symbolWidth : style.transcriptBarHeight;
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
           gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
           gradient.append("svg:stop").attr("offset", "100%").attr("stop-color", "#666666").attr("stop-opacity", 1);
@@ -2601,27 +2599,28 @@
           function dragMove(d) {
             var thisEl = d3.select(this), higher = d.loc == "top" ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
             if (d3.event.y > lower) {
-              thisEl.attr("cy", lower);
+              var y = lower;
             } else if (d3.event.y < higher) {
-              thisEl.attr("cy", higher);
+              var y = higher;
             } else {
-              thisEl.attr("cy", d3.event.y);
-              var activeG = d.loc == "top" ? activatingG : inactivatingG, activeM = d.loc == "top" ? activatingMutations : inactivatingMutations;
-              var scrollDomain = lower - higher, scrollNow = d3.event.y - higher, scrollPercent = d.loc == "top" ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
-              var offset = d.loc == "top" ? maxActivatingOffset : -1 * maxInactivatingOffset, adjust = offset * scrollPercent;
-              activeG.attr("transform", "translate(0," + adjust + ")");
-              activeM.each(function() {
-                var thisEl = d3.select(this), transform = thisEl.attr("transform");
-                if (transform) {
-                  var y = parseFloat(transform.split(",")[1].split(")")[0]);
-                  if (d.loc == "top") {
-                    thisEl.style("opacity", y + adjust > lower ? 0 : 1);
-                  } else {
-                    thisEl.style("opacity", y + adjust < higher ? 0 : 1);
-                  }
-                }
-              });
+              var y = d3.event.y;
             }
+            thisEl.attr("cy", y);
+            var activeG = d.loc == "top" ? activatingG : inactivatingG, activeM = d.loc == "top" ? activatingMutations : inactivatingMutations;
+            var scrollDomain = lower - higher, scrollNow = y - higher, scrollPercent = d.loc == "top" ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
+            var offset = d.loc == "top" ? maxActivatingOffset : -1 * maxInactivatingOffset, adjust = offset * scrollPercent;
+            activeG.attr("transform", "translate(0," + adjust + ")");
+            activeM.each(function() {
+              var thisEl = d3.select(this), transform = thisEl.attr("transform");
+              if (transform) {
+                var y = parseFloat(transform.split(",")[1].split(")")[0]);
+                if (d.loc == "top") {
+                  thisEl.style("opacity", y + adjust > lower ? 0 : 1);
+                } else {
+                  thisEl.style("opacity", y + adjust < higher ? 0 : 1);
+                }
+              }
+            });
           }
           function dragEnd(d) {
             var thisEl = d3.select(this);
