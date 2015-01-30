@@ -2,7 +2,7 @@
   var gd3 = {
     version: "0.2.1"
   };
-  gd3.dispatch = d3.dispatch("sample", "interaction");
+  gd3.dispatch = d3.dispatch("sample", "interaction", "sort");
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -904,8 +904,9 @@
           });
           colorScaleRect.attr("fill", "url(#" + gradientId + ")");
           var scaleHeight = scaleG.node().getBBox().height + 4, edgeKeys = legend.append("g").selectAll("g").data(data.edgeCategories).enter().append("g").style("cursor", "pointer").on("click", function(category) {
-            var catEdges = d3.selectAll("." + instanceIDConst + "-" + category), opacity = catEdges.style("opacity");
-            catEdges.style("opacity", opacity == 0 ? 1 : 0);
+            var catEdges = d3.selectAll("." + instanceIDConst + "-" + category), visible = catEdges.style("opacity") == 1;
+            d3.select(this).style("opacity", visible ? .5 : 1);
+            catEdges.style("opacity", visible ? 0 : 1);
           }).on("mouseover", function() {
             d3.select(this).selectAll("text").style("fill", "red");
           }).on("mouseout", function() {
@@ -1000,6 +1001,11 @@
       }
     }
     defaultParse();
+    data.sortColumns = function(columnIds) {
+      data.xs.sort(function(a, b) {
+        return columnIds.indexOf(a) - columnIds.indexOf(b);
+      });
+    };
     return data;
   }
   function heatmapChart(style) {
@@ -1091,6 +1097,7 @@
           }
         });
         svg.call(zoom);
+        var annotationCellsG, annotationCategoryCellsG;
         function renderAnnotationsFn() {
           if (!data.annotations) return;
           var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
@@ -1108,7 +1115,7 @@
             heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
           }
           annotationCellsG.attr("transform", "translate(0," + verticalOffset + ")");
-          var annotationCategoryCellsG = annotationCellsG.selectAll("g").data(data.annotations.categories).enter().append("g").attr("transform", function(d, i) {
+          annotationCategoryCellsG = annotationCellsG.selectAll("g").data(data.annotations.categories).enter().append("g").attr("transform", function(d, i) {
             var y = i * (style.annotationCellHeight + style.annotationCategorySpacing);
             return "translate(0," + y + ")";
           });
@@ -1162,8 +1169,9 @@
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.maxCellValue);
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth / 2).attr("y", textY + style.annotationLabelFontSize + 2).style("font-size", style.annotationLabelFontSize).text(data.name);
         }
+        var annotationXLabelsG;
         function renderXLabelsFn() {
-          var annotationXLabelsG = heatmap.append("g").attr("class", "gd3annotationXLabels");
+          annotationXLabelsG = heatmap.append("g").attr("class", "gd3annotationXLabels");
           var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
           annotationXLabelsG.attr("transform", "translate(0," + verticalOffset + ")");
           annotationXLabelsG.selectAll("text").data(data.xs).enter().append("text").attr("y", function(d, i) {
@@ -1186,6 +1194,24 @@
           yLabels.attr("x", maxLabelWidth);
           heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
         }
+        gd3.dispatch.on("sort.heatmap", function(d) {
+          data.sortColumns(d.columnLabels);
+          heatmapCells.transition().attr("x", function(d, i) {
+            return data.xs.indexOf(d.x) * style.cellWidth;
+          });
+          if (annotationXLabelsG) {
+            annotationXLabelsG.selectAll("text").transition().attr("y", function(d, i) {
+              return -data.xs.indexOf(d) * style.cellWidth;
+            });
+          }
+          if (annotationCategoryCellsG) {
+            annotationCategoryCellsG.each(function(d) {
+              d3.select(this).selectAll("rect").transition().attr("x", function(d) {
+                return data.xs.indexOf(d) * style.cellWidth;
+              });
+            });
+          }
+        });
       });
     }
     chart.showAnnotations = function(state) {
@@ -1280,7 +1306,8 @@
         return d3.ascending(c1First, c2First);
       }
       function sortByName(c1, c2) {
-        return d3.ascending(data.labels.columns[c1], data.labels.columns[c2]);
+        var c1Label = data.maps.columnIdToLabel[c1], c2Label = data.maps.columnIdToLabel[c2];
+        return d3.ascending(c1Label, c2Label);
       }
       function sortByColumnCategory(c1, c2) {
         return d3.ascending(data.maps.columnIdToCategory[c1], data.maps.columnIdToCategory[c2]);
@@ -1625,6 +1652,13 @@
                   data.reorderColumns(sortingOptionsData);
                   renderMenu();
                   rerenderMutationMatrix(true);
+                  var orderedLabels = data.ids.columns.map(function(d) {
+                    return data.maps.columnIdToLabel[d];
+                  });
+                  gd3.dispatch.sort({
+                    columnLabels: orderedLabels,
+                    sortingOptionsData: sortingOptionsData
+                  });
                 });
               });
             });
@@ -1646,6 +1680,10 @@
               return "translate(" + wholeVisX(colIndex) + ",0)";
             });
           }
+          columns.style("opacity", 1);
+          columns.filter(function(d) {
+            return wholeVisX(data.ids.columns.indexOf(d)) < style.labelWidth;
+          }).style("opacity", .2);
           columns.selectAll("rect").attr("width", colWidth);
           columns.selectAll(".gd3mutmtx-cellClyph").attr("transform", function(d) {
             var str = d3.select(this).attr("transform"), then = str.replace("translate", "").replace(")", "").split(","), x = colWidth / 2, y = +then[1], now = "translate(" + x + "," + y + ")";
@@ -1669,7 +1707,7 @@
           }).enter().append("g");
           cells.each(function(d) {
             var thisCell = d3.select(this), y = style.rowHeight * data.ids.rows.indexOf(d.row);
-            thisCell.append("rect").attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colCategoryToColor[d.cell.dataset]);
+            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colCategoryToColor[d.cell.dataset]);
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType];
             if (glyph && glyph != null) {
               thisCell.append("path").attr("class", "gd3mutmtx-cellClyph").attr("d", d3.svg.symbol().type(glyph).size(colWidth * colWidth)).attr("transform", "translate(" + colWidth / 2 + "," + (y + style.rowHeight / 2) + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("stroke-width", .5);
@@ -2535,6 +2573,8 @@
           activatingMutations.each(getYs(activatingYs));
           inactivatingMutations.each(getYs(inactivatingYs));
           var minActivatingY = d3.min(activatingYs), maxInactivatingY = d3.max(inactivatingYs);
+          var showActivatingScroller = minActivatingY < 0, showInactivatingScroller = maxInactivatingY > height;
+          if (!showActivatingScroller && !showInactivatingScroller) return;
           var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) + 1.1 * style.symbolWidth : 0, maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY - style.symbolWidth : 0;
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
           gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
@@ -2575,18 +2615,26 @@
             thisEl.style("fill", "url(#gradient)");
           }
           sG.append("rect").attr("x", 0).attr("y", 0).attr("width", 15).attr("height", style.height).style("fill", "#fff");
-          sG.append("line").attr("x1", 6).attr("y1", 10).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2 + 10).style("stroke", "#ccc").style("stroke-width", 1);
-          sG.append("line").attr("x1", 6).attr("y1", style.height / 2 + style.transcriptBarHeight / 2 + 10).attr("x2", 6).attr("y2", style.height - 10).style("stroke", "#ccc").style("stroke-width", 1);
+          if (showActivatingScroller) {
+            sG.append("line").attr("x1", 6).attr("y1", 10).attr("x2", 6).attr("y2", style.height / 2 - style.transcriptBarHeight / 2 + 10).style("stroke", "#ccc").style("stroke-width", 1);
+          }
+          if (showInactivatingScroller) {
+            sG.append("line").attr("x1", 6).attr("y1", style.height / 2 + style.transcriptBarHeight / 2 + 10).attr("x2", 6).attr("y2", style.height - 10).style("stroke", "#ccc").style("stroke-width", 1);
+          }
           var sliderBounds = [ {
             min: style.height / 2 - style.transcriptBarHeight / 2 + 4,
             max: 6,
-            loc: "top"
+            loc: "top",
+            show: showActivatingScroller
           }, {
             min: style.height / 2 + style.transcriptBarHeight + 4,
             max: style.height - 6,
-            loc: "bottom"
+            loc: "bottom",
+            show: showInactivatingScroller
           } ];
-          sG.selectAll("circle").data(sliderBounds).enter().append("circle").attr("r", 5).attr("cx", 6).attr("cy", function(d) {
+          sG.selectAll("circle").data(sliderBounds.filter(function(d) {
+            return d.show;
+          })).enter().append("circle").attr("r", 5).attr("cx", 6).attr("cy", function(d) {
             return d.min;
           }).style({
             "box-shadow": "0px 0px 5px 0px rgba(0,0,0,0.75)",
