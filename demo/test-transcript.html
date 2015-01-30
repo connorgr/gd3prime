@@ -56,26 +56,26 @@
       // Draw STAG1 where no scrollbar should appear
       d3.select('#test1')
         .append('h3')
-        .html(vizData[1].gene + " <small>" + vizData[1].transcript + "</small>");
+        .html(vizData[0].gene + " <small>" + vizData[0].transcript + "</small>");
       d3.select('#test1')
-          .datum(vizData[1])
+          .datum(vizData[0])
           .call(gd3.transcript(params));
 
       // Draw BRAF where an activating (top) scrollbar should appear
       d3.select('#test2')
         .append('h3')
-        .html(vizData[5].gene + " <small>" + vizData[5].transcript + "</small>");
+        .html(vizData[1].gene + " <small>" + vizData[1].transcript + "</small>");
       d3.select('#test2')
-          .datum(vizData[5])
+          .datum(vizData[1])
           .call(gd3.transcript(params));
 
       // Draw ARID1A where both inactivating (bottom) and activating (top)
       // scrollbars should appear
       d3.select('#test3')
         .append('h3')
-        .html(vizData[6].gene + " <small>" + vizData[6].transcript + "</small>");
+        .html(vizData[2].gene + " <small>" + vizData[2].transcript + "</small>");
       d3.select('#test3')
-          .datum(vizData[6])
+          .datum(vizData[2])
           .call(gd3.transcript(params));
     });
     </script>

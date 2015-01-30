@@ -109,8 +109,11 @@
       sampleTypes = Object.keys(sampleTypes);
       params.sampleTypes = sampleTypes;
 
+      d3.select("#transcript")
+        .append("h3")
+        .html(vizData[0].gene + " <small>" + vizData[1].transcript + "</small>");
       d3.select('#transcript')
-          .datum(vizData[1])
+          .datum(vizData[0])
           .call(gd3.transcript(params));
     });
 
