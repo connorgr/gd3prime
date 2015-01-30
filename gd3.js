@@ -2,7 +2,7 @@
   var gd3 = {
     version: "0.2.1"
   };
-  gd3.dispatch = d3.dispatch("sample", "interaction", "sort");
+  gd3.dispatch = d3.dispatch("sample", "interaction", "sort", "filterCategory", "filterType");
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -1428,7 +1428,7 @@
     return data;
   }
   function mutmtxChart(style) {
-    var drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, stickyLegend = false;
+    var dataToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, stickyLegend = false;
     var sortingOptionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
     function chart(selection) {
       selection.each(function(data) {
@@ -1525,6 +1525,13 @@
         svg.call(zoom);
         renderMutationMatrix();
         rerenderMutationMatrix();
+        gd3.dispatch.on("filterCategory.mutmtx", function(d) {
+          if (!d || !d.categories) return;
+          dataToFilter = d.categories.filter(function(s) {
+            return data.datasets.indexOf(s) > -1;
+          });
+          rerenderMutationMatrix();
+        });
         if (drawLegend) drawLegendFn(selection.append("div").style("width", style.width));
         if (drawHoverLegend) {
           var container = selection.append("div"), legendHoverHeader = container.append("span").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.fontSize + "px").text("Legend (mouse over)"), legend = container.append("div").style("background", "#fff").style("border", "1px solid #ccc").style("padding", "10px").style("position", "absolute").style("display", "none").style("visibility", "hidden");
@@ -1693,6 +1700,10 @@
             });
           }
           columns.style("opacity", 1);
+          columns.filter(function(d) {
+            var c = data.maps.columnIdToCategory[d];
+            return dataToFilter.indexOf(c) > -1;
+          }).style("opacity", .2);
           columns.filter(function(d) {
             return wholeVisX(data.ids.columns.indexOf(d)) < style.labelWidth;
           }).style("opacity", .2);

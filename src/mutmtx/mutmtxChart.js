@@ -1,7 +1,8 @@
 import "mutmtxData";
 
 function mutmtxChart(style) {
-  var drawHoverLegend = true,
+  var dataToFilter = [],
+      drawHoverLegend = true,
       drawLegend = false,
       drawSortingMenu = true,
       stickyLegend = false;
@@ -231,6 +232,16 @@ function mutmtxChart(style) {
 
       renderMutationMatrix();
       rerenderMutationMatrix();
+
+      // Listen for filtering events
+      gd3.dispatch.on('filterCategory.mutmtx', function(d) {
+        if(!d || !d.categories) return;
+
+        dataToFilter = d.categories.filter(function(s) {
+          return data.datasets.indexOf(s) > -1;
+        });
+        rerenderMutationMatrix();
+      });
 
       if(drawLegend) drawLegendFn(selection.append('div').style('width', style.width));
       if(drawHoverLegend) {
@@ -577,8 +588,15 @@ function mutmtxChart(style) {
           });
         }
 
-        // Fade columns out of the viewport
+        // Fade columns that have categories in the dataToFilter list
         columns.style("opacity", 1);
+        columns.filter(function(d) {
+          var c = data.maps.columnIdToCategory[d];
+          return dataToFilter.indexOf(c) > -1;
+        }).style('opacity', 0.2);
+
+
+        // Fade columns out of the viewport
         columns.filter(function(d){
             return wholeVisX(data.ids.columns.indexOf(d)) < style.labelWidth;
         }).style("opacity", 0.2);
