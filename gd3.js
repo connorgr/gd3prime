@@ -1528,10 +1528,6 @@
           });
         }
         if (drawSortingMenu) drawSortingMenu();
-        gd3.dispatch.on("sort.mutmtx", function(d) {
-          console.log(d);
-          sortingOptionsData = d.sortingOptionsData;
-        });
         function drawLegendFn(legend) {
           legend.style("font-size", style.fontSize + "px");
           var columnCategories = legend.append("div").style("min-width", legend.style("width")).style("width", legend.style("width")), cellTypes = legend.append("div");
