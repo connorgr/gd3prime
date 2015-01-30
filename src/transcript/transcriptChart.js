@@ -13,11 +13,11 @@ function transcriptChart(style) {
       for (var i = 0; i < data.get('mutationCategories').length; i++) {
         sampleTypeToColor[data.get('mutationCategories')[i]] = d3color(i);
       }
-      console.log(style.scollbarWidth)
+
       var height = style.height,
           scrollbarWidth = showScrollers ? style.scollbarWidth : 0,
           width = style.width - scrollbarWidth - style.margin.left - style.margin.right;
-      console.log(style.width, width, scrollbarWidth)
+
       // max number of mutations that can fit along the axis
       var mutationResolution = Math.floor(width / style.symbolWidth);
 
@@ -322,7 +322,9 @@ function transcriptChart(style) {
           var thisEl = d3.select(this);
           thisEl.style('fill', '#888888');
         }
+
         function dragMove(d) {
+          console.log(d)
           var thisEl = d3.select(this),
               higher = d.loc == 'top' ? d.max : d.min, // lesser/upper canvas y bound value
               lower = higher == d.max ? d.min : d.max;
