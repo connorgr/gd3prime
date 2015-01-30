@@ -544,6 +544,12 @@ function mutmtxChart(style) {
           });
         }
 
+        // Fade columns out of the viewport
+        columns.style("opacity", 1);
+        columns.filter(function(d){
+            return wholeVisX(data.ids.columns.indexOf(d)) < style.labelWidth;
+        }).style("opacity", 0.2);
+
         // Redraw each cell and any glyphs the cell might have
         columns.selectAll('rect').attr('width', colWidth);
         columns.selectAll('.gd3mutmtx-cellClyph').attr('transform', function (d) {
@@ -637,7 +643,7 @@ function mutmtxChart(style) {
             rects.attr("stroke-opacity", 0);
             rects.filter(function(d){ return data.maps.columnIdToLabel[d.colId] == sample; })
               .attr("stroke-opacity", over ? 1 : 0);
-            
+
             // Highlight the sample name
             columnNames.style({ "opacity": over ? 0.25 : 1, "font-weight": "normal"});
             affectedColumns.style({"opacity": 1, "font-weight": over ? "bold" : "normal"});

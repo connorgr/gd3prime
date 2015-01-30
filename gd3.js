@@ -1630,6 +1630,10 @@
               return "translate(" + wholeVisX(colIndex) + ",0)";
             });
           }
+          columns.style("opacity", 1);
+          columns.filter(function(d) {
+            return wholeVisX(data.ids.columns.indexOf(d)) < style.labelWidth;
+          }).style("opacity", .2);
           columns.selectAll("rect").attr("width", colWidth);
           columns.selectAll(".gd3mutmtx-cellClyph").attr("transform", function(d) {
             var str = d3.select(this).attr("transform"), then = str.replace("translate", "").replace(")", "").split(","), x = colWidth / 2, y = +then[1], now = "translate(" + x + "," + y + ")";
