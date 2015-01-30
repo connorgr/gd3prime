@@ -136,13 +136,55 @@ a:visited {
     });
 
 
+    body.append('hr');
+    body.append('h1').text('Filtering dispatch test');
+    var filterMenu = body.append('div'),
+        filterMutMtx = body.append('div'),
+        breaker = body.append('br').append('br');
+
+    var categories = [
+        'STAD',
+        'BLCA',
+        'BRCA',
+        'COADREAD',
+        'GBM',
+        'HNSC',
+        'KIRC',
+        'LAML',
+        'LUAD',
+        'LUSC',
+        'OV',
+        'UCEC'
+    ];
+    var filterMenuText = filterMenu.selectAll('span')
+        .data(categories)
+        .enter()
+        .append('span')
+            .style('border', '1px solid #ccc')
+            .style('font-size', '14px')
+            .style('padding', '10px')
+            .text(function(d){return d;});
+    filterMenuInput = filterMenuText.append('input')
+        .attr('type', 'checkbox')
+        .on('click', applyCategoryFilter);
+
+    function applyCategoryFilter() {
+      var checked = filterMenuInput.filter(function(d) {
+        return d3.select(this).property('checked');
+      });
+
+      var filtering = [];
+      checked.each(function(d) { filtering.push(d); });
+      gd3.dispatch.filterCategory( {categories: filtering });
+    }
+
+
 
     body.append('hr');
     body.append('h1').text('Sorting dispatch test');
     var sortMutMtx = body.append('div'),
-        breaker = body.append('br').append('br');
-        sortHeatmap = body.append('div'),
-        sortHeatmap2 = body.append('div');
+        breaker = body.append('br').append('br'),
+        sortHeatmap = body.append('div');
 
     d3.json('testData/example2-mutation-matrix.json', function(data) {
       d3.json('testData/exampleAnnotations.json', function(annData) {
