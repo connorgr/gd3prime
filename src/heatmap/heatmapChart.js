@@ -97,8 +97,8 @@ function heatmapChart(style) {
           if (cell.value){
             var lineLoc = legendScale(cell.value);
             legendRefLine.attr('x1', lineLoc)
-              .attr('x2', lineLoc)
-              .style('opacity', 1);
+                .attr('x2', lineLoc)
+                .style('opacity', 1);
           } else {
             legendRefLine.style('opacity', 0);
           }
@@ -312,8 +312,8 @@ function heatmapChart(style) {
 
         // Add a legend reference line
         legendScale = d3.scale.linear()
-          .domain([data.minCellValue, data.maxCellValue])
-          .range([0, style.colorScaleWidth]);
+            .domain([data.minCellValue, data.maxCellValue])
+            .range([0, style.colorScaleWidth]);
 
         legendRefLine = legendG.append('line')
             .attr('y1', 0)
