@@ -267,7 +267,7 @@ function mutmtxChart(style) {
         });
       }
       if(drawSortingMenu) drawSortingMenu();
-      
+
       function drawHoverLegendFn(legend) {
         // make sure the width of the legend is less than the window size
         var legendW = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
