@@ -1491,6 +1491,8 @@
           var container = selection.append("div"), legendHoverHeader = container.append("span").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.fontSize + "px").text("Legend (mouse over)"), legend = container.append("div").style("background", "#fff").style("border", "1px solid #ccc").style("padding", "10px").style("position", "absolute").style("display", "none").style("visibility", "hidden");
           legendHoverHeader.on("click", function() {
             stickyLegend = stickyLegend ? false : true;
+            legend.selectAll("*").remove();
+            if (stickyLegend) drawHoverLegendFn(legend); else legend.style("display", "none").style("visibility", "hidden");
           });
           legendHoverHeader.on("mouseover", function() {
             if (stickyLegend) return;
@@ -1508,11 +1510,13 @@
           legendW = legendW < style.width - 20 - 20 ? legendW : style.width - 20 - 20;
           var body = document.body, docElement = document.documentElement, legendHeaderBounds = legendHoverHeader.node().getBoundingClientRect(), clientTop = docElement.clientTop || body.clientTop || 0, clientLeft = docElement.clientLeft || body.clientLeft || 0, scrollLeft = window.pageXOffset || docElement.scrollLeft || body.scrollLeft, scrollTop = window.pageYOffset || docElement.scrollTop || body.scrollTop, top = legendHeaderBounds.top + scrollTop - clientTop, left = legendHeaderBounds.left + scrollLeft - clientLeft;
           legend.style("left", left).style("top", top + legendHeaderBounds.height + 5).style("display", "block").style("visibility", "visible");
-          legend.append("span").text("X").style("color", "#aaa").style("cursor", "pointer").style("float", "right").style("font-family", style.fontFamily).on("click", function() {
-            stickyLegend = false;
-            legend.selectAll("*").remove();
-            legend.style("display", "none").style("visibility", "hidden");
-          });
+          if (stickyLegend) {
+            legend.append("span").text("X").style("color", "#aaa").style("cursor", "pointer").style("float", "right").style("font-family", style.fontFamily).on("click", function() {
+              stickyLegend = false;
+              legend.selectAll("*").remove();
+              legend.style("display", "none").style("visibility", "hidden");
+            });
+          }
           drawLegendFn(legend.style("width", legendW + "px"));
         }
         function drawLegendFn(legend) {

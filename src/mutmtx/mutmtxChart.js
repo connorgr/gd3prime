@@ -250,6 +250,9 @@ function mutmtxChart(style) {
 
         legendHoverHeader.on('click', function() {
           stickyLegend = stickyLegend ? false : true;
+          legend.selectAll('*').remove();
+          if(stickyLegend) drawHoverLegendFn(legend);
+          else legend.style('display','none').style('visibility','hidden');
         });
 
         legendHoverHeader.on('mouseover', function() {
@@ -289,17 +292,19 @@ function mutmtxChart(style) {
             .style('display','block')
             .style('visibility', 'visible');
 
-        legend.append('span').text('X')
-            .style('color', '#aaa')
-            .style('cursor', 'pointer')
-            .style('float', 'right')
-            .style('font-family', style.fontFamily)
-            .on('click', function() {
-              stickyLegend = false;
-              legend.selectAll('*').remove();
-              legend.style('display', 'none')
-                  .style('visibility', 'hidden');
-            });
+        if(stickyLegend) {
+          legend.append('span').text('X')
+              .style('color', '#aaa')
+              .style('cursor', 'pointer')
+              .style('float', 'right')
+              .style('font-family', style.fontFamily)
+              .on('click', function() {
+                stickyLegend = false;
+                legend.selectAll('*').remove();
+                legend.style('display', 'none')
+                    .style('visibility', 'hidden');
+              });
+        }
 
         drawLegendFn(legend.style('width', legendW+'px'));
       }
