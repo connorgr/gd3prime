@@ -15,7 +15,8 @@ function transcriptChart(style) {
       }
 
       var height = style.height,
-          width = style.width;
+          scrollbarWidth = showScrollers ? style.scollbarWidth : 0,
+          width = style.width - scrollbarWidth - style.margin.left - style.margin.right;
 
       // max number of mutations that can fit along the axis
       var mutationResolution = Math.floor(width / style.symbolWidth);
@@ -26,7 +27,7 @@ function transcriptChart(style) {
           .enter()
             .append('svg')
                 .attr('height', height)
-                .attr('width', width);
+                .attr('width', width + scrollbarWidth + style.margin.left + style.margin.right);
 
       // x scale for the entire visualization based on transcript length
       var start = 0,
@@ -43,7 +44,8 @@ function transcriptChart(style) {
               .tickPadding(style.xTickPadding);
 
       // Group for all transcript visualization components other than sliders to live in
-      var tG = svg.append('g');
+      var tG = svg.append('g')
+        .attr('transform', 'translate(' + (style.margin.left + scrollbarWidth) + ',0)');
 
       // Append the axis to the canvas
       var transcriptAxis = tG.append('g')
@@ -258,9 +260,6 @@ function transcriptChart(style) {
 
 
       function renderScrollers () {
-        // Make room for the sliders
-        tG.attr('transform', 'translate(20,0)');
-
         // Add a group for sliders
         var sG = svg.append('g');
 
@@ -287,8 +286,8 @@ function transcriptChart(style) {
         if (!showActivatingScroller && !showInactivatingScroller) return;
 
         // Determine scrolling max offset for both activating and inactivating mutations
-        var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY)+1.1*style.symbolWidth : 0,
-            maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY-style.symbolWidth : 0;
+        var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY)+style.symbolWidth : style.transcriptBarHeight,
+            maxInactivatingOffset = maxInactivatingY > height ? maxInactivatingY-style.symbolWidth : style.transcriptBarHeight;
 
         // create drag slider gradient
         // Define the gradient
@@ -323,46 +322,52 @@ function transcriptChart(style) {
           var thisEl = d3.select(this);
           thisEl.style('fill', '#888888');
         }
+
         function dragMove(d) {
           var thisEl = d3.select(this),
               higher = d.loc == 'top' ? d.max : d.min, // lesser/upper canvas y bound value
               lower = higher == d.max ? d.min : d.max;
 
-          // Scroll only if the dragger is within the bounds of the track
+          // Set the y-value, stopping it at the upper and lower bounds
+          // of the scrollbar
           if(d3.event.y > lower) {
-            thisEl.attr('cy', lower);
+            var y = lower;
           } else if (d3.event.y < higher) {
-            thisEl.attr('cy', higher);
+            var y = higher;
           } else {
-            thisEl.attr('cy', d3.event.y);
-            var activeG = d.loc == 'top' ? activatingG : inactivatingG,
-                activeM = d.loc == 'top' ? activatingMutations : inactivatingMutations;
-
-            // Decide scroll amount
-            var scrollDomain = lower - higher,
-                scrollNow = d3.event.y - higher,
-                scrollPercent = d.loc == 'top' ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
-
-            // Calculate scroll adjustment if top or bottom
-            var offset = d.loc == 'top' ? maxActivatingOffset : -1*maxInactivatingOffset,
-                adjust = offset * scrollPercent;
-
-            activeG.attr('transform', 'translate(0,'+adjust+')');
-            activeM.each(function() {
-              var thisEl = d3.select(this),
-                  transform = thisEl.attr('transform');
-              if (transform) {
-                var y = parseFloat(transform.split(',')[1].split(')')[0]);
-                if(d.loc =='top') {
-                  thisEl.style('opacity', y+adjust > lower ? 0 : 1);
-                } else {
-                  thisEl.style('opacity', y+adjust < higher ? 0 : 1);
-                }
-              }
-
-            });
-
+            var y = d3.event.y;
           }
+
+          // Scroll only if the dragger is within the bounds of the track
+          thisEl.attr('cy', y);
+          var activeG = d.loc == 'top' ? activatingG : inactivatingG,
+              activeM = d.loc == 'top' ? activatingMutations : inactivatingMutations;
+
+          // Decide scroll amount
+          var scrollDomain = lower - higher,
+              scrollNow = y - higher,
+              scrollPercent = d.loc == 'top' ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
+
+          // Calculate scroll adjustment if top or bottom
+          var offset = d.loc == 'top' ? maxActivatingOffset : -1*maxInactivatingOffset,
+              adjust = offset * scrollPercent;
+
+          // Move the mutations, and hide the ones that are moving into
+          // out of the (in)activating viewport into the other viewport
+          activeG.attr('transform', 'translate(0,'+adjust+')');
+          activeM.each(function() {
+            var thisEl = d3.select(this),
+                transform = thisEl.attr('transform');
+            if (transform) {
+              var y = parseFloat(transform.split(',')[1].split(')')[0]);
+              if(d.loc =='top') {
+                thisEl.style('opacity', y+adjust > lower ? 0 : 1);
+              } else {
+                thisEl.style('opacity', y+adjust < higher ? 0 : 1);
+              }
+            }
+
+          });
         }
         function dragEnd(d) {
           var thisEl = d3.select(this);

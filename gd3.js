@@ -2504,13 +2504,13 @@
         for (var i = 0; i < data.get("mutationCategories").length; i++) {
           sampleTypeToColor[data.get("mutationCategories")[i]] = d3color(i);
         }
-        var height = style.height, width = style.width;
+        var height = style.height, scrollbarWidth = showScrollers ? style.scollbarWidth : 0, width = style.width - scrollbarWidth - style.margin.left - style.margin.right;
         var mutationResolution = Math.floor(width / style.symbolWidth);
-        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width);
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width + scrollbarWidth + style.margin.left + style.margin.right);
         var start = 0, stop = data.get("length");
         var x = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(style.numXTicks).tickSize(0).tickPadding(style.xTickPadding);
-        var tG = svg.append("g");
+        var tG = svg.append("g").attr("transform", "translate(" + (style.margin.left + scrollbarWidth) + ",0)");
         var transcriptAxis = tG.append("g").attr("class", "xaxis").attr("transform", "translate(0," + (style.height / 2 + style.transcriptBarHeight + 6) + ")").style("font-family", style.fontFamily).style("font-size", "12px").style("fill", "#000").call(xAxis);
         var transcriptBar = tG.append("rect").attr("height", style.transcriptBarHeight).attr("width", x(stop) - x(start)).attr("x", x(start)).attr("y", height / 2).style("fill", "#ccc");
         var zoom = d3.behavior.zoom().x(x).scaleExtent([ 1, 100 ]).on("zoom", function() {
@@ -2621,7 +2621,6 @@
           });
         }
         function renderScrollers() {
-          tG.attr("transform", "translate(20,0)");
           var sG = svg.append("g");
           var activatingYs = [], inactivatingYs = [];
           function getYs(transforms) {
@@ -2638,7 +2637,7 @@
           var minActivatingY = d3.min(activatingYs), maxInactivatingY = d3.max(inactivatingYs);
           var showActivatingScroller = minActivatingY < 0, showInactivatingScroller = maxInactivatingY > height;
           if (!showActivatingScroller && !showInactivatingScroller) return;
-          var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) + 1.1 * style.symbolWidth : 0, maxInactivatingOffset = maxInactivatingY > style.height ? maxInactivatingY - style.symbolWidth : 0;
+          var maxActivatingOffset = minActivatingY < 0 ? Math.abs(minActivatingY) + style.symbolWidth : style.transcriptBarHeight, maxInactivatingOffset = maxInactivatingY > height ? maxInactivatingY - style.symbolWidth : style.transcriptBarHeight;
           var gradient = svg.append("svg:defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
           gradient.append("svg:stop").attr("offset", "0%").attr("stop-color", "#eeeeee").attr("stop-opacity", 1);
           gradient.append("svg:stop").attr("offset", "100%").attr("stop-color", "#666666").attr("stop-opacity", 1);
@@ -2651,27 +2650,28 @@
           function dragMove(d) {
             var thisEl = d3.select(this), higher = d.loc == "top" ? d.max : d.min, lower = higher == d.max ? d.min : d.max;
             if (d3.event.y > lower) {
-              thisEl.attr("cy", lower);
+              var y = lower;
             } else if (d3.event.y < higher) {
-              thisEl.attr("cy", higher);
+              var y = higher;
             } else {
-              thisEl.attr("cy", d3.event.y);
-              var activeG = d.loc == "top" ? activatingG : inactivatingG, activeM = d.loc == "top" ? activatingMutations : inactivatingMutations;
-              var scrollDomain = lower - higher, scrollNow = d3.event.y - higher, scrollPercent = d.loc == "top" ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
-              var offset = d.loc == "top" ? maxActivatingOffset : -1 * maxInactivatingOffset, adjust = offset * scrollPercent;
-              activeG.attr("transform", "translate(0," + adjust + ")");
-              activeM.each(function() {
-                var thisEl = d3.select(this), transform = thisEl.attr("transform");
-                if (transform) {
-                  var y = parseFloat(transform.split(",")[1].split(")")[0]);
-                  if (d.loc == "top") {
-                    thisEl.style("opacity", y + adjust > lower ? 0 : 1);
-                  } else {
-                    thisEl.style("opacity", y + adjust < higher ? 0 : 1);
-                  }
-                }
-              });
+              var y = d3.event.y;
             }
+            thisEl.attr("cy", y);
+            var activeG = d.loc == "top" ? activatingG : inactivatingG, activeM = d.loc == "top" ? activatingMutations : inactivatingMutations;
+            var scrollDomain = lower - higher, scrollNow = y - higher, scrollPercent = d.loc == "top" ? 1 - scrollNow / scrollDomain : scrollNow / scrollDomain;
+            var offset = d.loc == "top" ? maxActivatingOffset : -1 * maxInactivatingOffset, adjust = offset * scrollPercent;
+            activeG.attr("transform", "translate(0," + adjust + ")");
+            activeM.each(function() {
+              var thisEl = d3.select(this), transform = thisEl.attr("transform");
+              if (transform) {
+                var y = parseFloat(transform.split(",")[1].split(")")[0]);
+                if (d.loc == "top") {
+                  thisEl.style("opacity", y + adjust > lower ? 0 : 1);
+                } else {
+                  thisEl.style("opacity", y + adjust < higher ? 0 : 1);
+                }
+              }
+            });
           }
           function dragEnd(d) {
             var thisEl = d3.select(this);
@@ -2741,7 +2741,12 @@
       symbolWidth: style.symbolWidth || 20,
       transcriptBarHeight: style.transcriptBarHeight || 20,
       width: style.width || 500,
-      xTickPadding: style.xTickPadding || 1.25
+      xTickPadding: style.xTickPadding || 1.25,
+      scollbarWidth: style.scrollbarWidth || 15,
+      margin: style.margin || {
+        left: 5,
+        right: 5
+      }
     };
   }
   gd3.transcript = function(params) {
