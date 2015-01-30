@@ -1,11 +1,12 @@
 import "mutmtxData";
 
 function mutmtxChart(style) {
-  var dataToFilter = [],
+  var categoriesToFilter = [],
       drawHoverLegend = true,
       drawLegend = false,
       drawSortingMenu = true,
-      stickyLegend = false;
+      stickyLegend = false,
+      typesToFilter = [];
 
   var sortingOptionsData = [
     'First active row',
@@ -237,11 +238,20 @@ function mutmtxChart(style) {
       gd3.dispatch.on('filterCategory.mutmtx', function(d) {
         if(!d || !d.categories) return;
 
-        dataToFilter = d.categories.filter(function(s) {
+        categoriesToFilter = d.categories.filter(function(s) {
           return data.datasets.indexOf(s) > -1;
         });
         rerenderMutationMatrix();
       });
+
+      gd3.dispatch.on('filterType.mutmtx', function(d) {
+        if(!d || !d.types) return;
+
+        typesToFilter = d.types.filter(function(s) {
+          return data.types.indexOf(s) > -1;
+        });
+        rerenderMutationMatrix();
+      })
 
       if(drawLegend) drawLegendFn(selection.append('div').style('width', style.width));
       if(drawHoverLegend) {
@@ -588,11 +598,14 @@ function mutmtxChart(style) {
           });
         }
 
-        // Fade columns that have categories in the dataToFilter list
+        // Fade columns that have categories or types in filter lists
         columns.style("opacity", 1);
         columns.filter(function(d) {
-          var c = data.maps.columnIdToCategory[d];
-          return dataToFilter.indexOf(c) > -1;
+          var c = data.maps.columnIdToCategory[d],
+              typeFilter = data.maps.columnIdToTypes[d].reduce(function(cur, elem) {
+                      return cur || typesToFilter.indexOf(elem) > -1;
+                  }, false);
+          return categoriesToFilter.indexOf(c) > -1 || typeFilter;
         }).style('opacity', 0.2);
 
 

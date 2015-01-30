@@ -22,6 +22,7 @@ function mutmtxData(inputData) {
       columnIdToActiveRows : {},
       rowIdToActiveColumns : {}
     },
+    types: []
   };
 
   data.get = function(attr) {
@@ -142,17 +143,23 @@ function mutmtxData(inputData) {
         data.matrix.columnIdToActiveRows[colId].push(rowId);
 
         // Add cell data
+        var type = inputData.M[rowLabel][colId][0];
         data.matrix.cells[[rowId,colId].join()] = {
           dataset: inputData.sampleToTypes[colId],
           type: inputData.M[rowLabel][colId][0]
         };
-        cellTypes.push(inputData.M[rowLabel][colId][0]);
+        cellTypes.push(type);
 
         // Track the types of cells in the data
         if(!data.maps.columnIdToTypes[colId]) data.maps.columnIdToTypes[colId] = [];
-        data.maps.columnIdToTypes[colId].push(inputData.M[rowLabel][colId][0]);
+        data.maps.columnIdToTypes[colId].push(type);
       });
     }); // end matrix mapping
+
+    // Remove repeat types
+    data.types = cellTypes.filter(function(item, pos, self) {
+      return self.indexOf(item) == pos;
+    });
 
     // Process the column to type map s.t. there are no repeats and
     //   the map is ordered by population of each type

@@ -1299,7 +1299,8 @@
         cells: {},
         columnIdToActiveRows: {},
         rowIdToActiveColumns: {}
-      }
+      },
+      types: []
     };
     data.get = function(attr) {
       if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "ids") return data.ids; else if (attr === "labels") return data.labels;
@@ -1383,14 +1384,18 @@
             data.matrix.columnIdToActiveRows[colId] = [];
           }
           data.matrix.columnIdToActiveRows[colId].push(rowId);
+          var type = inputData.M[rowLabel][colId][0];
           data.matrix.cells[[ rowId, colId ].join()] = {
             dataset: inputData.sampleToTypes[colId],
             type: inputData.M[rowLabel][colId][0]
           };
-          cellTypes.push(inputData.M[rowLabel][colId][0]);
+          cellTypes.push(type);
           if (!data.maps.columnIdToTypes[colId]) data.maps.columnIdToTypes[colId] = [];
-          data.maps.columnIdToTypes[colId].push(inputData.M[rowLabel][colId][0]);
+          data.maps.columnIdToTypes[colId].push(type);
         });
+      });
+      data.types = cellTypes.filter(function(item, pos, self) {
+        return self.indexOf(item) == pos;
       });
       Object.keys(data.maps.columnIdToTypes).forEach(function(colId) {
         var types = data.maps.columnIdToTypes[colId], typeLog = {};
@@ -1428,7 +1433,7 @@
     return data;
   }
   function mutmtxChart(style) {
-    var dataToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, stickyLegend = false;
+    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, stickyLegend = false, typesToFilter = [];
     var sortingOptionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
     function chart(selection) {
       selection.each(function(data) {
@@ -1527,8 +1532,15 @@
         rerenderMutationMatrix();
         gd3.dispatch.on("filterCategory.mutmtx", function(d) {
           if (!d || !d.categories) return;
-          dataToFilter = d.categories.filter(function(s) {
+          categoriesToFilter = d.categories.filter(function(s) {
             return data.datasets.indexOf(s) > -1;
+          });
+          rerenderMutationMatrix();
+        });
+        gd3.dispatch.on("filterType.mutmtx", function(d) {
+          if (!d || !d.types) return;
+          typesToFilter = d.types.filter(function(s) {
+            return data.types.indexOf(s) > -1;
           });
           rerenderMutationMatrix();
         });
@@ -1701,8 +1713,10 @@
           }
           columns.style("opacity", 1);
           columns.filter(function(d) {
-            var c = data.maps.columnIdToCategory[d];
-            return dataToFilter.indexOf(c) > -1;
+            var c = data.maps.columnIdToCategory[d], typeFilter = data.maps.columnIdToTypes[d].reduce(function(cur, elem) {
+              return cur || typesToFilter.indexOf(elem) > -1;
+            }, false);
+            return categoriesToFilter.indexOf(c) > -1 || typeFilter;
           }).style("opacity", .2);
           columns.filter(function(d) {
             return wholeVisX(data.ids.columns.indexOf(d)) < style.labelWidth;

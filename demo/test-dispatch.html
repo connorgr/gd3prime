@@ -138,9 +138,9 @@ a:visited {
 
     body.append('hr');
     body.append('h1').text('Filtering dispatch test');
-    var filterMenu = body.append('div'),
-        filterMutMtx = body.append('div'),
-        breaker = body.append('br').append('br');
+    var filterCategoryMenu = body.append('div').style('margin-bottom', '50px'),
+        filterTypeMenu = body.append('div'),
+        breaker = body.append('br').append('br').append('hr');
 
     var categories = [
         'STAD',
@@ -156,7 +156,7 @@ a:visited {
         'OV',
         'UCEC'
     ];
-    var filterMenuText = filterMenu.selectAll('span')
+    var filterCategoryMenuText = filterCategoryMenu.selectAll('span')
         .data(categories)
         .enter()
         .append('span')
@@ -164,12 +164,12 @@ a:visited {
             .style('font-size', '14px')
             .style('padding', '10px')
             .text(function(d){return d;});
-    filterMenuInput = filterMenuText.append('input')
+    filterCategoryMenuInput = filterCategoryMenuText.append('input')
         .attr('type', 'checkbox')
         .on('click', applyCategoryFilter);
 
     function applyCategoryFilter() {
-      var checked = filterMenuInput.filter(function(d) {
+      var checked = filterCategoryMenuInput.filter(function(d) {
         return d3.select(this).property('checked');
       });
 
@@ -178,6 +178,28 @@ a:visited {
       gd3.dispatch.filterCategory( {categories: filtering });
     }
 
+    var types = ['snv', 'inactive_snv'];
+    var filterTypeMenuText = filterTypeMenu.selectAll('span')
+        .data(types)
+        .enter()
+        .append('span')
+            .style('border', '1px solid #ccc')
+            .style('font-size', '14px')
+            .style('padding', '10px')
+            .text(function(d){return d;});
+    filterTypeMenuInput = filterTypeMenuText.append('input')
+        .attr('type', 'checkbox')
+        .on('click', applyTypeFilter);
+
+    function applyTypeFilter() {
+      var checked = filterTypeMenuInput.filter(function(d) {
+        return d3.select(this).property('checked');
+      });
+
+      var filtering = [];
+      checked.each(function(d) { filtering.push(d); });
+      gd3.dispatch.filterType( { types: filtering });
+    }
 
 
     body.append('hr');
