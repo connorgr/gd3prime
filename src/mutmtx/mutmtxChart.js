@@ -3,7 +3,8 @@ import "mutmtxData";
 function mutmtxChart(style) {
   var drawHoverLegend = true,
       drawLegend = false,
-      drawSortingMenu = true;
+      drawSortingMenu = true,
+      stickyLegend = false;
 
   var sortingOptionsData = [
     'First active row',
@@ -247,38 +248,61 @@ function mutmtxChart(style) {
                 .style('display','none')
                 .style('visibility','hidden');
 
+        legendHoverHeader.on('click', function() {
+          stickyLegend = stickyLegend ? false : true;
+        });
+
         legendHoverHeader.on('mouseover', function() {
-          // make sure the width of the legend is less than the window size
-          var legendW = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-          legendW = legendW - 20 - 20; // - 20 for page space, -20 for div padding
-          legendW = legendW < style.width - 20 - 20 ? legendW : style.width - 20 - 20;
-
-          var body = document.body,
-              docElement = document.documentElement,
-              legendHeaderBounds = legendHoverHeader.node().getBoundingClientRect(),
-
-              clientTop = docElement.clientTop || body.clientTop || 0,
-              clientLeft = docElement.clientLeft || body.clientLeft || 0,
-              scrollLeft = window.pageXOffset || docElement.scrollLeft || body.scrollLeft,
-              scrollTop = window.pageYOffset || docElement.scrollTop || body.scrollTop,
-
-              top = legendHeaderBounds.top + scrollTop - clientTop,
-              left = legendHeaderBounds.left + scrollLeft - clientLeft;
-
-          legend.style('left', left)
-              .style('top', top + legendHeaderBounds.height + 5)
-              .style('display','block')
-              .style('visibility', 'visible');
-
-          drawLegendFn(legend.style('width', legendW+'px'));
+          if(stickyLegend) return;
+          drawHoverLegendFn(legend);
         })
         .on('mouseout', function() {
+          if(stickyLegend) return;
           legend.selectAll('*').remove();
           legend.style('display','none')
                 .style('visibility','hidden');
         });
       }
       if(drawSortingMenu) drawSortingMenu();
+
+
+      function drawHoverLegendFn(legend) {
+        // make sure the width of the legend is less than the window size
+        var legendW = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        legendW = legendW - 20 - 20; // - 20 for page space, -20 for div padding
+        legendW = legendW < style.width - 20 - 20 ? legendW : style.width - 20 - 20;
+
+        var body = document.body,
+            docElement = document.documentElement,
+            legendHeaderBounds = legendHoverHeader.node().getBoundingClientRect(),
+
+            clientTop = docElement.clientTop || body.clientTop || 0,
+            clientLeft = docElement.clientLeft || body.clientLeft || 0,
+            scrollLeft = window.pageXOffset || docElement.scrollLeft || body.scrollLeft,
+            scrollTop = window.pageYOffset || docElement.scrollTop || body.scrollTop,
+
+            top = legendHeaderBounds.top + scrollTop - clientTop,
+            left = legendHeaderBounds.left + scrollLeft - clientLeft;
+
+        legend.style('left', left)
+            .style('top', top + legendHeaderBounds.height + 5)
+            .style('display','block')
+            .style('visibility', 'visible');
+
+        legend.append('span').text('X')
+            .style('color', '#aaa')
+            .style('cursor', 'pointer')
+            .style('float', 'right')
+            .style('font-family', style.fontFamily)
+            .on('click', function() {
+              stickyLegend = false;
+              legend.selectAll('*').remove();
+              legend.style('display', 'none')
+                  .style('visibility', 'hidden');
+            });
+
+        drawLegendFn(legend.style('width', legendW+'px'));
+      }
 
 
       // Legend should be a DIV d3 selection
