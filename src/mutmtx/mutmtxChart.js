@@ -280,13 +280,6 @@ function mutmtxChart(style) {
       }
       if(drawSortingMenu) drawSortingMenu();
 
-      // If a dispatch is triggered for sorting a mutation matrix... do it!
-      gd3.dispatch.on('sort.mutmtx', function(d) {
-        console.log(d);
-        sortingOptionsData = d.sortingOptionsData;
-      });
-
-
       // Legend should be a DIV d3 selection
       function drawLegendFn(legend) {
         legend.style('font-size', style.fontSize + 'px')
