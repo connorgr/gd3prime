@@ -1050,7 +1050,7 @@
           y2: 0
         } ];
         var guidelinesG = svg.append("g").attr("class", "gd3heatmapGuidlines"), guidelines = guidelinesG.selectAll("line").data(guidelineData).enter().append("line").style("stroke", "#000").style("stroke-width", 1);
-        heatmapCells.on("mouseover", function() {
+        heatmapCells.on("mouseover", function(cell) {
           var xOffset = +heatmap.attr("transform").replace(")", "").replace("translate(", "").split(",")[0];
           var thisEl = d3.select(this), h = +thisEl.attr("height"), w = +thisEl.attr("width"), x = +thisEl.attr("x") + xOffset, y = +thisEl.attr("y");
           var visibleHeight = +heatmap.node().getBBox().height, visibleWidth = +heatmap.node().getBBox().width + xOffset;
@@ -1061,9 +1061,18 @@
             if (i == 2) line.attr("x1", x).attr("x2", x).attr("y1", 0).attr("y2", visibleHeight);
             if (i == 3) line.attr("x1", x + w).attr("x2", x + w).attr("y1", 0).attr("y2", visibleHeight);
           });
+          if (renderLegend) {
+            if (cell.value) {
+              var lineLoc = legendScale(cell.value);
+              legendRefLine.attr("x1", lineLoc).attr("x2", lineLoc).style("opacity", 1);
+            } else {
+              legendRefLine.style("opacity", 0);
+            }
+          }
           thisEl.style("stroke", "#000").style("stroke-width", 1);
         }).on("mouseout", function() {
           guidelines.attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", 0);
+          if (renderLegend) legendRefLine.style("opacity", 0);
           d3.select(this).style("stroke", "none");
         });
         var legendG = svg.append("g");
@@ -1153,6 +1162,7 @@
             });
           });
         }
+        var legendScale, legendRefLine;
         function renderLegendFn() {
           var heatmapTranslate = heatmap.attr("transform") || "translate(0,0)", xOffset = +heatmapTranslate.replace(")", "").replace("translate(", "").split(",")[0], yOffset = heatmap.node().getBBox().height + style.annotationCategorySpacing;
           if (!xOffset) xOffset = 0;
@@ -1168,6 +1178,8 @@
           legendG.append("text").attr("text-anchor", "middle").attr("x", 0).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.minCellValue);
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.maxCellValue);
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth / 2).attr("y", textY + style.annotationLabelFontSize + 2).style("font-size", style.annotationLabelFontSize).text(data.name);
+          legendScale = d3.scale.linear().domain([ data.minCellValue, data.maxCellValue ]).range([ 0, style.colorScaleWidth ]);
+          legendRefLine = legendG.append("line").attr("y1", 0).attr("y2", style.colorScaleHeight).style("stroke", "black").style("stroke-width", 2);
         }
         var annotationXLabelsG;
         function renderXLabelsFn() {
