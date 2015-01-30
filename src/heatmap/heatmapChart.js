@@ -71,7 +71,7 @@ function heatmapChart(style) {
                   .style('stroke', '#000')
                   .style('stroke-width', 1);
 
-      heatmapCells.on('mouseover', function() {
+      heatmapCells.on('mouseover', function(cell) {
         var xOffset = +heatmap.attr('transform').replace(')','').replace('translate(','').split(',')[0];
         var thisEl = d3.select(this),
             h = +thisEl.attr('height'),
@@ -88,8 +88,21 @@ function heatmapChart(style) {
           if(i == 1) line.attr('x1',0).attr('x2',style.width).attr('y1',y+h).attr('y2',y+h);
           if(i == 2) line.attr('x1',x).attr('x2',x).attr('y1',0).attr('y2',visibleHeight);
           if(i == 3) line.attr('x1',x+w).attr('x2',x+w).attr('y1',0).attr('y2',visibleHeight);
+
         });
 
+        // Update the legend reference line's position, hiding it
+        // if the cell has no value
+        if (renderLegend){
+          if (cell.value){
+            var lineLoc = legendScale(cell.value);
+            legendRefLine.attr('x1', lineLoc)
+              .attr('x2', lineLoc)
+              .style('opacity', 1);
+          } else {
+            legendRefLine.style('opacity', 0);
+          }
+        }
         thisEl.style('stroke', '#000').style('stroke-width', 1);
       }).on('mouseout', function() {
         guidelines.attr('x1',0).attr('x2',0).attr('y1',0).attr('y2',0);
@@ -234,6 +247,7 @@ function heatmapChart(style) {
         });
       }
 
+      var legendScale, legendRefLine;
       function renderLegendFn() {
         var heatmapTranslate = heatmap.attr('transform') || 'translate(0,0)',
             xOffset = +heatmapTranslate.replace(')','').replace('translate(','').split(',')[0],
@@ -294,6 +308,18 @@ function heatmapChart(style) {
             .attr('y', textY + style.annotationLabelFontSize+2)
             .style('font-size', style.annotationLabelFontSize)
             .text(data.name);
+
+        // Add a legend reference line
+        legendScale = d3.scale.linear()
+          .domain([data.minCellValue, data.maxCellValue])
+          .range([0, style.colorScaleWidth]);
+
+        legendRefLine = legendG.append('line')
+            .attr('y1', 0)
+            .attr('y2',style.colorScaleHeight)
+            .style('stroke','black')
+            .style('stroke-width', 2);
+
       }
 
       var annotationXLabelsG;
