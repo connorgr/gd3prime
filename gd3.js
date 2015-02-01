@@ -137,7 +137,14 @@
       segJSON.sort(function(a, b) {
         if (a.dataset != b.dataset) return d3.ascending(a.dataset, b.dataset); else return d3.ascending(a.end - a.start, b.end - b.start);
       });
+      var ampIndex = 0, delIndex = 0;
+      segJSON.forEach(function(d) {
+        if (d.ty == "amp") d.index = ampIndex++;
+        if (d.ty == "del") d.index = delIndex++;
+      });
       var d = {
+        numAmps: ampIndex,
+        numDels: delIndex,
         genes: geneJSON,
         sampleTypes: sampleTypes,
         samplesToTypes: samplesToTypes,
@@ -145,7 +152,7 @@
         segmentDomain: [ minSegXLoc, maxSegXLoc ]
       };
       d.get = function(arg) {
-        if (arg == "genes") return d.genes; else if (arg == "sampleTypes") return d.sampleTypes; else if (arg == "samplesToTypes") return d.samplesToTypes; else if (arg == "segments") return d.segments; else if (arg == "segmentDomain") return d.segmentDomain; else return undefined;
+        if (arg == "genes") return d.genes; else if (arg == "sampleTypes") return d.sampleTypes; else if (arg == "samplesToTypes") return d.samplesToTypes; else if (arg == "segments") return d.segments; else if (arg == "amps") return d.amps; else if (arg == "dels") return d.dels; else if (arg == "segmentDomain") return d.segmentDomain; else return undefined;
       };
       return d;
     }
@@ -156,7 +163,7 @@
     function chart(selection) {
       selection.each(function(data) {
         data = cnaData(data);
-        var height = style.height, width = style.width;
+        var genomeBarHeight = style.genomeBarHeight, ampAreaHeight = data.numAmps * style.horizontalBarSpacing, delAreaHeight = data.numDels * style.horizontalBarSpacing, height = style.margin.top + style.margin.bottom + genomeBarHeight + delAreaHeight + ampAreaHeight, width = style.width;
         var d3color = d3.scale.category20(), segmentTypeToColor = {};
         for (var i = 0; i < data.get("sampleTypes").length; i++) {
           segmentTypeToColor[data.get("sampleTypes")[i]] = d3color(i);
@@ -167,25 +174,35 @@
         });
         var svgActual = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width);
         var svg = svgActual.append("g");
-        var bgMask = svg.append("rect").attr("width", width).style("fill", "#fff");
+        var bgMasks = svg.selectAll(".cna-bg").data([ {
+          y: 0,
+          height: ampAreaHeight
+        }, {
+          y: height - delAreaHeight,
+          height: delAreaHeight
+        } ]).enter().append("rect").attr("class", "cna-bg").attr("width", width).attr("height", function(d) {
+          return d.height;
+        }).attr("y", function(d) {
+          return d.y;
+        }).style("fill", style.backgroundColor);
         var start = d3.min(data.segmentDomain), stop = d3.max(data.segmentDomain);
         var x = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
         var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5).tickSize(0).tickPadding(1.25);
-        var normalize = d3.scale.linear().domain([ start, stop ]).range([ 0, width ]);
         var zoom = d3.behavior.zoom().x(x).scaleExtent([ 1, 100 ]).on("zoom", function() {
           updateAllComponents();
         });
         svg.call(zoom).on("dblclick.zoom", null);
-        var genomeG = svg.append("g"), genomeBar = svg.append("rect").attr("class", "genome").attr("y", style.genomeAreaHeight / 2 - style.genomeBarHeight).attr("x", 0).attr("width", width).attr("height", style.genomeBarHeight).style("fill", "#ccc");
+        var genomeBarY = ampAreaHeight + style.margin.top;
+        var genomeBar = svg.append("rect").attr("class", "genome").attr("y", genomeBarY).attr("x", 0).attr("width", width).attr("height", style.genomeBarHeight).style("fill", "#ccc");
         var geneGroups = svg.selectAll(".genes").data(data.get("genes")).enter().append("g").attr("class", "genes"), genes = geneGroups.append("rect").attr("width", function(d) {
-          return normalize(d.end) - normalize(d.start);
-        }).attr("height", style.geneHeight).style("fill-opacity", function(d) {
+          return x(d.end) - x(d.start);
+        }).attr("height", style.genomeBarHeight + 2 * style.geneHeightOverflow).attr("y", genomeBarY - style.geneHeightOverflow).style("fill-opacity", function(d) {
           return d.selected ? 1 : .2;
         }).style("fill", function(d) {
           return d.selected ? style.geneSelectedColor : style.geneColor;
         }).attr("id", function(d, i) {
           return "gene-" + i;
-        }), geneLabels = geneGroups.append("text").attr("y", style.genomeAreaHeight / 2 - 2).attr("text-anchor", "middle").style("fill-opacity", function(d) {
+        }), geneLabels = geneGroups.append("text").attr("y", genomeBarY + style.genomeBarHeight / 2 + 5).attr("text-anchor", "middle").style("fill-opacity", function(d) {
           return d.selected ? 1 : 0;
         }).style("fill", "#000").style("font-family", style.fontFamily).style("font-size", style.fontSize).text(function(d) {
           return d.label;
@@ -213,20 +230,20 @@
             d3.select(this).select("text").style("fill-opacity", 1);
           }
         });
-        var segmentsG = svg.append("g").attr("class", "cnaSegmentsGroup").attr("transform", "translate(0," + style.genomeAreaHeight + ")"), segments = segmentsG.selectAll(".segments").data(data.get("segments")).enter().append("g").attr("class", "intervals");
+        var segmentsG = svg.append("g"), segments = segmentsG.selectAll(".segments").data(data.get("segments")).enter().append("g").attr("class", "intervals");
         var minSegmentX = d3.min(data.get("segmentDomain")), maxSegmentX = d3.max(data.get("segmentDomain"));
         segs = segments.append("rect").attr("fill", function(d) {
           return segmentTypeToColor[samplesToTypes[d.sample]];
         }).attr("width", function(d) {
-          return normalize(d.end, minSegmentX, maxSegmentX) - normalize(d.start, minSegmentX, maxSegmentX);
+          return x(d.end, minSegmentX, maxSegmentX) - x(d.start, minSegmentX, maxSegmentX);
         }).attr("height", style.horizontalBarHeight).attr("id", function(d, i) {
           return "interval-" + i;
         });
-        var verticalBar = svg.selectAll(".vert-bar").data(data.get("genes").filter(function(d) {
+        var verticalBars = svg.selectAll(".vert-bar").data(data.get("genes").filter(function(d) {
           return d.selected;
-        })).enter().append("rect").attr("y", style.geneHeight).attr("width", function(d) {
-          return normalize(d.end) - normalize(d.start);
-        }).style("fill", style.geneSelectedColor).style("fill-opacity", .5);
+        })).enter().append("rect").attr("y", 0).attr("width", function(d) {
+          return x(d.end) - x(d.start);
+        }).attr("height", height).style("fill", style.geneSelectedColor).style("fill-opacity", .5);
         updateGeneBar();
         updateSegments();
         function updateAllComponents() {
@@ -234,32 +251,41 @@
           tx = Math.min(tx, 0);
           zoom.translate([ tx, ty ]);
           var curMin = d3.min(x.domain()), curMax = d3.max(x.domain());
-          normalize.domain([ curMin, curMax ]);
+          x.domain([ curMin, curMax ]);
           updateGeneBar();
           updateSegments();
         }
         function updateGeneBar() {
-          verticalBar.attr("x", function(d) {
-            return normalize(d.start);
+          verticalBars.attr("x", function(d) {
+            return x(d.start);
           }).attr("width", function(d) {
-            return normalize(d.end) - normalize(d.start);
+            return x(d.end) - x(d.start);
           });
           genes.attr("transform", function(d, i) {
-            return "translate(" + normalize(d.start) + ",0)";
+            return "translate(" + x(d.start) + ",0)";
           });
           genes.attr("width", function(d, i) {
-            return normalize(d.end) - normalize(d.start);
+            return x(d.end) - x(d.start);
           });
           geneLabels.attr("transform", function(d, i) {
-            var x1 = d3.max([ d.start, d3.max(normalize.domain()) ]), x2 = d3.min([ d.end, d3.min(normalize.domain()) ]);
-            return "translate(" + normalize(d.start + (d.end - d.start) / 2) + ",0)";
+            var x1 = d3.max([ d.start, d3.max(x.domain()) ]), x2 = d3.min([ d.end, d3.min(x.domain()) ]);
+            return "translate(" + x(d.start + (d.end - d.start) / 2) + ",0)";
           });
+        }
+        function segY(d) {
+          if (d.ty == "amp") {
+            return ampAreaHeight - style.horizontalBarHeight - style.horizontalBarSpacing * d.index;
+          } else if (d.ty == "del") {
+            return height - delAreaHeight + style.horizontalBarSpacing * d.index;
+          } else {
+            console.log("Segment of unknown type: " + d.ty);
+          }
         }
         function updateSegments() {
           segs.attr("transform", function(d, i) {
-            return "translate(" + normalize(d.start) + "," + style.horizontalBarSpacing * i + ")";
+            return "translate(" + x(d.start) + "," + segY(d) + ")";
           }).attr("width", function(d, i) {
-            return normalize(d.end) - normalize(d.start);
+            return x(d.end) - x(d.start);
           });
           var activeIntervals = segments.filter(function(d) {
             return sampleTypesToInclude[samplesToTypes[d.sample]];
@@ -268,17 +294,12 @@
             return !sampleTypesToInclude[samplesToTypes[d.sample]];
           }).style("opacity", 0);
         }
-        svgActual.attr("height", function() {
-          height = svg.node().getBBox().height + style.horizontalBarHeight;
-          bgMask.attr("height", height);
-          verticalBar.attr("height", height - style.geneHeight);
-          return height;
-        });
         segs.attr({
           "stroke-width": 1,
           stroke: "black",
           "stroke-opacity": 0
         }).on("mouseover", function(d) {
+          console.log(d.ty);
           gd3.dispatch.sample({
             sample: d.sample,
             opacity: 1
@@ -305,15 +326,18 @@
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
       fontSize: style.fontSize || "12px",
       geneColor: style.geneColor || "#aaa",
-      geneHeight: style.geneHeight || 24,
+      backgroundColor: style.backgroundColor || "#f6f6f6",
+      geneHeightOverflow: style.geneHeightOverflow || 5,
       geneHighlightColor: style.geneHighlightColor || "#f00",
       geneSelectedColor: style.geneSelectedColor || "#f00",
-      genomeAreaHeight: style.genomeAreaHeight || 40,
       genomeBarHeight: style.genomeBarHeight || 14,
-      height: style.height || 200,
       horizontalBarHeight: style.horizontalBarHeight || 5,
       horizontalBarSpacing: style.horizontalBarSpacing || 6,
-      width: style.width || 500
+      width: style.width || 500,
+      margin: style.margin || {
+        top: 10,
+        bottom: 10
+      }
     };
   }
   gd3.cna = function(params) {

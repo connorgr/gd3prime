@@ -7,7 +7,10 @@ function cnaChart(style) {
 
       // Determine the height
       //var height = (intervalH * data.segments.length) + initIntervalH + rangeLegendOffset - 10;
-      var height = style.height,
+      var genomeBarHeight = style.genomeBarHeight,
+          ampAreaHeight = data.numAmps * style.horizontalBarSpacing,
+          delAreaHeight = data.numDels * style.horizontalBarSpacing,
+          height = style.margin.top + style.margin.bottom + genomeBarHeight + delAreaHeight + ampAreaHeight,
           width = style.width;
 
       // Determine coloration
@@ -30,12 +33,20 @@ function cnaChart(style) {
             .append('svg')
               .attr('height', height)
               .attr('width', width);
+
       var svg = svgActual.append('g');
 
       // Needed for zooming and panning to work
-      var bgMask = svg.append('rect')
+      var bgMasks = svg.selectAll(".cna-bg")
+              .data([{y: 0, height: ampAreaHeight},
+                     {y: height-delAreaHeight, height: delAreaHeight}
+                    ]).enter()
+              .append('rect')
+              .attr("class", "cna-bg")
               .attr('width', width)
-              .style('fill', '#fff');
+              .attr("height", function(d){ return d.height; })
+              .attr("y", function(d){ return d.y; })
+              .style('fill', style.backgroundColor);
 
       // Set up scales
       var start = d3.min(data.segmentDomain),
@@ -52,10 +63,6 @@ function cnaChart(style) {
           .tickSize(0)
           .tickPadding(1.25);
 
-      var normalize = d3.scale.linear()
-        .domain([start, stop])
-        .range([0, width]);
-
       // Set up the zoom
       var zoom = d3.behavior.zoom()
         .x(x)
@@ -63,17 +70,15 @@ function cnaChart(style) {
         .on('zoom', function(){ updateAllComponents(); });
       svg.call(zoom).on('dblclick.zoom', null)
 
-
       //////////////////////////////////////////////////////////////////////////
       // BEGIN RENDERING CODE
 
       //////////////////////////////////////////////////////////////////////////
       // Draw the genome
-
-      var genomeG = svg.append('g'),
-          genomeBar = svg.append("rect")
+      var genomeBarY = ampAreaHeight + style.margin.top;
+      var genomeBar = svg.append("rect")
               .attr("class", "genome")
-              .attr("y", style.genomeAreaHeight/2 - style.genomeBarHeight)
+              .attr("y", genomeBarY)
               .attr("x", 0)
               .attr("width", width)
               .attr("height", style.genomeBarHeight)
@@ -84,13 +89,14 @@ function cnaChart(style) {
               .append("g")
               .attr("class", "genes"),
           genes = geneGroups.append('rect')
-              .attr('width', function(d){ return normalize(d.end) - normalize(d.start); })
-              .attr('height', style.geneHeight)
+              .attr('width', function(d){ return x(d.end) - x(d.start); })
+              .attr('height', style.genomeBarHeight + 2*style.geneHeightOverflow)
+              .attr('y', genomeBarY - style.geneHeightOverflow)
               .style('fill-opacity', function(d) {return d.selected ? 1 : 0.2;})
               .style('fill', function (d) {return d.selected ? style.geneSelectedColor : style.geneColor;})
               .attr('id', function (d, i) { return "gene-" + i; }),
           geneLabels = geneGroups.append('text')
-              .attr('y', style.genomeAreaHeight/2 - 2)
+              .attr('y', genomeBarY + style.genomeBarHeight/2 + 5)
               .attr('text-anchor', 'middle')
               .style('fill-opacity', function (d) {return d.selected ? 1 : 0})
               .style('fill', '#000')
@@ -98,13 +104,13 @@ function cnaChart(style) {
               .style('font-size', style.fontSize)
               .text(function(d){  return d.label; });
 
-
         geneGroups.on('mouseover', function(d){
           if (!d.fixed){
             d3.select(this).select('rect').style('fill', style.geneHighlightColor);
             d3.select(this).select("text").style("fill-opacity", 1)
           }
         });
+
         geneGroups.on('mouseout', function(d, i){
           if (!d.fixed){
             // Reset the gene block color
@@ -129,8 +135,7 @@ function cnaChart(style) {
 
       //////////////////////////////////////////////////////////////////////////
       // Draw the segments
-      var segmentsG = svg.append('g').attr('class', 'cnaSegmentsGroup')
-              .attr('transform', 'translate(0,'+style.genomeAreaHeight+')'),
+      var segmentsG = svg.append('g'),
           segments = segmentsG.selectAll('.segments')
               .data(data.get('segments'))
               .enter().append('g')
@@ -142,7 +147,7 @@ function cnaChart(style) {
       segs = segments.append('rect')
           .attr('fill', function(d){ return segmentTypeToColor[samplesToTypes[d.sample]] })
           .attr('width', function(d) {
-            return normalize(d.end, minSegmentX, maxSegmentX) - normalize(d.start, minSegmentX, maxSegmentX);
+            return x(d.end, minSegmentX, maxSegmentX) - x(d.start, minSegmentX, maxSegmentX);
           })
           .attr('height', style.horizontalBarHeight)
           .attr('id', function (d, i) { return "interval-" + i; })
@@ -150,13 +155,14 @@ function cnaChart(style) {
       //segments.call(gd3.annotation());
 
       // Add a vertical bar that spans the target gene
-      var verticalBar = svg.selectAll('.vert-bar')
-          .data(data.get('genes').filter(function(d){ return d.selected; })).enter()
-          .append("rect")
-          .attr("y", style.geneHeight)
-          .attr("width", function(d){ return normalize(d.end) - normalize(d.start); })
-          .style("fill", style.geneSelectedColor)
-          .style("fill-opacity", 0.5);
+      var verticalBars = svg.selectAll('.vert-bar')
+              .data(data.get('genes').filter(function(d){ return d.selected; })).enter()
+              .append("rect")
+              .attr("y", 0)
+              .attr("width", function(d){ return x(d.end) - x(d.start); })
+              .attr("height", height)
+              .style("fill", style.geneSelectedColor)
+              .style("fill-opacity", 0.5);
 
       updateGeneBar();
       updateSegments();
@@ -175,7 +181,7 @@ function cnaChart(style) {
         var curMin = d3.min( x.domain() ),
           curMax = d3.max( x.domain() );
 
-        normalize.domain([curMin, curMax]);
+        x.domain([curMin, curMax]);
 
         updateGeneBar();
         updateSegments();
@@ -184,32 +190,41 @@ function cnaChart(style) {
       // Updates the genome bar showing domains and also the target gene line
       function updateGeneBar() {
         // Move the vertical bar around the target genes
-        verticalBar.attr("x", function(d){ return normalize(d.start); })
-           .attr("width", function(d){ return normalize(d.end) - normalize(d.start); });
+        verticalBars.attr("x", function(d){ return x(d.start); })
+           .attr("width", function(d){ return x(d.end) - x(d.start); });
 
         // Move the genes into place
         genes.attr('transform', function(d, i){
-          return 'translate(' + normalize(d.start) + ',0)';
+          return 'translate(' + x(d.start) + ',0)';
         });
 
         // Scale the gene's blocks' width
-        genes.attr('width', function(d, i){ return normalize(d.end) - normalize(d.start); });
+        genes.attr('width', function(d, i){ return x(d.end) - x(d.start); });
 
         // Move the geneLabels
         geneLabels.attr('transform', function(d, i){
-          var x1 = d3.max( [d.start, d3.max(normalize.domain())] ),
-              x2 = d3.min( [d.end, d3.min(normalize.domain())] );
-          return 'translate(' + normalize(d.start + (d.end-d.start)/2) + ',0)';
+          var x1 = d3.max( [d.start, d3.max(x.domain())] ),
+              x2 = d3.min( [d.end, d3.min(x.domain())] );
+          return 'translate(' + x(d.start + (d.end-d.start)/2) + ',0)';
         });
       }
 
       // Updates the position of horizontal bars in the visualization
+      function segY(d){
+        if (d.ty == "amp"){
+          return ampAreaHeight - style.horizontalBarHeight - style.horizontalBarSpacing * d.index;
+        } else if (d.ty == "del") {
+          return (height-delAreaHeight) + style.horizontalBarSpacing * d.index;
+        } else {
+          console.log("Segment of unknown type: " + d.ty);
+        }
+      }
       function updateSegments() {
         // Move the intervals into place
         segs.attr("transform", function(d, i){
-          return "translate(" + normalize(d.start) + "," + style.horizontalBarSpacing*i + ")"
+          return "translate(" + x(d.start) + "," + segY(d) + ")"
         })
-        .attr("width", function(d, i){ return normalize(d.end) - normalize(d.start); })
+        .attr("width", function(d, i){ return x(d.end) - x(d.start); })
 
         // Fade in/out intervals that are from datasets not currently active
         var activeIntervals = segments.filter(function(d){ return sampleTypesToInclude[samplesToTypes[d.sample]]; })
@@ -219,16 +234,10 @@ function cnaChart(style) {
 
       }
 
-    svgActual.attr('height', function() {
-      height = svg.node().getBBox().height + style.horizontalBarHeight;
-      bgMask.attr('height', height);
-      verticalBar.attr('height', height - style.geneHeight);
-      return height;
-    });
-
       // Set up dispatch
       segs.attr({"stroke-width": 1, "stroke": "black", "stroke-opacity": 0})
         .on("mouseover", function(d){
+          console.log(d.ty)
           gd3.dispatch.sample({ sample: d.sample, opacity: 1});
         }).on("mouseout", function(d){
           gd3.dispatch.sample({ sample: d.sample, opacity: 0});
