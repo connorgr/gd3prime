@@ -264,7 +264,6 @@ function mutmtxChart(style) {
       });
 
       gd3.dispatch.on('filterType.mutmtx', function(d) {
-        console.log('hi');
         if(!d || !d.types) return;
 
         typesToFilter = d.types.filter(function(s) {
@@ -272,8 +271,6 @@ function mutmtxChart(style) {
         });
 
         data.hiddenColumns.byType = {};
-
-        console.log(data.maps.columnIdToTypes)
 
         Object.keys(data.maps.columnIdToTypes).forEach(function(cid) {
           var types = data.maps.columnIdToTypes[cid];
@@ -284,7 +281,6 @@ function mutmtxChart(style) {
           });
         });
 
-        console.log(data.hiddenColumns.byType)
         data.reorderColumns(sortingOptionsData);
         rerenderMutationMatrix();
       })
