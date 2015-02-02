@@ -2,6 +2,10 @@ function mutmtxData(inputData) {
   var data = {
     datasets: [],
     glyphs: ['square', 'triangle-up', 'cross', 'circle', 'diamond', 'triangle-down'],
+    hiddenColumns: {
+      byCategory: [],
+      byType: []
+    },
     ids: {
       columns: [],
       rows: []
@@ -42,6 +46,17 @@ function mutmtxData(inputData) {
   }
 
   data.reorderColumns = function(ordering) {
+    // Sort by whether or not the column is visible (i.e., has been filtered)
+    function sortByVisibility(c1, c2) {
+      var c1Hidden = data.hiddenColumns.byCategory[c1] || data.hiddenColumns.byType[c1] ? true : false,
+          c2Hidden = data.hiddenColumns.byCategory[c2] || data.hiddenColumns.byType[c2] ? true : false;
+
+      if (c1Hidden == c2Hidden) return 0;
+      else if (c1Hidden) return 1;
+      else if (c2Hidden) return -1;
+      else return 0;
+    }
+
     // Sort by the column's most common cell type
     function sortByCellType(c1,c2) {
       var c1Type = data.maps.columnIdToTypes[c1][0],
@@ -76,7 +91,7 @@ function mutmtxData(inputData) {
     // Sort the data based on input, or if none, on default ordering
     var sortFns;
     if(ordering) {
-      sortFns = [];
+      sortFns = [sortByVisibility];
       ordering.forEach(function(d) {
         if(d == 'First active row') sortFns.push(sortByFirstActiveRow);
         if(d == 'Column category') sortFns.push(sortByColumnCategory);
@@ -85,7 +100,7 @@ function mutmtxData(inputData) {
       });
     }
     else {
-      sortFns = [sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByCellType, sortByName];
+      sortFns = [sortByVisibility, sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByCellType, sortByName];
     }
 
     data.ids.columns.sort(function(c1,c2) {

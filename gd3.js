@@ -1340,6 +1340,10 @@
     var data = {
       datasets: [],
       glyphs: [ "square", "triangle-up", "cross", "circle", "diamond", "triangle-down" ],
+      hiddenColumns: {
+        byCategory: [],
+        byType: []
+      },
       ids: {
         columns: [],
         rows: []
@@ -1372,6 +1376,10 @@
       if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "ids") return data.ids; else if (attr === "labels") return data.labels;
     };
     data.reorderColumns = function(ordering) {
+      function sortByVisibility(c1, c2) {
+        var c1Hidden = data.hiddenColumns.byCategory[c1] || data.hiddenColumns.byType[c1] ? true : false, c2Hidden = data.hiddenColumns.byCategory[c2] || data.hiddenColumns.byType[c2] ? true : false;
+        if (c1Hidden == c2Hidden) return 0; else if (c1Hidden) return 1; else if (c2Hidden) return -1; else return 0;
+      }
       function sortByCellType(c1, c2) {
         var c1Type = data.maps.columnIdToTypes[c1][0], c2Type = data.maps.columnIdToTypes[c2][0];
         return d3.ascending(c1Type, c2Type);
@@ -1393,7 +1401,7 @@
       }
       var sortFns;
       if (ordering) {
-        sortFns = [];
+        sortFns = [ sortByVisibility ];
         ordering.forEach(function(d) {
           if (d == "First active row") sortFns.push(sortByFirstActiveRow);
           if (d == "Column category") sortFns.push(sortByColumnCategory);
@@ -1401,7 +1409,7 @@
           if (d == "Name") sortFns.push(sortByName);
         });
       } else {
-        sortFns = [ sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByCellType, sortByName ];
+        sortFns = [ sortByVisibility, sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByCellType, sortByName ];
       }
       data.ids.columns.sort(function(c1, c2) {
         var sortResult;
@@ -1611,13 +1619,34 @@
           categoriesToFilter = d.categories.filter(function(s) {
             return data.datasets.indexOf(s) > -1;
           });
+          data.hiddenColumns.byCategory = {};
+          Object.keys(data.maps.columnIdToCategory).forEach(function(cid) {
+            var category = data.maps.columnIdToCategory[cid];
+            if (categoriesToFilter.indexOf(category) > -1) {
+              data.hiddenColumns.byCategory[cid] = category;
+            }
+          });
+          data.reorderColumns(sortingOptionsData);
           rerenderMutationMatrix();
         });
         gd3.dispatch.on("filterType.mutmtx", function(d) {
+          console.log("hi");
           if (!d || !d.types) return;
           typesToFilter = d.types.filter(function(s) {
             return data.types.indexOf(s) > -1;
           });
+          data.hiddenColumns.byType = {};
+          console.log(data.maps.columnIdToTypes);
+          Object.keys(data.maps.columnIdToTypes).forEach(function(cid) {
+            var types = data.maps.columnIdToTypes[cid];
+            types.forEach(function(type) {
+              if (typesToFilter.indexOf(type) > -1) {
+                data.hiddenColumns.byType[cid] = type;
+              }
+            });
+          });
+          console.log(data.hiddenColumns.byType);
+          data.reorderColumns(sortingOptionsData);
           rerenderMutationMatrix();
         });
         if (drawLegend) drawLegendFn(selection.append("div").style("width", style.width));
@@ -1663,18 +1692,16 @@
           categories = Object.keys(categories).sort();
           var categoryLegendKeys = columnCategories.selectAll("div").data(categories).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
             return i == categories.length - 1 ? "0px" : "10px";
-          }).on("click", function(d) {
-            var filtering = categoriesToFilter;
+          }).on("click", function(d, dispatchFn) {
             if (categoriesToFilter.indexOf(d) > -1) {
-              filtering.splice(filtering.indexOf(d), 1);
+              categoriesToFilter.splice(categoriesToFilter.indexOf(d), 1);
               d3.select(this).style("opacity", 1);
             } else {
-              filtering.push(d);
+              categoriesToFilter.push(d);
               d3.select(this).style("opacity", .2);
             }
-            console.log(filtering);
             gd3.dispatch.filterCategory({
-              categories: filtering
+              categories: categoriesToFilter
             });
           });
           categoryLegendKeys.append("div").style("background", function(d) {
@@ -1693,18 +1720,16 @@
             var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
             var cellTypeLegendKeys = cellTypes.selectAll("div").data(cellTypesData).enter().append("div").style("cursor", "pointer").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
               return i == cellTypesData.length - 1 ? "0px" : "10px";
-            }).on("click", function(d) {
-              var filtering = typesToFilter;
+            }).on("click", function(d, dispatchFn) {
               if (typesToFilter.indexOf(d) > -1) {
-                filtering.splice(filtering.indexOf(d), 1);
+                typesToFilter.splice(typesToFilter.indexOf(d), 1);
                 d3.select(this).style("opacity", 1);
               } else {
-                filtering.push(d);
+                typesToFilter.push(d);
                 d3.select(this).style("opacity", .2);
               }
-              console.log(filtering);
               gd3.dispatch.filterType({
-                types: filtering
+                types: typesToFilter
               });
             });
             cellTypeLegendKeys.append("svg").attr("height", style.fontSize + "px").attr("width", style.fontSize + "px").style("background", d3color(0)).style("margin-right", "2px").each(function(type) {
