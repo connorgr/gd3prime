@@ -241,15 +241,41 @@ function mutmtxChart(style) {
         categoriesToFilter = d.categories.filter(function(s) {
           return data.datasets.indexOf(s) > -1;
         });
+
+        data.hiddenColumns.byCategory = {};
+
+        Object.keys(data.maps.columnIdToCategory).forEach(function(cid) {
+          var category = data.maps.columnIdToCategory[cid];
+          if (categoriesToFilter.indexOf(category) > -1) {
+            data.hiddenColumns.byCategory[cid] = category;
+          }
+        });
+
+        data.reorderColumns(sortingOptionsData);
         rerenderMutationMatrix();
       });
 
       gd3.dispatch.on('filterType.mutmtx', function(d) {
+        console.log('hi');
         if(!d || !d.types) return;
 
         typesToFilter = d.types.filter(function(s) {
           return data.types.indexOf(s) > -1;
         });
+
+        data.hiddenColumns.byType = {};
+
+        console.log(data.maps.columnIdToTypes)
+
+        Object.keys(data.maps.columnIdToTypes).forEach(function(cid) {
+          var type = data.maps.columnIdToTypes[cid][0];
+          if(typesToFilter.indexOf(type) > -1) {
+            data.hiddenColumns.byType[cid] = type;
+          }
+        });
+
+        console.log(data.hiddenColumns.byType)
+        data.reorderColumns(sortingOptionsData);
         rerenderMutationMatrix();
       })
 
@@ -331,18 +357,6 @@ function mutmtxChart(style) {
 
       // Legend should be a DIV d3 selection
       function drawLegendFn(legend) {
-        function filterCategoryEvent(d) {
-          var filtering = categoriesToFilter;
-          if(categoriesToFilter.indexOf(d) > -1) {
-            filtering.splice(filtering.indexOf(d), 1);
-            d3.select(this).style('opacity', 1);
-          } else {
-            filtering.push(d);
-            d3.select(this).style('opacity', 0.2);
-          }
-          console.log(filtering);
-          gd3.dispatch.filterCategory( { categories: filtering });
-        }
         legend.style('font-size', style.fontSize + 'px')
         var columnCategories = legend.append('div')
                 .style('min-width', legend.style('width'))
@@ -365,7 +379,16 @@ function mutmtxChart(style) {
                 .style('margin-right', function(d,i) {
                     return i == categories.length - 1 ? '0px' : '10px';
                 })
-                .on('click', filterCategoryEvent);
+                .on('click', function (d, dispatchFn) {
+                    if(categoriesToFilter.indexOf(d) > -1) {
+                      categoriesToFilter.splice(categoriesToFilter.indexOf(d), 1);
+                      d3.select(this).style('opacity', 1);
+                    } else {
+                      categoriesToFilter.push(d);
+                      d3.select(this).style('opacity', 0.2);
+                    }
+                    gd3.dispatch.filterCategory( { categories: categoriesToFilter });
+                });
         // Append the color blocks
         categoryLegendKeys.append('div')
             .style('background', function(d) { return colCategoryToColor[d]; })
@@ -399,7 +422,16 @@ function mutmtxChart(style) {
                   .style('margin-right', function(d,i) {
                       return i == cellTypesData.length - 1 ? '0px' : '10px';
                   })
-                  .on('click', filterCategoryEvent);
+                  .on('click', function (d, dispatchFn) {
+                      if(typesToFilter.indexOf(d) > -1) {
+                        typesToFilter.splice(typesToFilter.indexOf(d), 1);
+                        d3.select(this).style('opacity', 1);
+                      } else {
+                        typesToFilter.push(d);
+                        d3.select(this).style('opacity', 0.2);
+                      }
+                      gd3.dispatch.filterType( { types: typesToFilter });
+                  });
 
           cellTypeLegendKeys.append('svg')
               .attr('height', style.fontSize + 'px')
