@@ -106,7 +106,7 @@ a:visited {
             d3.json('testData/example-cna.json', function(data) {
               body.append("h3").text("CNA browser");
               body.append("div")
-                .datum(data.ARID1A)
+                .datum(data.PDGFRA)
                 .call(gd3.cna());
             });
         });

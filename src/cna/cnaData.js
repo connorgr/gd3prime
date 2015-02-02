@@ -71,13 +71,23 @@ function cnaData(data) {
       });
     });
 
+
     // Sort the segments by cancer type and then by length
     segJSON.sort(function(a, b){
       if (a.dataset != b.dataset) return d3.ascending(a.dataset, b.dataset);
       else return d3.ascending(a.end-a.start, b.end-b.start);
     });
 
+    var ampIndex = 0,
+        delIndex = 0;
+    segJSON.forEach(function(d){
+      if (d.ty == "amp") d.index = ampIndex++;
+      if (d.ty == "del") d.index = delIndex++;
+    });
+
     var d = {
+      numAmps: ampIndex,
+      numDels: delIndex,
       genes: geneJSON,
       sampleTypes: sampleTypes,
       samplesToTypes: samplesToTypes,
@@ -90,6 +100,8 @@ function cnaData(data) {
       else if (arg == 'sampleTypes') return d.sampleTypes;
       else if (arg == 'samplesToTypes') return d.samplesToTypes;
       else if (arg == 'segments') return d.segments;
+      else if (arg == 'amps') return d.amps;
+      else if (arg == 'dels') return d.dels;
       else if (arg == 'segmentDomain') return d.segmentDomain;
       else return undefined;
     }
