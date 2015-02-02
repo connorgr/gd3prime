@@ -275,7 +275,7 @@ function heatmapChart(style) {
                 .attr('x2', '100%')
                 .attr('y2', '0%');
 
-        style.colorScale.forEach(function(c, i){
+        style.colorScale.reverse().forEach(function(c, i){
           gradient.append('svg:stop')
               .attr('offset', i*1./style.colorScale.length)
               .attr('stop-color', c)
@@ -289,7 +289,7 @@ function heatmapChart(style) {
         // append the minimum value text
         legendG.append('text')
             .attr('text-anchor', 'middle')
-            .attr('x', 0)
+            .attr('x', style.colorScaleWidth)
             .attr('y', textY)
             .style('font-size', style.annotationLabelFontSize)
             .text(data.minCellValue);
@@ -297,7 +297,7 @@ function heatmapChart(style) {
         // append the maximum value text
         legendG.append('text')
             .attr('text-anchor', 'middle')
-            .attr('x', style.colorScaleWidth)
+            .attr('x', 0)
             .attr('y', textY)
             .style('font-size', style.annotationLabelFontSize)
             .text(data.maxCellValue);
@@ -313,7 +313,7 @@ function heatmapChart(style) {
         // Add a legend reference line
         legendScale = d3.scale.linear()
             .domain([data.minCellValue, data.maxCellValue])
-            .range([0, style.colorScaleWidth]);
+            .range([style.colorScaleWidth, 0]);
 
         legendRefLine = legendG.append('line')
             .attr('y1', 0)

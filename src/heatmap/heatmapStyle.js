@@ -6,7 +6,7 @@ function heatmapStyle(style) {
     annotationLabelFontSize : style.annotationLabelFontSize || style.fontSize || 12,
     cellHeight : style.cellHeight || 14,
     cellWidth : style.cellWidth || 14,
-    colorScale : style.colorScale || ['rgb(255,255,217)','rgb(237,248,177)','rgb(199,233,180)','rgb(127,205,187)','rgb(65,182,196)','rgb(29,145,192)','rgb(34,94,168)','rgb(37,52,148)','rgb(8,29,88)'],
+    colorScale : style.colorScale || ['rgb(222,235,247)','rgb(198,219,239)','rgb(158,202,225)','rgb(107,174,214)','rgb(66,146,198)','rgb(33,113,181)','rgb(8,81,156)','rgb(8,48,107)'],
     colorScaleHeight : style.colorScaleHeight || 14,
     colorScaleWidth : style.colorScaleWidth || 200,
     fontFamily : style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
