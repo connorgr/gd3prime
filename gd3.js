@@ -1037,8 +1037,8 @@
     function chart(selection) {
       selection.each(function(data) {
         data = heatmapData(data);
-        var height = style.height, width = style.width;
-        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontFamily);
+        var width = style.width;
+        var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontFamily);
         var cells = data.cells, xs = data.xs, ys = data.ys;
         var colorDomain = d3.range(data.minCellValue, data.maxCellValue, (data.maxCellValue - data.minCellValue) / style.colorScale.length).concat([ data.maxCellValue ]), colorScale = d3.scale.linear().domain(colorDomain).range(style.colorScale).interpolate(d3.interpolateLab);
         var heatmap = svg.append("g").attr("class", "gd3heatmapCellsContainer");
@@ -1230,6 +1230,8 @@
           yLabels.attr("x", maxLabelWidth);
           heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
         }
+        var actualHeight = heatmap.node().getBBox().height + 4;
+        svg.attr("height", actualHeight);
         gd3.dispatch.on("sort.heatmap", function(d) {
           data.sortColumns(d.columnLabels);
           heatmapCells.transition().attr("x", function(d, i) {
@@ -1274,14 +1276,13 @@
       annotationCategorySpacing: style.annotationCategorySpacing || 5,
       annotationContinuousColorScale: style.annotationContinuousColorScale || [ "#f7fcb9", "#004529" ],
       annotationLabelFontSize: style.annotationLabelFontSize || style.fontSize || 12,
-      cellHeight: style.cellHeight || 14,
+      cellHeight: style.cellHeight || 20,
       cellWidth: style.cellWidth || 14,
       colorScale: style.colorScale || [ "rgb(255,255,217)", "rgb(237,248,177)", "rgb(199,233,180)", "rgb(127,205,187)", "rgb(65,182,196)", "rgb(29,145,192)", "rgb(34,94,168)", "rgb(37,52,148)", "rgb(8,29,88)" ],
       colorScaleHeight: style.colorScaleHeight || 14,
       colorScaleWidth: style.colorScaleWidth || 200,
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
-      fontSize: style.fontSize || 12,
-      height: style.height || 400,
+      fontSize: style.fontSize || 14,
       labelMargins: style.labelMargins || {
         bottom: 5,
         right: 2

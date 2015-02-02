@@ -15,7 +15,7 @@
     d3.json('testData/example-heatmap.json', function(data) {
       d3.json('testData/exampleAnnotations.json', function(adata) {
         data.annotations = adata;
-        var hStyle = {height: 260, width: 800};
+        var hStyle = {width: 800};
         d3.select('#heatmap')
             .datum(data)
             .call(gd3.heatmap({style:hStyle}));

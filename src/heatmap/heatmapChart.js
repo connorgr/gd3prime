@@ -10,15 +10,13 @@ function heatmapChart(style) {
     selection.each(function(data) {
       data = heatmapData(data);
 
-      var height = style.height,
-          width = style.width;
+      var width = style.width;
 
       var svg = d3.select(this)
           .selectAll('svg')
           .data([data])
           .enter()
             .append('svg')
-                .attr('height', height)
                 .attr('width', width)
                 .style('font-family', style.fontFamily)
                 .style('font-size', style.fontFamily);
@@ -362,6 +360,10 @@ function heatmapChart(style) {
         // move the heatmap over
         heatmap.attr('transform', 'translate(' + (maxLabelWidth+style.labelMargins.right) +',0)');
       }
+
+      // Set the height to show all the elements
+      var actualHeight = heatmap.node().getBBox().height + 4;
+      svg.attr("height", actualHeight);
 
       gd3.dispatch.on('sort.heatmap', function(d) {
         data.sortColumns(d.columnLabels);
