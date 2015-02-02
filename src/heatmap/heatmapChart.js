@@ -21,6 +21,8 @@ function heatmapChart(style) {
                 .style('font-family', style.fontFamily)
                 .style('font-size', style.fontFamily);
 
+      var svgGroup = svg.append('g');
+
       var cells = data.cells,
           xs = data.xs,
           ys = data.ys;
@@ -34,7 +36,7 @@ function heatmapChart(style) {
               .range(style.colorScale)
               .interpolate(d3.interpolateLab);
 
-      var heatmap = svg.append('g').attr('class', 'gd3heatmapCellsContainer');
+      var heatmap = svgGroup.append('g').attr('class', 'gd3heatmapCellsContainer');
 
       var heatmapCells = heatmap.append('g').attr('class', 'gd3heatmapCells').selectAll('.rect')
           .data(cells)
@@ -61,7 +63,7 @@ function heatmapChart(style) {
         {x1: 0, y1: 0, x2: 0, y2: 0}
       ];
 
-      var guidelinesG = svg.append('g').attr('class', 'gd3heatmapGuidlines'),
+      var guidelinesG = svgGroup.append('g').attr('class', 'gd3heatmapGuidlines'),
           guidelines = guidelinesG.selectAll('line')
               .data(guidelineData)
               .enter()
@@ -108,9 +110,9 @@ function heatmapChart(style) {
         d3.select(this).style('stroke', 'none');
       })
 
-      var legendG = svg.append('g');
+      var legendG = svgGroup.append('g');
 
-      yLabelsG = svg.append('g').attr('class', 'gd3heatmapYLabels');
+      yLabelsG = svgGroup.append('g').attr('class', 'gd3heatmapYLabels');
 
       if (renderYLabels) renderYLabelsFn();
       if (renderAnnotations) renderAnnotationsFn();
@@ -148,7 +150,7 @@ function heatmapChart(style) {
                 });
           }
       });
-      svg.call(zoom);
+      svgGroup.call(zoom);
 
       var annotationCellsG,
           annotationCategoryCellsG;
@@ -157,7 +159,7 @@ function heatmapChart(style) {
         var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
 
         var annotationCellsG = heatmap.append('g').attr('class', 'gd3heatmapAnnotationCells'),
-            annotationYLabelsG = svg.append('g').attr('class', 'gd3annotationYLabels');
+            annotationYLabelsG = svgGroup.append('g').attr('class', 'gd3annotationYLabels');
 
         annotationYLabelsG.attr('transform', 'translate(0,'+verticalOffset+')');
 
@@ -290,7 +292,7 @@ function heatmapChart(style) {
             .attr('x', 0)
             .attr('y', textY)
             .style('font-size', style.annotationLabelFontSize)
-            .text(data.minCellValue);
+            .text(data.maxCellValue);
 
         // append the maximum value text
         legendG.append('text')
@@ -298,7 +300,7 @@ function heatmapChart(style) {
             .attr('x', style.colorScaleWidth)
             .attr('y', textY)
             .style('font-size', style.annotationLabelFontSize)
-            .text(data.maxCellValue);
+            .text(data.minCellValue);
 
         // append the name of the legend/heatmap
         legendG.append('text')
@@ -362,7 +364,7 @@ function heatmapChart(style) {
       }
 
       // Set the height to show all the elements
-      var actualHeight = heatmap.node().getBBox().height + 4;
+      var actualHeight = svgGroup.node().getBBox().height + 4;
       svg.attr("height", actualHeight);
 
       gd3.dispatch.on('sort.heatmap', function(d) {

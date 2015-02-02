@@ -2,7 +2,7 @@ function heatmapStyle(style) {
   return {
     annotationCellHeight : style.annotationCellHeight || 10,
     annotationCategorySpacing : style.annotationCategorySpacing || 5,
-    annotationContinuousColorScale : style.annotationContinuousColorScale || ['#f7fcb9', '#004529'],
+    annotationContinuousColorScale : style.annotationContinuousColorScale || ['#004529', '#f7fcb9'],
     annotationLabelFontSize : style.annotationLabelFontSize || style.fontSize || 12,
     cellHeight : style.cellHeight || 20,
     cellWidth : style.cellWidth || 14,

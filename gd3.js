@@ -1039,9 +1039,10 @@
         data = heatmapData(data);
         var width = style.width;
         var svg = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("width", width).style("font-family", style.fontFamily).style("font-size", style.fontFamily);
+        var svgGroup = svg.append("g");
         var cells = data.cells, xs = data.xs, ys = data.ys;
         var colorDomain = d3.range(data.minCellValue, data.maxCellValue, (data.maxCellValue - data.minCellValue) / style.colorScale.length).concat([ data.maxCellValue ]), colorScale = d3.scale.linear().domain(colorDomain).range(style.colorScale).interpolate(d3.interpolateLab);
-        var heatmap = svg.append("g").attr("class", "gd3heatmapCellsContainer");
+        var heatmap = svgGroup.append("g").attr("class", "gd3heatmapCellsContainer");
         var heatmapCells = heatmap.append("g").attr("class", "gd3heatmapCells").selectAll(".rect").data(cells).enter().append("rect").attr("height", style.cellHeight).attr("width", style.cellWidth).attr("x", function(d, i) {
           return data.xs.indexOf(d.x) * style.cellWidth;
         }).attr("y", function(d, i) {
@@ -1073,7 +1074,7 @@
           x2: 0,
           y2: 0
         } ];
-        var guidelinesG = svg.append("g").attr("class", "gd3heatmapGuidlines"), guidelines = guidelinesG.selectAll("line").data(guidelineData).enter().append("line").style("stroke", "#000").style("stroke-width", 1);
+        var guidelinesG = svgGroup.append("g").attr("class", "gd3heatmapGuidlines"), guidelines = guidelinesG.selectAll("line").data(guidelineData).enter().append("line").style("stroke", "#000").style("stroke-width", 1);
         heatmapCells.on("mouseover", function(cell) {
           var xOffset = +heatmap.attr("transform").replace(")", "").replace("translate(", "").split(",")[0];
           var thisEl = d3.select(this), h = +thisEl.attr("height"), w = +thisEl.attr("width"), x = +thisEl.attr("x") + xOffset, y = +thisEl.attr("y");
@@ -1099,8 +1100,8 @@
           if (renderLegend) legendRefLine.style("opacity", 0);
           d3.select(this).style("stroke", "none");
         });
-        var legendG = svg.append("g");
-        yLabelsG = svg.append("g").attr("class", "gd3heatmapYLabels");
+        var legendG = svgGroup.append("g");
+        yLabelsG = svgGroup.append("g").attr("class", "gd3heatmapYLabels");
         if (renderYLabels) renderYLabelsFn();
         if (renderAnnotations) renderAnnotationsFn();
         if (renderXLabels) renderXLabelsFn();
@@ -1129,12 +1130,12 @@
             });
           }
         });
-        svg.call(zoom);
+        svgGroup.call(zoom);
         var annotationCellsG, annotationCategoryCellsG;
         function renderAnnotationsFn() {
           if (!data.annotations) return;
           var verticalOffset = heatmap.node().getBBox().height + style.labelMargins.bottom;
-          var annotationCellsG = heatmap.append("g").attr("class", "gd3heatmapAnnotationCells"), annotationYLabelsG = svg.append("g").attr("class", "gd3annotationYLabels");
+          var annotationCellsG = heatmap.append("g").attr("class", "gd3heatmapAnnotationCells"), annotationYLabelsG = svgGroup.append("g").attr("class", "gd3annotationYLabels");
           annotationYLabelsG.attr("transform", "translate(0," + verticalOffset + ")");
           if (renderYLabels) {
             var annotationYLabels = annotationYLabelsG.selectAll("text").data(data.annotations.categories).enter().append("text").attr("text-anchor", "end").attr("y", function(d, i) {
@@ -1199,8 +1200,8 @@
           });
           colorScaleRect.style("fill", "url(#" + gradientId + ")");
           var textY = style.colorScaleHeight + style.fontSize + 3;
-          legendG.append("text").attr("text-anchor", "middle").attr("x", 0).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.minCellValue);
-          legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.maxCellValue);
+          legendG.append("text").attr("text-anchor", "middle").attr("x", 0).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.maxCellValue);
+          legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.minCellValue);
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth / 2).attr("y", textY + style.annotationLabelFontSize + 2).style("font-size", style.annotationLabelFontSize).text(data.name);
           legendScale = d3.scale.linear().domain([ data.minCellValue, data.maxCellValue ]).range([ 0, style.colorScaleWidth ]);
           legendRefLine = legendG.append("line").attr("y1", 0).attr("y2", style.colorScaleHeight).style("stroke", "black").style("stroke-width", 2);
@@ -1230,7 +1231,7 @@
           yLabels.attr("x", maxLabelWidth);
           heatmap.attr("transform", "translate(" + (maxLabelWidth + style.labelMargins.right) + ",0)");
         }
-        var actualHeight = heatmap.node().getBBox().height + 4;
+        var actualHeight = svgGroup.node().getBBox().height + 4;
         svg.attr("height", actualHeight);
         gd3.dispatch.on("sort.heatmap", function(d) {
           data.sortColumns(d.columnLabels);
