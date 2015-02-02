@@ -4,7 +4,7 @@ function heatmapStyle(style) {
     annotationCategorySpacing : style.annotationCategorySpacing || 5,
     annotationContinuousColorScale : style.annotationContinuousColorScale || ['#004529', '#f7fcb9'],
     annotationLabelFontSize : style.annotationLabelFontSize || style.fontSize || 12,
-    cellHeight : style.cellHeight || 20,
+    cellHeight : style.cellHeight || 18,
     cellWidth : style.cellWidth || 14,
     colorScale : style.colorScale || ['rgb(255,255,217)','rgb(237,248,177)','rgb(199,233,180)','rgb(127,205,187)','rgb(65,182,196)','rgb(29,145,192)','rgb(34,94,168)','rgb(37,52,148)','rgb(8,29,88)'],
     colorScaleHeight : style.colorScaleHeight || 14,

@@ -86,9 +86,8 @@ function heatmapChart(style) {
           var line = d3.select(this);
           if(i == 0) line.attr('x1',0).attr('x2',style.width).attr('y1',y).attr('y2',y);
           if(i == 1) line.attr('x1',0).attr('x2',style.width).attr('y1',y+h).attr('y2',y+h);
-          if(i == 2) line.attr('x1',x).attr('x2',x).attr('y1',0).attr('y2',visibleHeight);
-          if(i == 3) line.attr('x1',x+w).attr('x2',x+w).attr('y1',0).attr('y2',visibleHeight);
-
+          // if(i == 2) line.attr('x1',x).attr('x2',x).attr('y1',0).attr('y2',visibleHeight);
+          // if(i == 3) line.attr('x1',x+w).attr('x2',x+w).attr('y1',0).attr('y2',visibleHeight);
         });
 
         // Update the legend reference line's position, hiding it
@@ -104,10 +103,14 @@ function heatmapChart(style) {
           }
         }
         thisEl.style('stroke', '#000').style('stroke-width', 1);
-      }).on('mouseout', function() {
+
+        gd3.dispatch.sample({ sample: cell.x, over: true});
+
+      }).on('mouseout', function(cell) {
         guidelines.attr('x1',0).attr('x2',0).attr('y1',0).attr('y2',0);
         if (renderLegend) legendRefLine.style("opacity", 0);
         d3.select(this).style('stroke', 'none');
+        gd3.dispatch.sample({ sample: cell.x, over: false});
       })
 
       var legendG = svgGroup.append('g');
@@ -367,6 +370,7 @@ function heatmapChart(style) {
       var actualHeight = svgGroup.node().getBBox().height + 4;
       svg.attr("height", actualHeight);
 
+      // Sort the columns in response to a dispatch
       gd3.dispatch.on('sort.heatmap', function(d) {
         data.sortColumns(d.columnLabels);
         heatmapCells.transition().attr('x', function(d, i) {
@@ -389,6 +393,27 @@ function heatmapChart(style) {
           });
         }
       });
+
+      // Select the sample names and the mutations, and give each of the
+      // mutations a hidden stroke
+
+      gd3.dispatch.on("sample.heatmap", function(d){
+        if (d.over){
+          var xOffset = +heatmap.attr('transform').replace(')','').replace('translate(','').split(',')[0],
+              x = xOffset + data.xs.indexOf(d.sample) * style.cellWidth;
+
+          var visibleHeight = +heatmap.node().getBBox().height;
+
+          guidelines.each(function(d,i) {
+            var line = d3.select(this);
+            if(i == 2) line.attr({x1: x, x2: x, y1: 0, y2: visibleHeight });
+            if(i == 3) line.attr({x1: x+style.cellWidth, x2: x+style.cellWidth, y1: 0, y2: visibleHeight});
+          });
+        } else {
+          guidelines.attr({x1: 0, x2: 0, y1: 0, y2: 0});
+        }
+
+      })
 
     });
   }

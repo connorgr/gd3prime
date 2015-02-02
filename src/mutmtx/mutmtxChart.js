@@ -731,8 +731,9 @@ function mutmtxChart(style) {
           if (gd3_util.selectionSize(affectedColumns)){
             // Show the small stroke around each of the sample's mutations
             rects.attr("stroke-opacity", 0);
-            rects.filter(function(d){ return data.maps.columnIdToLabel[d.colId] == sample; })
-              .attr("stroke-opacity", over ? 1 : 0);
+            rects.filter(function(d){
+              return data.maps.columnIdToLabel[d.colId] == sample;
+            }).attr("stroke-opacity", over ? 1 : 0);
 
             // Highlight the sample name
             columnNames.style({ "opacity": over ? 0.25 : 1, "font-weight": "normal"});

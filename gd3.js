@@ -1083,8 +1083,6 @@
             var line = d3.select(this);
             if (i == 0) line.attr("x1", 0).attr("x2", style.width).attr("y1", y).attr("y2", y);
             if (i == 1) line.attr("x1", 0).attr("x2", style.width).attr("y1", y + h).attr("y2", y + h);
-            if (i == 2) line.attr("x1", x).attr("x2", x).attr("y1", 0).attr("y2", visibleHeight);
-            if (i == 3) line.attr("x1", x + w).attr("x2", x + w).attr("y1", 0).attr("y2", visibleHeight);
           });
           if (renderLegend) {
             if (cell.value) {
@@ -1095,10 +1093,18 @@
             }
           }
           thisEl.style("stroke", "#000").style("stroke-width", 1);
-        }).on("mouseout", function() {
+          gd3.dispatch.sample({
+            sample: cell.x,
+            over: true
+          });
+        }).on("mouseout", function(cell) {
           guidelines.attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", 0);
           if (renderLegend) legendRefLine.style("opacity", 0);
           d3.select(this).style("stroke", "none");
+          gd3.dispatch.sample({
+            sample: cell.x,
+            over: false
+          });
         });
         var legendG = svgGroup.append("g");
         yLabelsG = svgGroup.append("g").attr("class", "gd3heatmapYLabels");
@@ -1251,6 +1257,34 @@
             });
           }
         });
+        gd3.dispatch.on("sample.heatmap", function(d) {
+          if (d.over) {
+            var xOffset = +heatmap.attr("transform").replace(")", "").replace("translate(", "").split(",")[0], x = xOffset + data.xs.indexOf(d.sample) * style.cellWidth;
+            var visibleHeight = +heatmap.node().getBBox().height;
+            guidelines.each(function(d, i) {
+              var line = d3.select(this);
+              if (i == 2) line.attr({
+                x1: x,
+                x2: x,
+                y1: 0,
+                y2: visibleHeight
+              });
+              if (i == 3) line.attr({
+                x1: x + style.cellWidth,
+                x2: x + style.cellWidth,
+                y1: 0,
+                y2: visibleHeight
+              });
+            });
+          } else {
+            guidelines.attr({
+              x1: 0,
+              x2: 0,
+              y1: 0,
+              y2: 0
+            });
+          }
+        });
       });
     }
     chart.showAnnotations = function(state) {
@@ -1277,7 +1311,7 @@
       annotationCategorySpacing: style.annotationCategorySpacing || 5,
       annotationContinuousColorScale: style.annotationContinuousColorScale || [ "#004529", "#f7fcb9" ],
       annotationLabelFontSize: style.annotationLabelFontSize || style.fontSize || 12,
-      cellHeight: style.cellHeight || 20,
+      cellHeight: style.cellHeight || 18,
       cellWidth: style.cellWidth || 14,
       colorScale: style.colorScale || [ "rgb(255,255,217)", "rgb(237,248,177)", "rgb(199,233,180)", "rgb(127,205,187)", "rgb(65,182,196)", "rgb(29,145,192)", "rgb(34,94,168)", "rgb(37,52,148)", "rgb(8,29,88)" ],
       colorScaleHeight: style.colorScaleHeight || 14,
