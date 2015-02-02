@@ -331,6 +331,18 @@ function mutmtxChart(style) {
 
       // Legend should be a DIV d3 selection
       function drawLegendFn(legend) {
+        function filterCategoryEvent(d) {
+          var filtering = categoriesToFilter;
+          if(categoriesToFilter.indexOf(d) > -1) {
+            filtering.splice(filtering.indexOf(d), 1);
+            d3.select(this).style('opacity', 1);
+          } else {
+            filtering.push(d);
+            d3.select(this).style('opacity', 0.2);
+          }
+          console.log(filtering);
+          gd3.dispatch.filterCategory( { categories: filtering });
+        }
         legend.style('font-size', style.fontSize + 'px')
         var columnCategories = legend.append('div')
                 .style('min-width', legend.style('width'))
@@ -353,18 +365,7 @@ function mutmtxChart(style) {
                 .style('margin-right', function(d,i) {
                     return i == categories.length - 1 ? '0px' : '10px';
                 })
-                .on('click', function(d) {
-                  var filtering = categoriesToFilter;
-                  if(categoriesToFilter.indexOf(d) > -1) {
-                    filtering.splice(filtering.indexOf(d), 1);
-                    d3.select(this).style('opacity', 1);
-                  } else {
-                    filtering.push(d);
-                    d3.select(this).style('opacity', 0.2);
-                  }
-                  console.log(filtering);
-                  gd3.dispatch.filterCategory( { categories: filtering });
-                });
+                .on('click', filterCategoryEvent);
         // Append the color blocks
         categoryLegendKeys.append('div')
             .style('background', function(d) { return colCategoryToColor[d]; })
@@ -398,18 +399,7 @@ function mutmtxChart(style) {
                   .style('margin-right', function(d,i) {
                       return i == cellTypesData.length - 1 ? '0px' : '10px';
                   })
-                  .on('click', function(d) {
-                    var filtering = typesToFilter;
-                    if(typesToFilter.indexOf(d) > -1) {
-                      filtering.splice(filtering.indexOf(d), 1);
-                      d3.select(this).style('opacity', 1);
-                    } else {
-                      filtering.push(d);
-                      d3.select(this).style('opacity', 0.2);
-                    }
-                    console.log(filtering);
-                    gd3.dispatch.filterType( { types: filtering });
-                  });;
+                  .on('click', filterCategoryEvent);
 
           cellTypeLegendKeys.append('svg')
               .attr('height', style.fontSize + 'px')
