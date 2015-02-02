@@ -404,10 +404,12 @@ function mutmtxChart(style) {
             .style('background', function(d) { return colCategoryToColor[d]; })
             .style('display', 'inline-block')
             .style('height', style.fontSize + 'px')
-            .style('width', (style.fontSize/2) + 'px');
+            .style('width', (style.fontSize/2) + 'px')
+            .style('cursor', 'pointer');
         categoryLegendKeys.append('span')
             .style('display', 'inline-block')
             .style('margin-left', '2px')
+            .style('cursor', 'pointer')
             .text(function(d) { return d; });
         // Resize the category legend key widths based on max bounding box
         var categoryLegendKeyWidths = [];
@@ -663,7 +665,7 @@ function mutmtxChart(style) {
                       return cur || typesToFilter.indexOf(elem) > -1;
                   }, false);
           return categoriesToFilter.indexOf(c) > -1 || typeFilter;
-        }).style('opacity', 0.2);
+        }).style('opacity', 0.0);
 
 
         // Fade columns out of the viewport

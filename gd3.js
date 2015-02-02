@@ -1706,8 +1706,8 @@
           });
           categoryLegendKeys.append("div").style("background", function(d) {
             return colCategoryToColor[d];
-          }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px");
-          categoryLegendKeys.append("span").style("display", "inline-block").style("margin-left", "2px").text(function(d) {
+          }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px").style("cursor", "pointer");
+          categoryLegendKeys.append("span").style("display", "inline-block").style("margin-left", "2px").style("cursor", "pointer").text(function(d) {
             return d;
           });
           var categoryLegendKeyWidths = [];
@@ -1844,7 +1844,7 @@
               return cur || typesToFilter.indexOf(elem) > -1;
             }, false);
             return categoriesToFilter.indexOf(c) > -1 || typeFilter;
-          }).style("opacity", .2);
+          }).style("opacity", 0);
           columns.filter(function(d) {
             return wholeVisX(data.ids.columns.indexOf(d)) < style.labelWidth;
           }).style("opacity", .2);
