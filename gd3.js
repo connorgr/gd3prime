@@ -1201,7 +1201,7 @@
           var colorScaleRect = legendG.append("rect").attr("height", style.colorScaleHeight).attr("width", style.colorScaleWidth);
           var now = Date.now(), gradientId = "gd3heatmapGradient" + now;
           var gradient = legendG.append("svg:defs").append("svg:linearGradient").attr("id", gradientId).attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
-          style.colorScale.forEach(function(c, i) {
+          style.colorScale.reverse().forEach(function(c, i) {
             gradient.append("svg:stop").attr("offset", i * 1 / style.colorScale.length).attr("stop-color", c).attr("stop-opacity", 1);
           });
           colorScaleRect.style("fill", "url(#" + gradientId + ")");
@@ -1209,7 +1209,7 @@
           legendG.append("text").attr("text-anchor", "middle").attr("x", 0).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.maxCellValue);
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.minCellValue);
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth / 2).attr("y", textY + style.annotationLabelFontSize + 2).style("font-size", style.annotationLabelFontSize).text(data.name);
-          legendScale = d3.scale.linear().domain([ data.minCellValue, data.maxCellValue ]).range([ 0, style.colorScaleWidth ]);
+          legendScale = d3.scale.linear().domain([ data.minCellValue, data.maxCellValue ]).range([ style.colorScaleWidth, 0 ]);
           legendRefLine = legendG.append("line").attr("y1", 0).attr("y2", style.colorScaleHeight).style("stroke", "black").style("stroke-width", 2);
         }
         var annotationXLabelsG;
@@ -1313,7 +1313,7 @@
       annotationLabelFontSize: style.annotationLabelFontSize || style.fontSize || 12,
       cellHeight: style.cellHeight || 18,
       cellWidth: style.cellWidth || 14,
-      colorScale: style.colorScale || [ "rgb(255,255,217)", "rgb(237,248,177)", "rgb(199,233,180)", "rgb(127,205,187)", "rgb(65,182,196)", "rgb(29,145,192)", "rgb(34,94,168)", "rgb(37,52,148)", "rgb(8,29,88)" ],
+      colorScale: style.colorScale || [ "rgb(222,235,247)", "rgb(198,219,239)", "rgb(158,202,225)", "rgb(107,174,214)", "rgb(66,146,198)", "rgb(33,113,181)", "rgb(8,81,156)", "rgb(8,48,107)" ],
       colorScaleHeight: style.colorScaleHeight || 14,
       colorScaleWidth: style.colorScaleWidth || 200,
       fontFamily: style.fontFamily || '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
