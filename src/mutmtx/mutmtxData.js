@@ -43,7 +43,8 @@ function mutmtxData(inputData) {
           c2Hidden = data.hiddenColumns.byCategory[c2] || data.hiddenColumns.byType[c2] ? true : false;
 
       if (c1Hidden == c2Hidden) return 0;
-      else if (c1Hidden || c2Hidden) return 1;
+      else if (c1Hidden) return 1;
+      else if (c2Hidden) return -1;
       else return 0;
     }
 

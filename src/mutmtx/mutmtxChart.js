@@ -268,10 +268,12 @@ function mutmtxChart(style) {
         console.log(data.maps.columnIdToTypes)
 
         Object.keys(data.maps.columnIdToTypes).forEach(function(cid) {
-          var type = data.maps.columnIdToTypes[cid][0];
-          if(typesToFilter.indexOf(type) > -1) {
-            data.hiddenColumns.byType[cid] = type;
-          }
+          var types = data.maps.columnIdToTypes[cid];
+          types.forEach(function(type) {
+            if(typesToFilter.indexOf(type) > -1) {
+              data.hiddenColumns.byType[cid] = type;
+            }
+          });
         });
 
         console.log(data.hiddenColumns.byType)

@@ -1336,7 +1336,7 @@
     data.reorderColumns = function(ordering) {
       function sortByVisibility(c1, c2) {
         var c1Hidden = data.hiddenColumns.byCategory[c1] || data.hiddenColumns.byType[c1] ? true : false, c2Hidden = data.hiddenColumns.byCategory[c2] || data.hiddenColumns.byType[c2] ? true : false;
-        if (c1Hidden == c2Hidden) return 0; else if (c1Hidden || c2Hidden) return 1; else return 0;
+        if (c1Hidden == c2Hidden) return 0; else if (c1Hidden) return 1; else if (c2Hidden) return -1; else return 0;
       }
       function sortByCellType(c1, c2) {
         var c1Type = data.maps.columnIdToTypes[c1][0], c2Type = data.maps.columnIdToTypes[c2][0];
@@ -1586,10 +1586,12 @@
           data.hiddenColumns.byType = {};
           console.log(data.maps.columnIdToTypes);
           Object.keys(data.maps.columnIdToTypes).forEach(function(cid) {
-            var type = data.maps.columnIdToTypes[cid][0];
-            if (typesToFilter.indexOf(type) > -1) {
-              data.hiddenColumns.byType[cid] = type;
-            }
+            var types = data.maps.columnIdToTypes[cid];
+            types.forEach(function(type) {
+              if (typesToFilter.indexOf(type) > -1) {
+                data.hiddenColumns.byType[cid] = type;
+              }
+            });
           });
           console.log(data.hiddenColumns.byType);
           data.reorderColumns(sortingOptionsData);
