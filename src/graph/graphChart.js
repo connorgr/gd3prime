@@ -50,7 +50,7 @@ function graphChart(style) {
       // Set up force directed graph
       var force = d3.layout.force()
           .charge(-400)
-          .linkDistance(10)
+          .linkDistance(100)
           .size([forceWidth,forceHeight]);
 
       var x = d3.scale.linear().range([0,forceWidth]),

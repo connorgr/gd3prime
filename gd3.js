@@ -862,7 +862,7 @@
           var xLegend = style.width - style.legendWidth, legend = svg.append("g").attr("transform", "translate(" + xLegend + ",0)");
           drawLegendFn(legend);
         }
-        var force = d3.layout.force().charge(-400).linkDistance(10).size([ forceWidth, forceHeight ]);
+        var force = d3.layout.force().charge(-400).linkDistance(100).size([ forceWidth, forceHeight ]);
         var x = d3.scale.linear().range([ 0, forceWidth ]), y = d3.scale.linear().range([ 0, forceHeight ]);
         force.nodes(data.nodes).links(data.links).start();
         var link = graph.append("g").selectAll(".link").data(data.links).enter().append("g");
