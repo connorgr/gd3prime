@@ -5,6 +5,7 @@ function mutmtxChart(style) {
       drawHoverLegend = true,
       drawLegend = false,
       drawSortingMenu = true,
+      drawCoverage = true,
       stickyLegend = false,
       typesToFilter = [];
 
@@ -233,6 +234,13 @@ function mutmtxChart(style) {
 
       renderMutationMatrix();
       rerenderMutationMatrix();
+
+      // Add the coverage (if necessary)
+      if (drawCoverage){
+        selection.append("p")
+          .style("float", "right")
+          .html("<b>Coverage:</b> " + data.coverage());
+      }
 
       // Listen for filtering events
       gd3.dispatch.on('filterCategory.mutmtx', function(d) {
@@ -752,6 +760,11 @@ function mutmtxChart(style) {
 
   chart.showLegend = function(state) {
     drawLegend = state;
+    return chart;
+  }
+
+  chart.showCoverage = function(state) {
+    drawCoverage = state;
     return chart;
   }
 

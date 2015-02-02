@@ -1362,6 +1362,12 @@
       },
       types: []
     };
+    data.coverage = function() {
+      var mutatedSamples = d3.merge(data.ids.rows.map(function(d) {
+        return data.matrix.rowIdToActiveColumns[d];
+      })), numMutatedSamples = d3.set(mutatedSamples).values().length, s = (numMutatedSamples * 100 / data.numSamples).toFixed(2) + "%";
+      return s + " (" + numMutatedSamples + "/" + data.numSamples + ")";
+    };
     data.get = function(attr) {
       if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "ids") return data.ids; else if (attr === "labels") return data.labels;
     };
@@ -1413,6 +1419,13 @@
         data.maps.columnIdToLabel[s._id] = s.name;
         data.labels.columns.push(s.name);
       });
+      if (inputData.typeToSamples && inputData.sampleTypes) {
+        data.numSamples = inputData.sampleTypes.reduce(function(total, t) {
+          return total + inputData.typeToSamples[t].length;
+        }, 0);
+      } else {
+        data.numSamples = inputData.samples.length;
+      }
       var rowAndCount = [];
       Object.keys(inputData.M).forEach(function(k, i) {
         var numSamples = Object.keys(inputData.M[k]).length;
@@ -1493,7 +1506,7 @@
     return data;
   }
   function mutmtxChart(style) {
-    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, stickyLegend = false, typesToFilter = [];
+    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, drawCoverage = true, stickyLegend = false, typesToFilter = [];
     var sortingOptionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
     function chart(selection) {
       selection.each(function(data) {
@@ -1590,6 +1603,9 @@
         svg.call(zoom);
         renderMutationMatrix();
         rerenderMutationMatrix();
+        if (drawCoverage) {
+          selection.append("p").style("float", "right").html("<b>Coverage:</b> " + data.coverage());
+        }
         gd3.dispatch.on("filterCategory.mutmtx", function(d) {
           if (!d || !d.categories) return;
           categoriesToFilter = d.categories.filter(function(s) {
@@ -1881,6 +1897,10 @@
     };
     chart.showLegend = function(state) {
       drawLegend = state;
+      return chart;
+    };
+    chart.showCoverage = function(state) {
+      drawCoverage = state;
       return chart;
     };
     chart.showSortingMenu = function(state) {
