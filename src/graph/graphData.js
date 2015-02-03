@@ -18,7 +18,7 @@ function graphData(inputData) {
 
     // add edge categories only if they exist
     var categories = {};
-    if(data.edges[0].categories) {
+    if(data.edges.length && data.edges[0].categories) {
       data.edges.forEach(function(e) {
         e.categories.forEach(function(c) {
           categories[c] = null;
@@ -29,27 +29,19 @@ function graphData(inputData) {
 
     // creates a force-directed layout friendly link list
     function loadLinks(edges, nodes) {
-      var links = [];
+      var links = [],
+          nodeToIndex = {};
 
-      for (var i = 0; i < nodes.length; i++) {
-        var u = nodes[i].name;
-        for(var j = 0; j < nodes.length; j++) {
-          var v = nodes[j].name;
-          for (var k = 0; k < edges.length; k++) {
-            var src = edges[k].source,
-                tgt = edges[k].target;
-            if ( (u == src && v == tgt) || (u == tgt && v == src) ) {
-              links.push({
-                source: nodes[i],
-                target: nodes[j],
-                weight: edges[k].weight,
-                categories: edges[k].categories,
-                references: edges[k].references
-              })
-            }
-          }
-        }
-      }
+      nodes.forEach(function(n, i){ nodeToIndex[n.name] = i; });
+      edges.forEach(function(d){
+        links.push({
+          source: nodes[nodeToIndex[d.source]],
+          target: nodes[nodeToIndex[d.target]],
+          weight: d.weight,
+          categories: d.categories,
+          references: d.references
+        });
+      });
 
       return links;
     } // end loadLinks()
