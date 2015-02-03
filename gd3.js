@@ -2602,15 +2602,19 @@
         var inactivatingMutations = inactivatingG.selectAll(".symbols").data(inactivatingData).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
         }).size(style.symbolWidth)).style("fill", function(d, i) {
+          if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
           return sampleTypeToColor[d.dataset];
         }).style("stroke", function(d, i) {
+          if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
           return sampleTypeToColor[d.dataset];
         }).style("stroke-width", 2);
         var activatingMutations = activatingG.selectAll(".symbols").data(activatingData).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
         }).size(style.symbolWidth)).style("fill", function(d, i) {
+          if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
           return sampleTypeToColor[d.dataset];
         }).style("stroke", function(d, i) {
+          if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
           return sampleTypeToColor[d.dataset];
         }).style("stroke-width", 2);
         var domainGroupsData = data.get("proteinDomains");
@@ -2662,8 +2666,10 @@
             pY[i] = py;
             return "translate(" + px + ", " + py + ")";
           }).style("fill", function(d) {
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
             return sampleTypeToColor[d.dataset];
           }).style("fill-opacity", 1).style("stroke", function(d) {
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
             return sampleTypeToColor[d.dataset];
           }).style("stroke-opacity", 1);
           inactivatingMutations.attr("transform", function(d, i) {
@@ -2679,8 +2685,10 @@
             pY[i] = py;
             return "translate(" + px + ", " + py + ")";
           }).style("fill", function(d) {
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
             return sampleTypeToColor[d.dataset];
           }).style("fill-opacity", 1).style("stroke", function(d) {
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
             return sampleTypeToColor[d.dataset];
           }).style("stroke-opacity", 1);
           transcriptAxis.call(xAxis);
