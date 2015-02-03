@@ -72,7 +72,7 @@ function transcriptChart(style) {
       svg.call(zoom);
 
       // Add mutations to the transcript
-      var mutationsG = tG.append('g').attr('class','transcriptMutations'),
+      var mutationsG = tG.append('g').attr('class','gd3TranscriptMutations'),
           inactivatingG = mutationsG.append('g'),
           activatingG = mutationsG.append('g');
 

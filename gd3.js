@@ -859,7 +859,7 @@
         var force = d3.layout.force().charge(-400).linkDistance(100).size([ forceWidth, forceHeight ]);
         var x = d3.scale.linear().range([ 0, forceWidth ]), y = d3.scale.linear().range([ 0, forceHeight ]);
         force.nodes(data.nodes).links(data.links).start();
-        var link = graph.append("g").selectAll(".link").data(data.links).enter().append("g");
+        var link = graph.append("g").selectAll(".link").data(data.links).enter().append("g").attr("class", "gd3Link");
         if (data.edgeCategories) {
           link.each(function(d) {
             var thisEdge = d3.select(this);
@@ -1840,11 +1840,14 @@
         function renderMutationMatrix() {
           var colWidth = wholeVisX(1) - wholeVisX(0);
           var cells = columns.append("g").attr("class", "mutmtx-sampleMutationCells").selectAll("g").data(function(colId) {
-            var activeRows = data.matrix.columnIdToActiveRows[colId];
+            var activeRows = data.matrix.columnIdToActiveRows[colId], colLabel = data.maps.columnIdToLabel[colId];
             return activeRows.map(function(rowId) {
+              var rowLabel = data.maps.rowIdToLabel[rowId];
               return {
                 colId: colId,
                 row: rowId,
+                rowLabel: rowLabel,
+                colLabel: colLabel,
                 cell: data.matrix.cells[[ rowId, colId ].join()]
               };
             });

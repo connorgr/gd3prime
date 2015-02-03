@@ -63,7 +63,8 @@ function graphChart(style) {
       var link = graph.append('g').selectAll('.link')
           .data(data.links)
           .enter()
-          .append('g');
+          .append('g')
+          .attr('class', 'gd3Link');
 
       // Draw categories for each edge
       if(data.edgeCategories) {

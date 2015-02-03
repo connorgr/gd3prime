@@ -677,9 +677,16 @@ function mutmtxChart(style) {
             .attr('class', 'mutmtx-sampleMutationCells')
             .selectAll('g')
             .data(function(colId){
-              var activeRows = data.matrix.columnIdToActiveRows[colId];
+              var activeRows = data.matrix.columnIdToActiveRows[colId],
+                  colLabel = data.maps.columnIdToLabel[colId];
               return activeRows.map(function(rowId){
-                return {colId: colId, row:rowId, cell:data.matrix.cells[[rowId, colId].join()]}
+                var rowLabel = data.maps.rowIdToLabel[rowId];
+                return {colId: colId,
+                        row:rowId,
+                        rowLabel: rowLabel,
+                        colLabel: colLabel,
+                        cell:data.matrix.cells[[rowId, colId].join()]
+                      }
               });
             })
             .enter()
