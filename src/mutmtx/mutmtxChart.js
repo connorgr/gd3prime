@@ -738,6 +738,12 @@ function mutmtxChart(style) {
             gd3.dispatch.sample({ sample: data.maps.columnIdToLabel[d.colId], over: true});
           }).on("mouseout", function(d){
             gd3.dispatch.sample({ sample: data.maps.columnIdToLabel[d.colId], over: false});
+          }).on("click", function(d){
+            gd3.dispatch.mutation({
+              gene: d.rowLabel,
+              dataset: d.cell.dataset,
+              mutation_class: d.cell.type == "inactive_snv" ? "snv" : d.cell.type
+            })
           });
 
         gd3.dispatch.on("sample.mutmtx", function(d){

@@ -1903,6 +1903,12 @@
               sample: data.maps.columnIdToLabel[d.colId],
               over: false
             });
+          }).on("click", function(d) {
+            gd3.dispatch.mutation({
+              gene: d.rowLabel,
+              dataset: d.cell.dataset,
+              mutation_class: d.cell.type == "inactive_snv" ? "snv" : d.cell.type
+            });
           });
           gd3.dispatch.on("sample.mutmtx", function(d) {
             var over = d.over, sample = d.sample, affectedColumns = columnNames.filter(function(d) {
