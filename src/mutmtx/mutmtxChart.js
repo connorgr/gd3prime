@@ -6,6 +6,7 @@ function mutmtxChart(style) {
       drawLegend = false,
       drawSortingMenu = true,
       drawCoverage = true,
+      drawColumnLabels = true,
       stickyLegend = false,
       typesToFilter = [];
 
@@ -196,22 +197,25 @@ function mutmtxChart(style) {
                     else return '#000';
                   });
 
-          var annTextOffset = annData.length
-              * (style.annotationRowHeight + style.annotationRowSpacing)
-              + style.annotationRowSpacing
-              + mtxOffset;
+          if (drawColumnLabels){
+            var annTextOffset = annData.length
+                * (style.annotationRowHeight + style.annotationRowSpacing)
+                + style.annotationRowSpacing
+                + mtxOffset;
 
-          var annText = aGroup.append('text')
-              .attr('x', annTextOffset)
-              .attr('text-anchor', 'start')
-              .attr('transform', 'rotate(90)')
-              .style('font-family', style.fontFamily)
-              .style('font-size', style.annotationFontSize)
-              .text(annotationKey);
+            var annText = aGroup.append('text')
+                .attr('x', annTextOffset)
+                .attr('text-anchor', 'start')
+                .attr('transform', 'rotate(90)')
+                .style('font-family', style.fontFamily)
+                .style('font-size', style.annotationFontSize)
+                .text(annotationKey);
 
-          // width because of rotation
-          var annTextHeight = annText.node().getBBox().width + style.annotationRowSpacing;
-          maxTextHeight =  annTextHeight > maxTextHeight ? annTextHeight : maxTextHeight;
+            // width because of rotation
+            var annTextHeight = annText.node().getBBox().width + style.annotationRowSpacing;
+            maxTextHeight =  d3.max([annTextHeight, maxTextHeight]);
+          }
+
         });
 
         // Modify the SVG height based on the sample annotations
@@ -765,6 +769,11 @@ function mutmtxChart(style) {
 
   chart.showCoverage = function(state) {
     drawCoverage = state;
+    return chart;
+  }
+
+  chart.showColumnLabels = function(state) {
+    drawColumnLabels = state;
     return chart;
   }
 

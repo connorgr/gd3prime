@@ -1509,7 +1509,7 @@
     return data;
   }
   function mutmtxChart(style) {
-    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, drawCoverage = true, stickyLegend = false, typesToFilter = [];
+    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, drawCoverage = true, drawColumnLabels = true, stickyLegend = false, typesToFilter = [];
     var sortingOptionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
     function chart(selection) {
       selection.each(function(data) {
@@ -1592,10 +1592,12 @@
               var coloring = annColoring[categories[i]];
               if (coloring.typeOfScale == "continuous") return coloring.scale(d); else if (Object.keys(coloring).length > 0) return coloring[d]; else return "#000";
             });
-            var annTextOffset = annData.length * (style.annotationRowHeight + style.annotationRowSpacing) + style.annotationRowSpacing + mtxOffset;
-            var annText = aGroup.append("text").attr("x", annTextOffset).attr("text-anchor", "start").attr("transform", "rotate(90)").style("font-family", style.fontFamily).style("font-size", style.annotationFontSize).text(annotationKey);
-            var annTextHeight = annText.node().getBBox().width + style.annotationRowSpacing;
-            maxTextHeight = annTextHeight > maxTextHeight ? annTextHeight : maxTextHeight;
+            if (drawColumnLabels) {
+              var annTextOffset = annData.length * (style.annotationRowHeight + style.annotationRowSpacing) + style.annotationRowSpacing + mtxOffset;
+              var annText = aGroup.append("text").attr("x", annTextOffset).attr("text-anchor", "start").attr("transform", "rotate(90)").style("font-family", style.fontFamily).style("font-size", style.annotationFontSize).text(annotationKey);
+              var annTextHeight = annText.node().getBBox().width + style.annotationRowSpacing;
+              maxTextHeight = d3.max([ annTextHeight, maxTextHeight ]);
+            }
           });
           var svgHeight = svg.attr("height"), numAnnotations = data.annotations.sampleToAnnotations[names[0]].length, svgHeight = parseInt(svgHeight) + numAnnotations * (style.annotationRowHeight + 2);
           svg.attr("height", svgHeight + maxTextHeight);
@@ -1904,6 +1906,10 @@
     };
     chart.showCoverage = function(state) {
       drawCoverage = state;
+      return chart;
+    };
+    chart.showColumnLabels = function(state) {
+      drawColumnLabels = state;
       return chart;
     };
     chart.showSortingMenu = function(state) {
