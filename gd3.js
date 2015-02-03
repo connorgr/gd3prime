@@ -825,8 +825,6 @@
         nodes.forEach(function(n, i) {
           nodeToIndex[n.name] = i;
         });
-        console.log(nodeToIndex);
-        console.log(edges);
         edges.forEach(function(d) {
           links.push({
             source: nodes[nodeToIndex[d.source]],
@@ -836,7 +834,6 @@
             references: d.references
           });
         });
-        console.log(links);
         return links;
       }
     }
