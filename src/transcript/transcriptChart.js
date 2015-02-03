@@ -439,6 +439,16 @@ function transcriptChart(style) {
           gd3.dispatch.sample({ sample: d.sample, over: true});
         }).on("mouseout", function(d){
           gd3.dispatch.sample({ sample: d.sample, over: false});
+        }).on("click", function(d){
+          var domain = null;
+          gd3.dispatch.mutation({
+            dataset: d.dataset,
+            gene: data.geneName,
+            mutation_class: "snv",
+            mutation_type: d.ty,
+            locus: d.locus,
+            domain: data.domain(d.locus)
+          })
         });
 
       gd3.dispatch.on("sample.transcript", function(d){

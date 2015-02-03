@@ -943,7 +943,6 @@
           });
         }
         link.on("click", function(d) {
-          console.log("HELLLLOOOOO");
           gd3.dispatch.interaction({
             source: d.source.name,
             target: d.target.name
@@ -1011,17 +1010,32 @@
         if (tmp > data.maxCellValue) data.maxCellValue = tmp;
         if (tmp < data.minCellValue) data.minCellValue = tmp;
       }
+      var datasetCatIndex = -1;
       if (data.annotations) {
         if (!data.annotations.annotationToColor) data.annotations.annotationToColor = {};
-        data.annotations.categories.forEach(function(category) {
+        data.annotations.categories.forEach(function(category, categoryIndex) {
           var entry = data.annotations.annotationToColor[category];
           if (entry && Object.keys(entry).length > 0) return;
-          var categoryIndex = data.annotations.categories.indexOf(category);
           var annotationNames = Object.keys(data.annotations.sampleToAnnotations), values = annotationNames.map(function(n) {
             return data.annotations.sampleToAnnotations[n][categoryIndex];
           });
           entry = [ d3.min(values), d3.max(values) ];
           data.annotations.annotationToColor[category] = entry;
+        });
+        data.columnIdToDataset = {};
+        data.annotations.categories.forEach(function(c, i) {
+          if (c.toLowerCase() === "cancer type" || c.toLowerCase() === "dataset") {
+            datasetCatIndex = i;
+          }
+        });
+      }
+      if (datasetCatIndex !== -1) {
+        data.xs.forEach(function(n) {
+          data.columnIdToDataset[n] = data.annotations.sampleToAnnotations[n][datasetCatIndex];
+        });
+      } else {
+        data.xs.forEach(function(n) {
+          data.columnIdToDataset[n] = null;
         });
       }
     }
@@ -1105,6 +1119,12 @@
           gd3.dispatch.sample({
             sample: cell.x,
             over: false
+          });
+        }).on("click", function(cell) {
+          gd3.dispatch.mutation({
+            gene: cell.y,
+            dataset: data.columnIdToDataset[cell.x],
+            mutation_class: "expression"
           });
         });
         var legendG = svgGroup.append("g");
@@ -2572,7 +2592,7 @@
         mutations: cdata.mutations,
         mutationTypesToSymbols: cdata.mutationTypesToSymbols || defaultMutationTypesToSymbols,
         proteinDomainDB: proteinDomainDB,
-        proteinDomains: cdata.domains[proteinDomainDB]
+        proteinDomains: cdata.domains[proteinDomainDB] || []
       };
       var datasetNames = cdata.mutations.map(function(m) {
         return m.dataset;
@@ -2587,6 +2607,15 @@
       };
       d.isMutationInactivating = function(mut) {
         return d.inactivatingMutations[mut];
+      };
+      d.domain = function(locus) {
+        var loc = locus * 1;
+        for (var i = 0; i < d.proteinDomains.length; i++) {
+          if (d.proteinDomains[i].start < loc && d.proteinDomains[i].end > loc) {
+            return d.proteinDomains[i].name;
+          }
+        }
+        return null;
       };
       return d;
     }
@@ -2813,6 +2842,16 @@
           gd3.dispatch.sample({
             sample: d.sample,
             over: false
+          });
+        }).on("click", function(d) {
+          var domain = null;
+          gd3.dispatch.mutation({
+            dataset: d.dataset,
+            gene: data.geneName,
+            mutation_class: "snv",
+            mutation_type: d.ty,
+            locus: d.locus,
+            domain: data.domain(d.locus)
           });
         });
         gd3.dispatch.on("sample.transcript", function(d) {

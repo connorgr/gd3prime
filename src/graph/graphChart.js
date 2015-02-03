@@ -248,7 +248,6 @@ function graphChart(style) {
 
       // Add dispatch
       link.on("click", function(d){
-        console.log("HELLLLOOOOO")
         gd3.dispatch.interaction({ source: d.source.name, target: d.target.name });
       })
     });
