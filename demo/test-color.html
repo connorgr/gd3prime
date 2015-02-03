@@ -6,13 +6,42 @@
     <title>GD3 Example Color Formatting</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
+</style>
   </head>
   <body>
     <div id="test"></div>
     <script src="../bower_components/d3/d3.min.js"></script>
     <script src="../gd3.js"></script>
     <script>
+      var palettes = d3.select('#test').append('div');
+      palettes.append('h1').text('Default palettes')
 
+      var data = [],
+          swatchStyle = {
+            display: 'inline-block',
+            height: '10px',
+            'margin-right': '2px',
+            width: '20px'
+          };
+
+      for (var i = 0; i < 20; i++) {
+        data.push(i);
+        var palette = gd3.color.categories(data); // return the palette
+
+        palette = gd3.color.categoryPalette; // or statically reference it
+
+        palettes.append('div').selectAll('div')
+            .data(data)
+            .enter()
+              .append('div')
+                  .style(swatchStyle)
+                  .style('background-color', function(d) { return palette(d); });
+
+      }
     </script>
   </body>
 </html>

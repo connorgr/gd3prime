@@ -36,7 +36,6 @@
   };
   gd3.color.categories = function() {
     function isArrayTest() {
-      console.log(arguments.length);
       for (var i = 0; i < arguments.length; i++) {
         var a = arguments[i];
         if (Object.prototype.toString.call(a) !== "[object Array]") {
@@ -62,6 +61,7 @@
       isArrayTest(categories, colors);
       gd3.color.categoryPalette = d3.scale.ordinal().domain(categories).range(colors);
     }
+    return gd3.color.categoryPalette;
   };
   var gd3_util = {
     arraysEqual: function(a, b) {

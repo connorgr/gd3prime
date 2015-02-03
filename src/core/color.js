@@ -5,6 +5,7 @@ gd3.color.categoryPalette;
 gd3.color.palettes = {};
 
 // colorbrewer paired qualitative paired scale with modified 2 and 1 element versions
+// Color blind safe!
 gd3.color.palettes.categorical_cbSafe = {
   1: ["#1f78b4"],
   2: ["#1f78b4","#b2df8a"],
@@ -13,6 +14,7 @@ gd3.color.palettes.categorical_cbSafe = {
 };
 
 // colorbrewer paired qualitative paired scale, but above range of colorblind friendly
+// Even though the two use the same scale, they are separated for clarity
 gd3.color.palettes.categorical = {
   5: ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99"],
   6: ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c"],
@@ -58,4 +60,6 @@ gd3.color.categories = function() {
     isArrayTest(categories, colors);
     gd3.color.categoryPalette = d3.scale.ordinal().domain(categories).range(colors);
   }
+
+  return gd3.color.categoryPalette;
 }
