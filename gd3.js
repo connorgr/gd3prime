@@ -1674,6 +1674,7 @@
             });
           });
           categoryLegendKeys.append("div").style("background", function(d) {
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d);
             return colCategoryToColor[d];
           }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px");
           categoryLegendKeys.append("span").style("display", "inline-block").style("margin-left", "2px").text(function(d) {
@@ -1842,7 +1843,10 @@
           }).enter().append("g");
           cells.each(function(d) {
             var thisCell = d3.select(this), y = style.rowHeight * data.ids.rows.indexOf(d.row);
-            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colCategoryToColor[d.cell.dataset]);
+            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function() {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.cell.dataset);
+              return colCategoryToColor[d.cell.dataset];
+            });
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType];
             if (glyph && glyph != null) {
               thisCell.append("path").attr("class", "gd3mutmtx-cellClyph").attr("d", d3.svg.symbol().type(glyph).size(colWidth * colWidth)).attr("transform", "translate(" + colWidth / 2 + "," + (y + style.rowHeight / 2) + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("stroke-width", .5);

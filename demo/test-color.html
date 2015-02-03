@@ -13,11 +13,11 @@
 </style>
   </head>
   <body>
-    <div id="test"></div>
     <script src="../bower_components/d3/d3.min.js"></script>
     <script src="../gd3.js"></script>
     <script>
-      var palettes = d3.select('#test').append('div');
+      var body = d3.select('body');
+      var palettes = body.append('div');
       palettes.append('h1').text('Default palettes')
 
       var data = [],
@@ -42,6 +42,45 @@
                   .style('background-color', function(d) { return palette(d); });
 
       }
+
+      body.append('hr');
+
+      // clear the palette information for the next example
+      gd3.color.categoryPalette = undefined;
+
+      var mutmtxStyle = {
+        width: 800
+      }
+
+      d3.json('testData/example2-mutation-matrix.json', function(data) {
+        d3.json('testData/exampleAnnotations.json', function(annData) {
+          body.append('h2').text('For mutation matrix examples, try sorting by category');
+
+          data.annotations = annData;
+          body.append('p').text('Mutation matrix with default coloring, no categories specified');
+          body.append('div')
+            .datum(data)
+            .call(gd3.mutationMatrix({style:mutmtxStyle}));
+
+          var categories = ['BLCA', 'BRCA', 'COADREAD', 'GBM','HNSC','KIRC','LAML','LUAD','LUSC','OV','UCEC'];
+          gd3.color.categories(categories);
+
+          body.append('br').append('br');
+          body.append('p').text('Mutation matrix with its categories added');
+          body.append('div')
+            .datum(data)
+            .call(gd3.mutationMatrix({style:mutmtxStyle}));
+
+          body.append('br').append('br');
+          body.append('p').text('Mutation matrix with its categories added and some additional ones');
+          var categories = [1,2,'BLCA', 'BRCA', 'COADREAD', 'GBM','HNSC','KIRC','LAML','LUAD','LUSC','OV','UCEC'];
+          gd3.color.categories(categories);
+
+          body.append('div')
+            .datum(data)
+            .call(gd3.mutationMatrix({style:mutmtxStyle}));
+        });
+      });
     </script>
   </body>
 </html>

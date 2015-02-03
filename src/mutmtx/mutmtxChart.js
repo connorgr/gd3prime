@@ -367,7 +367,10 @@ function mutmtxChart(style) {
                 });
         // Append the color blocks
         categoryLegendKeys.append('div')
-            .style('background', function(d) { return colCategoryToColor[d]; })
+            .style('background', function(d) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d);
+              return colCategoryToColor[d];
+            })
             .style('display', 'inline-block')
             .style('height', style.fontSize + 'px')
             .style('width', (style.fontSize/2) + 'px');
@@ -684,7 +687,10 @@ function mutmtxChart(style) {
               .attr('y', y)
               .attr('height', style.rowHeight)
               .attr('width', colWidth)
-              .style('fill', colCategoryToColor[d.cell.dataset]);
+              .style('fill', function() {
+                  if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.cell.dataset);
+                  return colCategoryToColor[d.cell.dataset];
+              });
 
           var cellType = d.cell.type,
               glyph = data.maps.cellTypeToGlyph[cellType];
