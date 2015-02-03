@@ -309,7 +309,7 @@
             sample: d.sample,
             opacity: 0
           });
-        }).on("click", function(d) {
+        }).on("click.dispatch-mutation", function(d) {
           gd3.dispatch.mutation({
             dataset: d.dataset,
             gene: data.gene,
@@ -942,7 +942,7 @@
             thisEl.append("text").attr("x", 16).attr("y", (i + 1) * style.legendFontSize + titleHeight + scaleHeight).style("font-size", style.legendFontSize).text(category);
           });
         }
-        link.on("click", function(d) {
+        link.on("click.dispatch-interaction", function(d) {
           gd3.dispatch.interaction({
             source: d.source.name,
             target: d.target.name
@@ -1120,7 +1120,7 @@
             sample: cell.x,
             over: false
           });
-        }).on("click", function(cell) {
+        }).on("click.dispatch-mutation", function(cell) {
           gd3.dispatch.mutation({
             gene: cell.y,
             dataset: data.columnIdToDataset[cell.x],
@@ -1903,12 +1903,18 @@
               sample: data.maps.columnIdToLabel[d.colId],
               over: false
             });
-          }).on("click", function(d) {
+          }).on("click.dispatch-mutation", function(d) {
             gd3.dispatch.mutation({
               gene: d.rowLabel,
               dataset: d.cell.dataset,
               mutation_class: d.cell.type == "inactive_snv" ? "snv" : d.cell.type
             });
+          });
+          gd3.dispatch.sort({
+            columnLabels: data.ids.columns.map(function(d) {
+              return data.maps.columnIdToLabel[d];
+            }),
+            sortingOptionsData: sortingOptionsData
           });
           gd3.dispatch.on("sample.mutmtx", function(d) {
             var over = d.over, sample = d.sample, affectedColumns = columnNames.filter(function(d) {
@@ -2849,7 +2855,7 @@
             sample: d.sample,
             over: false
           });
-        }).on("click", function(d) {
+        }).on("click.dispatch-mutation", function(d) {
           var domain = null;
           gd3.dispatch.mutation({
             dataset: d.dataset,

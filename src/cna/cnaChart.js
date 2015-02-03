@@ -240,7 +240,7 @@ function cnaChart(style) {
           gd3.dispatch.sample({ sample: d.sample, opacity: 1});
         }).on("mouseout", function(d){
           gd3.dispatch.sample({ sample: d.sample, opacity: 0});
-        }).on("click", function(d){
+        }).on("click.dispatch-mutation", function(d){
           gd3.dispatch.mutation({dataset: d.dataset, gene: data.gene, mutation_class: d.ty });
         });
 

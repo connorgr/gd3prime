@@ -247,7 +247,7 @@ function graphChart(style) {
       }
 
       // Add dispatch
-      link.on("click", function(d){
+      link.on("click.dispatch-interaction", function(d){
         gd3.dispatch.interaction({ source: d.source.name, target: d.target.name });
       })
     });

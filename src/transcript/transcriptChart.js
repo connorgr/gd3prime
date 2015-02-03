@@ -439,7 +439,7 @@ function transcriptChart(style) {
           gd3.dispatch.sample({ sample: d.sample, over: true});
         }).on("mouseout", function(d){
           gd3.dispatch.sample({ sample: d.sample, over: false});
-        }).on("click", function(d){
+        }).on("click.dispatch-mutation", function(d){
           var domain = null;
           gd3.dispatch.mutation({
             dataset: d.dataset,

@@ -111,7 +111,7 @@ function heatmapChart(style) {
         if (renderLegend) legendRefLine.style("opacity", 0);
         d3.select(this).style('stroke', 'none');
         gd3.dispatch.sample({ sample: cell.x, over: false});
-      }).on('click', function(cell){
+      }).on('click.dispatch-mutation', function(cell){
         gd3.dispatch.mutation({
           gene: cell.y,
           dataset: data.columnIdToDataset[cell.x],

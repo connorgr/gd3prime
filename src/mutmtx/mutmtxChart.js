@@ -738,13 +738,18 @@ function mutmtxChart(style) {
             gd3.dispatch.sample({ sample: data.maps.columnIdToLabel[d.colId], over: true});
           }).on("mouseout", function(d){
             gd3.dispatch.sample({ sample: data.maps.columnIdToLabel[d.colId], over: false});
-          }).on("click", function(d){
+          }).on("click.dispatch-mutation", function(d){
             gd3.dispatch.mutation({
               gene: d.rowLabel,
               dataset: d.cell.dataset,
               mutation_class: d.cell.type == "inactive_snv" ? "snv" : d.cell.type
             })
           });
+
+        gd3.dispatch.sort({
+          columnLabels: data.ids.columns.map(function(d) { return data.maps.columnIdToLabel[d]; }),
+          sortingOptionsData: sortingOptionsData
+        });
 
         gd3.dispatch.on("sample.mutmtx", function(d){
           var over = d.over, // flag if mouseover or mouseout
