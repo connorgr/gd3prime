@@ -2,7 +2,7 @@
   var gd3 = {
     version: "0.2.1"
   };
-  gd3.dispatch = d3.dispatch("sample", "interaction", "sort", "filterCategory", "filterType");
+  gd3.dispatch = d3.dispatch("sample", "interaction", "sort", "filterCategory", "filterType", "mutation");
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -143,6 +143,7 @@
         if (d.ty == "del") d.index = delIndex++;
       });
       var d = {
+        gene: cdata.gene,
         numAmps: ampIndex,
         numDels: delIndex,
         genes: geneJSON,
@@ -299,7 +300,6 @@
           stroke: "black",
           "stroke-opacity": 0
         }).on("mouseover", function(d) {
-          console.log(d.ty);
           gd3.dispatch.sample({
             sample: d.sample,
             opacity: 1
@@ -308,6 +308,12 @@
           gd3.dispatch.sample({
             sample: d.sample,
             opacity: 0
+          });
+        }).on("click", function(d) {
+          gd3.dispatch.mutation({
+            dataset: d.dataset,
+            gene: data.gene,
+            mutation_class: d.ty
           });
         });
         gd3.dispatch.on("sample.cna", function(d) {
@@ -937,6 +943,7 @@
           });
         }
         link.on("click", function(d) {
+          console.log("HELLLLOOOOO");
           gd3.dispatch.interaction({
             source: d.source.name,
             target: d.target.name

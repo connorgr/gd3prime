@@ -86,6 +86,7 @@ function cnaData(data) {
     });
 
     var d = {
+      gene: cdata.gene,
       numAmps: ampIndex,
       numDels: delIndex,
       genes: geneJSON,
