@@ -2211,7 +2211,6 @@
       return view;
     };
     view.useData = function(data) {
-      console.log("useData");
       function depth(d) {
         return Array.isArray(d) ? depth(d[0]) + 1 : 0;
       }
@@ -2609,7 +2608,7 @@
           updateTranscript();
         });
         svg.call(zoom);
-        var mutationsG = tG.append("g").attr("class", "transcriptMutations"), inactivatingG = mutationsG.append("g"), activatingG = mutationsG.append("g");
+        var mutationsG = tG.append("g").attr("class", "gd3TranscriptMutations"), inactivatingG = mutationsG.append("g"), activatingG = mutationsG.append("g");
         var inactivatingData = data.get("mutations").filter(function(d) {
           return data.isMutationInactivating(d.ty);
         }), activatingData = data.get("mutations").filter(function(d) {
