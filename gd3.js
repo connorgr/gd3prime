@@ -1496,6 +1496,15 @@
     defaultParse();
     if (inputData.annotations) {
       data.annotations = inputData.annotations;
+    } else {
+      data.annotations = {
+        categories: [],
+        sampleToAnnotations: {},
+        annotationToColor: {}
+      };
+      data.ids.columns.forEach(function(s) {
+        data.annotations.sampleToAnnotations[data.maps.columnIdToLabel[s]] = [];
+      });
     }
     return data;
   }

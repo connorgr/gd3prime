@@ -218,6 +218,11 @@ function mutmtxData(inputData) {
   // sample annotation data processing, if present
   if(inputData.annotations) {
     data.annotations = inputData.annotations;
+  } else {
+    data.annotations = { categories: [], sampleToAnnotations: {}, annotationToColor: {} };
+    data.ids.columns.forEach(function(s){
+      data.annotations.sampleToAnnotations[data.maps.columnIdToLabel[s]] = [];
+    });
   }
 
   // create simulated annotation data if it does not exist.
