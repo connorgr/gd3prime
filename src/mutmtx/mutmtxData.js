@@ -115,6 +115,17 @@ function mutmtxData(inputData) {
     });
   } // end data.reorderColumns()
 
+  data.recomputeLabels = function(){
+    data.labels.rows = data.labels.rows.map(function(rowLabel){
+      var rowId = rowLabel.split(" (")[0],
+          count = Object.keys(inputData.M[rowId]).reduce(function(sum, colId){
+            if (data.hiddenColumns.byCategory[colId] || data.hiddenColumns.byType[colId]) return sum;
+            else return sum + 1;
+          }, 0);
+      return rowId + " (" + count + ")";
+    });
+  }
+
   function defaultParse() {
     // Scrape labels from the matrix
     inputData.samples.forEach(function(s) {

@@ -1422,6 +1422,14 @@
         return sortResult;
       });
     };
+    data.recomputeLabels = function() {
+      data.labels.rows = data.labels.rows.map(function(rowLabel) {
+        var rowId = rowLabel.split(" (")[0], count = Object.keys(inputData.M[rowId]).reduce(function(sum, colId) {
+          if (data.hiddenColumns.byCategory[colId] || data.hiddenColumns.byType[colId]) return sum; else return sum + 1;
+        }, 0);
+        return rowId + " (" + count + ")";
+      });
+    };
     function defaultParse() {
       inputData.samples.forEach(function(s) {
         data.maps.columnIdToLabel[s._id] = s.name;
@@ -1627,26 +1635,23 @@
             }
           });
           data.reorderColumns(sortingOptionsData);
+          data.recomputeLabels();
           rerenderMutationMatrix();
         });
         gd3.dispatch.on("filterType.mutmtx", function(d) {
-          console.log("hi");
           if (!d || !d.types) return;
           typesToFilter = d.types.filter(function(s) {
             return data.types.indexOf(s) > -1;
           });
           data.hiddenColumns.byType = {};
-          console.log(data.maps.columnIdToTypes);
           Object.keys(data.maps.columnIdToTypes).forEach(function(cid) {
             var types = data.maps.columnIdToTypes[cid];
-            types.forEach(function(type) {
-              if (typesToFilter.indexOf(type) > -1) {
-                data.hiddenColumns.byType[cid] = type;
-              }
+            data.hiddenColumns.byType[cid] = types.every(function(type) {
+              return typesToFilter.indexOf(type) > -1;
             });
           });
-          console.log(data.hiddenColumns.byType);
           data.reorderColumns(sortingOptionsData);
+          data.recomputeLabels();
           rerenderMutationMatrix();
         });
         if (drawLegend) drawLegendFn(selection.append("div").style("width", style.width));
@@ -1826,6 +1831,9 @@
           var t = zoom.translate(), tx = t[0], ty = t[1], scale = zoom.scale();
           tx = Math.min(tx, 0);
           zoom.translate([ tx, ty ]);
+          rowLabels.data(data.labels.rows).text(function(d) {
+            return d;
+          });
           var colWidth = wholeVisX(1) - wholeVisX(0);
           if (transition && transition == true) {
             columns.transition().attr("transform", function(d) {
@@ -1840,10 +1848,7 @@
           }
           columns.style("opacity", 1);
           columns.filter(function(d) {
-            var c = data.maps.columnIdToCategory[d], typeFilter = data.maps.columnIdToTypes[d].reduce(function(cur, elem) {
-              return cur || typesToFilter.indexOf(elem) > -1;
-            }, false);
-            return categoriesToFilter.indexOf(c) > -1 || typeFilter;
+            return data.hiddenColumns.byCategory[d] || data.hiddenColumns.byType[d];
           }).style("opacity", 0);
           columns.filter(function(d) {
             return wholeVisX(data.ids.columns.indexOf(d)) < style.labelWidth;
@@ -1856,10 +1861,15 @@
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType], gWidth = d3.min([ colWidth, style.rowHeight - style.rowHeight / 2 ]);
             return d3.svg.symbol().type(glyph).size(gWidth * gWidth)();
           });
+          cells.style("opacity", function(d) {
+            var visibleType = typesToFilter.indexOf(d.cell.type) === -1, visibleCategory = categoriesToFilter.indexOf(d.cell.dataset) === -1;
+            return visibleType && visibleCategory ? 1 : 0;
+          });
         }
+        var cells;
         function renderMutationMatrix() {
           var colWidth = wholeVisX(1) - wholeVisX(0);
-          var cells = columns.append("g").attr("class", "mutmtx-sampleMutationCells").selectAll("g").data(function(colId) {
+          cells = columns.append("g").attr("class", "mutmtx-sampleMutationCells").selectAll("g").data(function(colId) {
             var activeRows = data.matrix.columnIdToActiveRows[colId];
             return activeRows.map(function(rowId) {
               return {
