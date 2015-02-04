@@ -1463,8 +1463,15 @@
           amp: "Amplification",
           del: "Deletion"
         },
-        cellTypeToGlyph: {
-          snv: null
+        cellTypeToGlyph: inputData.cellTypeToGlyph || {
+          snv: null,
+          inactive_snv: "square"
+        },
+        cellTypeToSortIndex: inputData.cellTypeToSortIndex || {
+          snv: 0,
+          inactive_snv: 1,
+          del: 2,
+          amp: 3
         },
         columnIdToLabel: {},
         columnIdToCategory: {},
@@ -1494,7 +1501,7 @@
       }
       function sortByCellType(c1, c2) {
         var c1Type = data.maps.columnIdToTypes[c1][0], c2Type = data.maps.columnIdToTypes[c2][0];
-        return d3.ascending(c1Type, c2Type);
+        return d3.ascending(data.maps.cellTypeToSortIndex[c1Type], data.maps.cellTypeToSortIndex[c2Type]);
       }
       function sortByExclusivity(c1, c2) {
         var c1X = data.matrix.columnIdToActiveRows[c1].length > 1, c2X = data.matrix.columnIdToActiveRows[c2].length > 1;
@@ -2947,7 +2954,7 @@
             return x(d.end) - x(d.start);
           });
           domainLabels.attr("x", function(d, i) {
-            var w = d3.select(d3.select(this).node().parentNode).select("rect").attr("width");
+            var w = d3.select(this.parentNode).select("rect").attr("width");
             return w / 2;
           });
         }

@@ -17,7 +17,8 @@ function mutmtxData(inputData) {
     maps: {
       cellTypeToTick: inputData.cellTypeToTick || {snv: 'full', amp: 'up', del: 'down'},
       cellTypeToLabel: inputData.cellTypeToLabel || {snv: 'SNV', inactive_snv: 'Inactivating SNV', amp: 'Amplification', del: 'Deletion'},
-      cellTypeToGlyph: { 'snv': null},
+      cellTypeToGlyph: inputData.cellTypeToGlyph || {snv: null, inactive_snv: 'square'},
+      cellTypeToSortIndex: inputData.cellTypeToSortIndex || {snv: 0, inactive_snv: 1, del: 2, amp: 3},
       columnIdToLabel: {},
       columnIdToCategory: {},
       columnIdToTypes: {},
@@ -63,7 +64,7 @@ function mutmtxData(inputData) {
     function sortByCellType(c1,c2) {
       var c1Type = data.maps.columnIdToTypes[c1][0],
           c2Type = data.maps.columnIdToTypes[c2][0];
-      return d3.ascending(c1Type, c2Type);
+      return d3.ascending(data.maps.cellTypeToSortIndex[c1Type], data.maps.cellTypeToSortIndex[c2Type]);
     }
     // Sort by how exclusive each column's mutations are with one another
     function sortByExclusivity(c1, c2) {
