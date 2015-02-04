@@ -65,7 +65,7 @@ function cnaData(data) {
           ty: s.ty
         })
 
-        if (sampleTypes.indexOf(samplesToTypes[d.sample])){
+        if (sampleTypes.indexOf(samplesToTypes[d.sample]) === -1){
           sampleTypes.push( samplesToTypes[s.sample] );
         }
       });
@@ -78,21 +78,16 @@ function cnaData(data) {
       else return d3.ascending(a.end-a.start, b.end-b.start);
     });
 
-    var ampIndex = 0,
-        delIndex = 0;
-    segJSON.forEach(function(d){
-      if (d.ty == "amp") d.index = ampIndex++;
-      if (d.ty == "del") d.index = delIndex++;
-    });
+    var sampleTypeToInclude = {};
+    sampleTypes.sort().forEach(function(d){ sampleTypeToInclude[d] = true; });
 
     var d = {
-      numAmps: ampIndex,
-      numDels: delIndex,
       genes: geneJSON,
       sampleTypes: sampleTypes,
       samplesToTypes: samplesToTypes,
       segments: segJSON,
-      segmentDomain: [minSegXLoc, maxSegXLoc]
+      segmentDomain: [minSegXLoc, maxSegXLoc],
+      sampleTypeToInclude: sampleTypeToInclude
     };
 
     d.get = function(arg) {
@@ -105,6 +100,24 @@ function cnaData(data) {
       else if (arg == 'segmentDomain') return d.segmentDomain;
       else return undefined;
     }
+
+    // We stack amplifications above and deletions below the
+    // genome bar, so we need to figure out which position in 
+    // the stack each *visible* segment has
+    d.recomputeSegmentIndices = function(){
+      var ampIndex = 0,
+          delIndex = 0;
+
+      d.segments.forEach(function(datum){
+        if (d.sampleTypeToInclude[datum.dataset]){
+          if (datum.ty == "amp") datum.index = ampIndex++;
+          if (datum.ty == "del") datum.index = delIndex++;
+        }
+      });
+      d.numAmps = ampIndex;
+      d.numDels = delIndex;
+    }
+    d.recomputeSegmentIndices();
 
     return d;
   }

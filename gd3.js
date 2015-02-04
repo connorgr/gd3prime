@@ -129,7 +129,7 @@
             dataset: samplesToTypes[d.sample],
             ty: s.ty
           });
-          if (sampleTypes.indexOf(samplesToTypes[d.sample])) {
+          if (sampleTypes.indexOf(samplesToTypes[d.sample]) === -1) {
             sampleTypes.push(samplesToTypes[s.sample]);
           }
         });
@@ -137,23 +137,34 @@
       segJSON.sort(function(a, b) {
         if (a.dataset != b.dataset) return d3.ascending(a.dataset, b.dataset); else return d3.ascending(a.end - a.start, b.end - b.start);
       });
-      var ampIndex = 0, delIndex = 0;
-      segJSON.forEach(function(d) {
-        if (d.ty == "amp") d.index = ampIndex++;
-        if (d.ty == "del") d.index = delIndex++;
+      var sampleTypeToInclude = {};
+      sampleTypes.sort().forEach(function(d) {
+        sampleTypeToInclude[d] = true;
       });
       var d = {
-        numAmps: ampIndex,
-        numDels: delIndex,
         genes: geneJSON,
         sampleTypes: sampleTypes,
         samplesToTypes: samplesToTypes,
         segments: segJSON,
-        segmentDomain: [ minSegXLoc, maxSegXLoc ]
+        segmentDomain: [ minSegXLoc, maxSegXLoc ],
+        sampleTypeToInclude: sampleTypeToInclude
       };
+      console.log(d.sampleTypes);
       d.get = function(arg) {
         if (arg == "genes") return d.genes; else if (arg == "sampleTypes") return d.sampleTypes; else if (arg == "samplesToTypes") return d.samplesToTypes; else if (arg == "segments") return d.segments; else if (arg == "amps") return d.amps; else if (arg == "dels") return d.dels; else if (arg == "segmentDomain") return d.segmentDomain; else return undefined;
       };
+      d.recomputeSegmentIndices = function() {
+        var ampIndex = 0, delIndex = 0;
+        d.segments.forEach(function(datum) {
+          if (d.sampleTypeToInclude[datum.dataset]) {
+            if (datum.ty == "amp") datum.index = ampIndex++;
+            if (datum.ty == "del") datum.index = delIndex++;
+          }
+        });
+        d.numAmps = ampIndex;
+        d.numDels = delIndex;
+      };
+      d.recomputeSegmentIndices();
       return d;
     }
     var cnaData = braph(data);
@@ -168,10 +179,6 @@
         for (var i = 0; i < data.get("sampleTypes").length; i++) {
           segmentTypeToColor[data.get("sampleTypes")[i]] = d3color(i);
         }
-        var sampleTypesToInclude = {}, samplesToTypes = data.get("samplesToTypes");
-        data.sampleTypes.sort().forEach(function(d) {
-          sampleTypesToInclude[d] = true;
-        });
         var svgActual = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width);
         var svg = svgActual.append("g");
         var bgMasks = svg.selectAll(".cna-bg").data([ {
@@ -288,10 +295,10 @@
             return x(d.end) - x(d.start);
           });
           var activeIntervals = segments.filter(function(d) {
-            return sampleTypesToInclude[samplesToTypes[d.sample]];
+            return data.sampleTypeToInclude[samplesToTypes[d.sample]];
           }).style("opacity", 1);
           segments.filter(function(d) {
-            return !sampleTypesToInclude[samplesToTypes[d.sample]];
+            return !data.sampleTypeToInclude[samplesToTypes[d.sample]];
           }).style("opacity", 0);
         }
         segs.attr({
@@ -316,6 +323,16 @@
           segs.filter(function(d) {
             return d.sample == sample;
           }).attr("stroke-opacity", opacity);
+        });
+        gd3.dispatch.on("filterCategory.cnas", function(d) {
+          if (!d || !d.categories) return;
+          data.sampleTypes.forEach(function(s) {
+            data.sampleTypeToInclude[s] = true;
+          });
+          d.categories.forEach(function(s) {
+            data.sampleTypeToInclude[s] = false;
+          });
+          updateAllComponents();
         });
       });
     }

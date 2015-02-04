@@ -686,6 +686,7 @@ function mutmtxChart(style) {
             return d3.svg.symbol().type(glyph).size(gWidth*gWidth)();
           });
 
+        // Hide cells that are of a filtered type and/or category
         cells.style("opacity", function(d){
             var visibleType = typesToFilter.indexOf(d.cell.type) === -1,
                 visibleCategory = categoriesToFilter.indexOf(d.cell.dataset) === -1;
