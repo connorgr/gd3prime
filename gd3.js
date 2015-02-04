@@ -1528,6 +1528,7 @@
         var numSamples = Object.keys(inputData.M[k]).length;
         rowAndCount.push([ k, numSamples ]);
       });
+      var sortedRowIds = [];
       rowAndCount.sort(function(a, b) {
         return a[1] < b[1] ? 1 : -1;
       });
@@ -1535,6 +1536,7 @@
         var name = d[0], numSamples = d[1];
         data.maps.rowIdToLabel[i.toString()] = name;
         data.labels.rows.push(name + " (" + numSamples + ")");
+        sortedRowIds.push(name);
       });
       data.ids.columns = Object.keys(data.maps.columnIdToLabel);
       data.ids.rows = Object.keys(data.maps.rowIdToLabel);
@@ -1545,7 +1547,7 @@
       });
       data.datasets = Object.keys(setOfDatasets);
       var cellTypes = [];
-      Object.keys(inputData.M).forEach(function(rowLabel, rowId) {
+      sortedRowIds.forEach(function(rowLabel, rowId) {
         var columns = Object.keys(inputData.M[rowLabel]);
         rowId = rowId.toString();
         data.matrix.rowIdToActiveColumns[rowId] = columns;

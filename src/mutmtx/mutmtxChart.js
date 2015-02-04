@@ -692,6 +692,7 @@ function mutmtxChart(style) {
             .data(function(colId){
               var activeRows = data.matrix.columnIdToActiveRows[colId],
                   colLabel = data.maps.columnIdToLabel[colId];
+
               return activeRows.map(function(rowId){
                 var rowLabel = data.maps.rowIdToLabel[rowId];
                 return {colId: colId,
