@@ -1433,7 +1433,14 @@
         rows: []
       },
       maps: {
-        cellTypeToGlyph: {},
+        cellTypeToTick: inputData.cellTypeToTick || {
+          snv: "full",
+          amp: "up",
+          del: "down"
+        },
+        cellTypeToGlyph: {
+          snv: null
+        },
         columnIdToLabel: {},
         columnIdToCategory: {},
         columnIdToTypes: {},
@@ -1566,6 +1573,11 @@
         });
         data.maps.columnIdToTypes[colId] = types;
       });
+      data.types.forEach(function(t) {
+        if (!(t in data.maps.cellTypeToTick)) {
+          data.maps.cellTypeToTick[t] = "full";
+        }
+      });
       if (inputData.cellTypesToGlyph) {
         data.maps.cellTypeToGlyph = inputData.cellTypeToGlyph;
       } else {
@@ -1577,10 +1589,15 @@
         var types = Object.keys(typesTmp).sort(function(a, b) {
           typesTmp[a] > typesTmp[b];
         });
-        data.maps.cellTypeToGlyph[types.shift()] = null;
         types.forEach(function(d, i) {
-          data.maps.cellTypeToGlyph[d] = data.glyphs[i % data.glyphs.length];
+          if (d in data.maps.cellTypeToGlyph) return;
+          if (data.maps.cellTypeToTick[d] != "full") {
+            data.maps.cellTypeToGlyph[d] = null;
+          } else {
+            data.maps.cellTypeToGlyph[d] = data.glyphs[i % data.glyphs.length];
+          }
         });
+        console.log(data.maps.cellTypeToGlyph);
       }
     }
     defaultParse();
@@ -1945,7 +1962,13 @@
           }).enter().append("g");
           cells.each(function(d) {
             var thisCell = d3.select(this), y = style.rowHeight * data.ids.rows.indexOf(d.row);
-            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function() {
+            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", function(d) {
+              var tickType = data.maps.cellTypeToTick[d.cell.type];
+              if (tickType == "down") return y + style.rowHeight / 2; else return y;
+            }).attr("height", function(d) {
+              var tickType = data.maps.cellTypeToTick[d.cell.type];
+              if (tickType == "up" || tickType == "down") return style.rowHeight / 2; else return style.rowHeight;
+            }).attr("width", colWidth).style("fill", function() {
               if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.cell.dataset);
               return colCategoryToColor[d.cell.dataset];
             });

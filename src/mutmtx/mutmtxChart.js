@@ -703,8 +703,16 @@ function mutmtxChart(style) {
           thisCell.append('rect')
               .attr('data-column-id', d.colId)
               .attr('x', 0)
-              .attr('y', y)
-              .attr('height', style.rowHeight)
+              .attr('y', function(d){
+                var tickType = data.maps.cellTypeToTick[d.cell.type];
+                if (tickType == 'down') return y + style.rowHeight/2;
+                else return y;
+              })
+              .attr('height', function(d){
+                var tickType = data.maps.cellTypeToTick[d.cell.type];
+                if (tickType == 'up' || tickType == 'down') return style.rowHeight/2;
+                else return style.rowHeight;
+              })
               .attr('width', colWidth)
               .style('fill', function() {
                   if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.cell.dataset);
