@@ -15,6 +15,54 @@
       ctor.prototype = properties;
     }
   }
+  gd3.color = {};
+  gd3.color.categoryPalette;
+  gd3.color.palettes = {};
+  gd3.color.palettes.categorical_cbSafe = {
+    1: [ "#1f78b4" ],
+    2: [ "#1f78b4", "#b2df8a" ],
+    3: [ "#a6cee3", "#1f78b4", "#b2df8a" ],
+    4: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c" ]
+  };
+  gd3.color.palettes.categorical = {
+    5: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99" ],
+    6: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c" ],
+    7: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f" ],
+    8: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00" ],
+    9: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6" ],
+    10: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a" ],
+    11: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99" ],
+    12: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928" ]
+  };
+  gd3.color.categories = function() {
+    function isArrayTest() {
+      for (var i = 0; i < arguments.length; i++) {
+        var a = arguments[i];
+        if (Object.prototype.toString.call(a) !== "[object Array]") {
+          throw "categories() must be passed: (1) an array of categories, (2) an array of categories and an array of colors";
+        }
+        if (a.length == 0) throw "categories() must be passed non-empty arrays for arguments";
+      }
+    }
+    if (arguments.length == 0) return gd3.color.categoryPalette; else if (arguments.length == 1) {
+      var categories = arguments[0];
+      isArrayTest(categories);
+      var colors;
+      if (categories.length < 5) {
+        colors = gd3.color.palettes.categorical_cbSafe[categories.length];
+      } else if (categories.length < 13) {
+        colors = gd3.color.palettes.categorical[categories.length];
+      } else {
+        colors = d3.scale.category20().range();
+      }
+      gd3.color.categoryPalette = d3.scale.ordinal().domain(categories).range(colors);
+    } else if (arguments.length > 1) {
+      var categories = arguments[0], colors = arguments[1];
+      isArrayTest(categories, colors);
+      gd3.color.categoryPalette = d3.scale.ordinal().domain(categories).range(colors);
+    }
+    return gd3.color.categoryPalette;
+  };
   var gd3_util = {
     arraysEqual: function(a, b) {
       if (a === b) return true;
@@ -233,6 +281,7 @@
         var segmentsG = svg.append("g"), segments = segmentsG.selectAll(".segments").data(data.get("segments")).enter().append("g").attr("class", "intervals");
         var minSegmentX = d3.min(data.get("segmentDomain")), maxSegmentX = d3.max(data.get("segmentDomain"));
         segs = segments.append("rect").attr("fill", function(d) {
+          if (gd3.color.categoryPalette) return gd3.color.categoryPalette(samplesToTypes[d.sample]);
           return segmentTypeToColor[samplesToTypes[d.sample]];
         }).attr("width", function(d) {
           return x(d.end, minSegmentX, maxSegmentX) - x(d.start, minSegmentX, maxSegmentX);
@@ -1672,6 +1721,7 @@
             });
           });
           categoryLegendKeys.append("div").style("background", function(d) {
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d);
             return colCategoryToColor[d];
           }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px");
           categoryLegendKeys.append("span").style("display", "inline-block").style("margin-left", "2px").text(function(d) {
@@ -1840,7 +1890,10 @@
           }).enter().append("g");
           cells.each(function(d) {
             var thisCell = d3.select(this), y = style.rowHeight * data.ids.rows.indexOf(d.row);
-            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", colCategoryToColor[d.cell.dataset]);
+            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function() {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.cell.dataset);
+              return colCategoryToColor[d.cell.dataset];
+            });
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType];
             if (glyph && glyph != null) {
               thisCell.append("path").attr("class", "gd3mutmtx-cellClyph").attr("d", d3.svg.symbol().type(glyph).size(colWidth * colWidth)).attr("transform", "translate(" + colWidth / 2 + "," + (y + style.rowHeight / 2) + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("stroke-width", .5);
@@ -2600,15 +2653,19 @@
         var inactivatingMutations = inactivatingG.selectAll(".symbols").data(inactivatingData).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
         }).size(style.symbolWidth)).style("fill", function(d, i) {
+          if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
           return sampleTypeToColor[d.dataset];
         }).style("stroke", function(d, i) {
+          if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
           return sampleTypeToColor[d.dataset];
         }).style("stroke-width", 2);
         var activatingMutations = activatingG.selectAll(".symbols").data(activatingData).enter().append("path").attr("class", "symbols").attr("d", d3.svg.symbol().type(function(d, i) {
           return d3.svg.symbolTypes[data.get("mutationTypesToSymbols")[d.ty]];
         }).size(style.symbolWidth)).style("fill", function(d, i) {
+          if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
           return sampleTypeToColor[d.dataset];
         }).style("stroke", function(d, i) {
+          if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
           return sampleTypeToColor[d.dataset];
         }).style("stroke-width", 2);
         var domainGroupsData = data.get("proteinDomains");
@@ -2660,8 +2717,10 @@
             pY[i] = py;
             return "translate(" + px + ", " + py + ")";
           }).style("fill", function(d) {
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
             return sampleTypeToColor[d.dataset];
           }).style("fill-opacity", 1).style("stroke", function(d) {
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
             return sampleTypeToColor[d.dataset];
           }).style("stroke-opacity", 1);
           inactivatingMutations.attr("transform", function(d, i) {
@@ -2677,8 +2736,10 @@
             pY[i] = py;
             return "translate(" + px + ", " + py + ")";
           }).style("fill", function(d) {
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
             return sampleTypeToColor[d.dataset];
           }).style("fill-opacity", 1).style("stroke", function(d) {
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
             return sampleTypeToColor[d.dataset];
           }).style("stroke-opacity", 1);
           transcriptAxis.call(xAxis);

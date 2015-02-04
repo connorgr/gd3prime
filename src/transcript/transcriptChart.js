@@ -89,8 +89,14 @@ function transcriptChart(style) {
                 return d3.svg.symbolTypes[data.get('mutationTypesToSymbols')[d.ty]];
               })
               .size(style.symbolWidth))
-            .style('fill', function(d, i) { return sampleTypeToColor[d.dataset]; })
-            .style('stroke', function(d, i) { return sampleTypeToColor[d.dataset]; })
+            .style('fill', function(d, i) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
+            .style('stroke', function(d, i) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('stroke-width', 2);
 
       var activatingMutations = activatingG.selectAll('.symbols')
@@ -103,8 +109,14 @@ function transcriptChart(style) {
                 return d3.svg.symbolTypes[data.get('mutationTypesToSymbols')[d.ty]];
               })
               .size(style.symbolWidth))
-            .style('fill', function(d, i) { return sampleTypeToColor[d.dataset]; })
-            .style('stroke', function(d, i) { return sampleTypeToColor[d.dataset]; })
+            .style('fill', function(d, i) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
+            .style('stroke', function(d, i) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('stroke-width', 2);
 
       // Draw domain data with labels with mouse over
@@ -203,9 +215,15 @@ function transcriptChart(style) {
 
                 return 'translate(' + px + ', ' + py + ')';
             })// end symbols.attr('transform')
-            .style('fill', function(d) { return sampleTypeToColor[d.dataset]; })
+            .style('fill', function(d) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('fill-opacity', 1)
-            .style('stroke', function(d) { return sampleTypeToColor[d.dataset]; })
+            .style('stroke', function(d) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('stroke-opacity', 1);
             // .call(gd3.annotation());
         inactivatingMutations.attr('transform', function(d, i) {
@@ -232,9 +250,14 @@ function transcriptChart(style) {
 
                 return 'translate(' + px + ', ' + py + ')';
             })// end symbols.attr('transform')
-            .style('fill', function(d) { return sampleTypeToColor[d.dataset]; })
+            .style('fill', function(d) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('fill-opacity', 1)
-            .style('stroke', function(d) { return sampleTypeToColor[d.dataset]; })
+            .style('stroke', function(d) {if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('stroke-opacity', 1);
             // .call(gd3.annotation());
 
