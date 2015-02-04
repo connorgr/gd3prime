@@ -38,7 +38,7 @@ gd3.color.annotations = function() {
   if(arguments.length == 0) return gd3.color.annotationPalettes;
   if(arguments.length == 1) return gd3.color.annotationPalettes[arguments[0]];
   // Else, expect two arguments where the first is the name and the second is the type
-  if(Object.prototype.toString.call(arguments[1]) !== '[object Array]' )) {
+  if(Object.prototype.toString.call(arguments[1]) !== '[object Array]' ) {
     throw 'annotations() must be passed: (1) the annotation name, (2) an array of annotation values'
         + ' OR the range of values, (3) [optionally] a string declaring if the data is "discrete"'
         + ' or "continuous"';

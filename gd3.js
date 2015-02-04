@@ -17,6 +17,7 @@
   }
   gd3.color = {};
   gd3.color.categoryPalette;
+  gd3.color.annotationPalettes = {};
   gd3.color.palettes = {};
   gd3.color.palettes.categorical_cbSafe = {
     1: [ "#1f78b4" ],
@@ -34,12 +35,25 @@
     11: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99" ],
     12: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928" ]
   };
+  gd3.color.annotations = function() {
+    if (arguments.length == 0) return gd3.color.annotationPalettes;
+    if (arguments.length == 1) return gd3.color.annotationPalettes[arguments[0]];
+    if (Object.prototype.toString.call(arguments[1]) !== "[object Array]") {
+      throw "annotations() must be passed: (1) the annotation name, (2) an array of annotation values" + ' OR the range of values, (3) [optionally] a string declaring if the data is "discrete"' + ' or "continuous"';
+    }
+    if (arguments.length > 2 && Object.prototype.toString.call(arguments[2] !== "[object String]")) {
+      throw "annotations() third argument must be a string";
+    }
+    if (arguments.length > 2 && (arguments[2] != "discrete" || arguments[2] != "continuous")) {
+      throw 'annotations() third argument must either be "discrete" or "continuous"';
+    }
+  };
   gd3.color.categories = function() {
     function isArrayTest() {
       for (var i = 0; i < arguments.length; i++) {
         var a = arguments[i];
         if (Object.prototype.toString.call(a) !== "[object Array]") {
-          throw "categories() must be passed: (1) an array of categories, (2) an array of categories and an array of colors";
+          throw "categories() must be passed: (1) an array of categories, (2) an array of categories" + " and an array of colors";
         }
         if (a.length == 0) throw "categories() must be passed non-empty arrays for arguments";
       }
