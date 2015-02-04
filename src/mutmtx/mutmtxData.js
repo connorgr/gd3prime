@@ -11,7 +11,8 @@ function mutmtxData(inputData) {
       rows: []
     },
     maps: {
-      cellTypeToTick: inputData.cellTypeToTick || { 'snv': 'full', 'amp': 'up', 'del': 'down'},
+      cellTypeToTick: inputData.cellTypeToTick || {snv: 'full', amp: 'up', del: 'down'},
+      cellTypeToLabel: inputData.cellTypeToLabel || {snv: 'SNV', inactive_snv: 'Inactivating SNV', amp: 'Amplification', del: 'Deletion'},
       cellTypeToGlyph: { 'snv': null},
       columnIdToLabel: {},
       columnIdToCategory: {},
@@ -198,6 +199,9 @@ function mutmtxData(inputData) {
       if (!(t in data.maps.cellTypeToTick)){
         data.maps.cellTypeToTick[t] = 'full';
       }
+      if (!(t in data.maps.cellTypeToLabel)){
+        data.maps.cellTypeToLabel[t] = t.replace("_", " ");
+      }
     })
 
     // Load the cell type to glyph mapping if it exists, else create it
@@ -220,7 +224,6 @@ function mutmtxData(inputData) {
           data.maps.cellTypeToGlyph[d] = data.glyphs[i%data.glyphs.length];
         }
       });
-      console.log(data.maps.cellTypeToGlyph)
     } // end glyph mapping
   }
 

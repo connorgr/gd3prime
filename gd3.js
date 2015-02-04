@@ -1438,6 +1438,12 @@
           amp: "up",
           del: "down"
         },
+        cellTypeToLabel: inputData.cellTypeToLabel || {
+          snv: "SNV",
+          inactive_snv: "Inactivating SNV",
+          amp: "Amplification",
+          del: "Deletion"
+        },
         cellTypeToGlyph: {
           snv: null
         },
@@ -1577,6 +1583,9 @@
         if (!(t in data.maps.cellTypeToTick)) {
           data.maps.cellTypeToTick[t] = "full";
         }
+        if (!(t in data.maps.cellTypeToLabel)) {
+          data.maps.cellTypeToLabel[t] = t.replace("_", " ");
+        }
       });
       if (inputData.cellTypesToGlyph) {
         data.maps.cellTypeToGlyph = inputData.cellTypeToGlyph;
@@ -1597,7 +1606,6 @@
             data.maps.cellTypeToGlyph[d] = data.glyphs[i % data.glyphs.length];
           }
         });
-        console.log(data.maps.cellTypeToGlyph);
       }
     }
     defaultParse();
@@ -1616,7 +1624,7 @@
     return data;
   }
   function mutmtxChart(style) {
-    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, drawCoverage = true, drawColumnLabels = true, stickyLegend = false, typesToFilter = [];
+    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, drawCoverage = true, drawColumnLabels = true, showColumnCategories = true, stickyLegend = false, typesToFilter = [];
     var sortingOptionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
     function chart(selection) {
       selection.each(function(data) {
@@ -1767,43 +1775,44 @@
         }
         function drawLegendFn(legend) {
           legend.style("font-size", style.fontSize + "px");
-          var columnCategories = legend.append("div").style("min-width", legend.style("width")).style("width", legend.style("width")), cellTypes = legend.append("div");
-          var categories = {};
-          Object.keys(data.maps.columnIdToCategory).forEach(function(k) {
-            categories[data.maps.columnIdToCategory[k]] = null;
-          });
-          categories = Object.keys(categories).sort();
-          var categoryLegendKeys = columnCategories.selectAll("div").data(categories).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
-            return i == categories.length - 1 ? "0px" : "10px";
-          }).on("click", function(d) {
-            var filtering = categoriesToFilter;
-            if (categoriesToFilter.indexOf(d) > -1) {
-              filtering.splice(filtering.indexOf(d), 1);
-              d3.select(this).style("opacity", 1);
-            } else {
-              filtering.push(d);
-              d3.select(this).style("opacity", .2);
-            }
-            console.log(filtering);
-            gd3.dispatch.filterCategory({
-              categories: filtering
+          if (showColumnCategories) {
+            var columnCategories = legend.append("div").style("min-width", legend.style("width")).style("width", legend.style("width"));
+            var categories = {};
+            Object.keys(data.maps.columnIdToCategory).forEach(function(k) {
+              categories[data.maps.columnIdToCategory[k]] = null;
             });
-          });
-          categoryLegendKeys.append("div").style("background", function(d) {
-            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d);
-            return colCategoryToColor[d];
-          }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px");
-          categoryLegendKeys.append("span").style("display", "inline-block").style("margin-left", "2px").text(function(d) {
-            return d;
-          });
-          var categoryLegendKeyWidths = [];
-          categoryLegendKeys.each(function() {
-            var cWidth = this.getBoundingClientRect().width;
-            categoryLegendKeyWidths.push(cWidth);
-          });
-          categoryLegendKeys.style("width", d3.max(categoryLegendKeyWidths) + "px").style("min-width", d3.max(categoryLegendKeyWidths) + "px");
+            categories = Object.keys(categories).sort();
+            var categoryLegendKeys = columnCategories.selectAll("div").data(categories).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
+              return i == categories.length - 1 ? "0px" : "10px";
+            }).on("click", function(d) {
+              var filtering = categoriesToFilter;
+              if (categoriesToFilter.indexOf(d) > -1) {
+                filtering.splice(filtering.indexOf(d), 1);
+                d3.select(this).style("opacity", 1);
+              } else {
+                filtering.push(d);
+                d3.select(this).style("opacity", .2);
+              }
+              gd3.dispatch.filterCategory({
+                categories: filtering
+              });
+            });
+            categoryLegendKeys.append("div").style("background", function(d) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d);
+              return colCategoryToColor[d];
+            }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px");
+            categoryLegendKeys.append("span").style("display", "inline-block").style("margin-left", "2px").text(function(d) {
+              return d;
+            });
+            var categoryLegendKeyWidths = [];
+            categoryLegendKeys.each(function() {
+              var cWidth = this.getBoundingClientRect().width;
+              categoryLegendKeyWidths.push(cWidth);
+            });
+            categoryLegendKeys.style("width", d3.max(categoryLegendKeyWidths) + "px").style("min-width", d3.max(categoryLegendKeyWidths) + "px");
+          }
           if (Object.keys(data.maps.cellTypeToGlyph).length > 1) {
-            var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
+            var cellTypes = legend.append("div"), cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
             var cellTypeLegendKeys = cellTypes.selectAll("div").data(cellTypesData).enter().append("div").style("cursor", "pointer").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
               return i == cellTypesData.length - 1 ? "0px" : "10px";
             }).on("click", function(d) {
@@ -1815,12 +1824,17 @@
                 filtering.push(d);
                 d3.select(this).style("opacity", .2);
               }
-              console.log(filtering);
               gd3.dispatch.filterType({
                 types: filtering
               });
             });
-            cellTypeLegendKeys.append("svg").attr("height", style.fontSize + "px").attr("width", style.fontSize + "px").style("background", d3color(0)).style("margin-right", "2px").each(function(type) {
+            cellTypeLegendKeys.append("svg").attr("height", function(d) {
+              var tickType = data.maps.cellTypeToTick[d];
+              if (tickType == "down" || tickType == "up") return style.fontSize / 2 + "px"; else return style.fontSize + "px";
+            }).attr("width", style.fontSize + "px").style("background", d3color(0)).style("margin-right", "2px").style("margin-bottom", function(d) {
+              var tickType = data.maps.cellTypeToTick[d];
+              if (tickType == "up") return style.fontSize / 2 + "px"; else "0px";
+            }).each(function(type) {
               var glyph = data.maps.cellTypeToGlyph[type];
               if (!glyph || glyph == null) return;
               d3.select(this).append("path").attr("d", function(type) {
@@ -1829,7 +1843,7 @@
               }).attr("transform", "translate(" + style.fontSize / 2 + "," + style.fontSize / 2 + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("strokew-width", .5);
             });
             cellTypeLegendKeys.append("span").text(function(d) {
-              return d;
+              return data.maps.cellTypeToLabel[d];
             });
           }
           if (data.annotations) {
@@ -2046,6 +2060,10 @@
     };
     chart.showSortingMenu = function(state) {
       drawSortingMenu = state;
+      return chart;
+    };
+    chart.showColumnCategories = function(state) {
+      showColumnCategories = state;
       return chart;
     };
     return chart;
