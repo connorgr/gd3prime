@@ -1,7 +1,8 @@
 import "transcriptData";
 
 function transcriptChart(style) {
-  var showScrollers = true;
+  var showScrollers = true,
+      showLegend = true;
 
   function chart(selection) {
     selection.each(function(data) {
@@ -492,8 +493,12 @@ function transcriptChart(style) {
     }); // End selection
   }
 
-  function showScrollers(val) {
-    showScrollers = val;
+  chart.showScrollers = function showScrollers(state) {
+    showScrollers = state;
+  }
+
+  chart.showLegend = function showLegend(state) {
+    showLegend = state;
   }
 
   return chart;
