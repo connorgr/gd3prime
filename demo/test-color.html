@@ -243,12 +243,12 @@
           });
         });
 
-        // d3.json('testData/example-heatmap.json', function(data) {
-        //   data.annotations = annData;
-        //   var hStyle = {width: 800};
-        //   hmapA.datum(data)
-        //       .call(gd3.heatmap({style:hStyle}));
-        // });
+        d3.json('testData/example-heatmap.json', function(data) {
+          data.annotations = annData;
+          var hStyle = {width: 800};
+          hmapA.datum(data)
+              .call(gd3.heatmap({style:hStyle}));
+        });
       });
     </script>
   </body>

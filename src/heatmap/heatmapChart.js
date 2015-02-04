@@ -220,19 +220,26 @@ function heatmapChart(style) {
           sampleIndex = sampleIndex.sort(function(a,b) { return a[1] - b[1]; })
               .map(function(d) { return d[0]; });
 
-          // Decide on a color scale based on whether or not the color information lists a
-          // continuous range, or if it instead lists categorical data
-          var colorInfo = data.annotations.annotationToColor[category],
-              annColor;
-          if( Object.prototype.toString.call(colorInfo) === '[object Array]' ) {
-            annColor = d3.scale.linear()
-                .domain([colorInfo[0], colorInfo[1]])
-                .range(style.annotationContinuousColorScale)
-                .interpolate(d3.interpolateLab);
-          } else {
-            var domain = Object.keys(colorInfo),
-                range = domain.map(function(d) { return colorInfo[d]; });
-            annColor = d3.scale.ordinal().domain(domain).range(range);
+          var annColor;
+
+          // For each coloring see:
+          //    If there is a predefined categorical set, do nothing
+          //    Elsetherwise define a scale
+          if(gd3.color.annotations(category)) {
+            annColor = gd3.color.annotations(category);
+          }
+          else { // Else we need to create an annotation color
+            var values = Object.keys(data.annotations.sampleToAnnotations).map(function(key) {
+              return data.annotations.sampleToAnnotations[key][i];
+            });
+            values = d3.set(values).values();
+            console.log(values);
+
+            if(values.length <= 10) gd3.color.annotations(category, values, 'discrete');
+            else {
+              values = values.map(function(v) { return +v; });
+              annColor = gd3.color.annotations(category, [d3.min(values), d3.max(values)], 'continuous');
+            }
           }
 
           // Render the cells for each category

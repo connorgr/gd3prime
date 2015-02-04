@@ -1298,6 +1298,21 @@
               });
               annColor = d3.scale.ordinal().domain(domain).range(range);
             }
+            if (gd3.color.annotations(category)) {
+              annColor = gd3.color.annotations(category);
+            } else {
+              var values = Object.keys(data.annotations.sampleToAnnotations).map(function(key) {
+                return data.annotations.sampleToAnnotations[key][i];
+              });
+              values = d3.set(values).values();
+              console.log(values);
+              if (values.length <= 10) gd3.color.annotations(category, values, "discrete"); else {
+                values = values.map(function(v) {
+                  return +v;
+                });
+                annColor = gd3.color.annotations(category, [ d3.min(values), d3.max(values) ], "continuous");
+              }
+            }
             var annotationRects = thisEl.selectAll("rect").data(sampleIndex).enter().append("rect").attr("height", style.annotationCellHeight).attr("width", style.cellWidth).attr("x", function(d) {
               return xs.indexOf(d) * style.cellWidth;
             }).style("fill", function(d) {
