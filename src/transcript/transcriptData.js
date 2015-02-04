@@ -29,8 +29,9 @@ function transcriptData(data) {
       mutations: cdata.mutations,
       mutationTypesToSymbols: cdata.mutationTypesToSymbols || defaultMutationTypesToSymbols,
       proteinDomainDB: proteinDomainDB,
-      proteinDomains: cdata.domains[proteinDomainDB]
+      proteinDomains: cdata.domains[proteinDomainDB] || []
     };
+    d.types = Object.keys(d.mutationTypesToSymbols);
 
     var datasetNames = cdata.mutations.map(function(m) { return m.dataset; });
         tmpMutationCategories = {};
@@ -83,6 +84,16 @@ function transcriptData(data) {
     }
     d.isMutationInactivating = function(mut) {
       return d.inactivatingMutations[mut];
+    }
+    // Find the first domain that includes the given locus
+    d.domain = function(locus){
+      var loc = locus * 1; // convert to integer
+      for (var i = 0; i < d.proteinDomains.length; i++){
+        if (d.proteinDomains[i].start < loc && d.proteinDomains[i].end > loc){
+          return d.proteinDomains[i].name;
+        }
+      }
+      return null;
     }
 
     return d;

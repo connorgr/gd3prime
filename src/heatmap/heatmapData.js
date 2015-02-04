@@ -25,14 +25,13 @@ function heatmapData(inputData) {
       if (tmp < data.minCellValue) data.minCellValue = tmp;
     }
 
+    var datasetCatIndex = -1;
     if(data.annotations) {
       if(!data.annotations.annotationToColor) data.annotations.annotationToColor = {};
 
-      data.annotations.categories.forEach(function(category) {
+      data.annotations.categories.forEach(function(category, categoryIndex) {
         var entry = data.annotations.annotationToColor[category];
         if(entry && Object.keys(entry).length > 0) return;
-
-        var categoryIndex = data.annotations.categories.indexOf(category);
 
         // Assume the data is continuous and find the min and max of the category
         var annotationNames = Object.keys(data.annotations.sampleToAnnotations),
@@ -45,6 +44,23 @@ function heatmapData(inputData) {
         data.annotations.annotationToColor[category] = entry;
 
       });
+      // Set any missing column datasets to null
+      data.columnIdToDataset = {};
+      data.annotations.categories.forEach(function(c, i){
+        if (c.toLowerCase() === "cancer type" || c.toLowerCase() === "dataset"){
+          datasetCatIndex = i;
+        }
+      })
+    }
+
+    // If this category is giving the dataset (or cancer type) of the
+    // column, add it to the map of column IDs to datasets
+    if (datasetCatIndex !== -1){
+      data.xs.forEach(function(n){
+        data.columnIdToDataset[n] = data.annotations.sampleToAnnotations[n][datasetCatIndex];
+      })
+    } else {
+      data.xs.forEach(function(n){ data.columnIdToDataset[n] = null; });
     }
   }
 
@@ -53,6 +69,7 @@ function heatmapData(inputData) {
   data.sortColumns = function (columnIds) {
     data.xs.sort(function(a,b) { return columnIds.indexOf(a) - columnIds.indexOf(b); });
   }
+
 
   return data;
 }

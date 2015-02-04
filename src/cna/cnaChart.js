@@ -140,7 +140,10 @@ function cnaChart(style) {
           maxSegmentX = d3.max(data.get('segmentDomain'));
 
       segs = segments.append('rect')
-          .attr('fill', function(d){ return segmentTypeToColor[samplesToTypes[d.sample]] })
+          .attr('fill', function(d){
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(samplesToTypes[d.sample]);
+            return segmentTypeToColor[samplesToTypes[d.sample]]
+          })
           .attr('width', function(d) {
             return x(d.end, minSegmentX, maxSegmentX) - x(d.start, minSegmentX, maxSegmentX);
           })
@@ -234,10 +237,12 @@ function cnaChart(style) {
 
       // Assign actions for dispatch events
       segs.attr({"stroke-width": 1, "stroke": "black", "stroke-opacity": 0})
-        .on("mouseover", function(d){
+        .on("mouseover.dispatch-sample", function(d){
           gd3.dispatch.sample({ sample: d.sample, opacity: 1});
-        }).on("mouseout", function(d){
+        }).on("mouseout.dispatch-sample", function(d){
           gd3.dispatch.sample({ sample: d.sample, opacity: 0});
+        }).on("click.dispatch-mutation", function(d){
+          gd3.dispatch.mutation({dataset: d.dataset, gene: data.gene, mutation_class: d.ty });
         });
 
       // Highlight the segments corresponding to the given sample

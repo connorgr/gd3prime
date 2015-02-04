@@ -1,11 +1,14 @@
 import "transcriptData";
 
 function transcriptChart(style) {
-  var showScrollers = true;
+  var showScrollers = true,
+      showLegend = true;
 
   function chart(selection) {
     selection.each(function(data) {
       data = transcriptData(data);
+      var filteredTypes = []; // store list of mutation types to exclude
+      var instanceIDConst = 'gd3-transcript-'+Date.now();
 
       // Determine coloration
       var d3color = d3.scale.category20(),
@@ -72,7 +75,7 @@ function transcriptChart(style) {
       svg.call(zoom);
 
       // Add mutations to the transcript
-      var mutationsG = tG.append('g').attr('class','transcriptMutations'),
+      var mutationsG = tG.append('g').attr('class','gd3TranscriptMutations'),
           inactivatingG = mutationsG.append('g'),
           activatingG = mutationsG.append('g');
 
@@ -89,8 +92,14 @@ function transcriptChart(style) {
                 return d3.svg.symbolTypes[data.get('mutationTypesToSymbols')[d.ty]];
               })
               .size(style.symbolWidth))
-            .style('fill', function(d, i) { return sampleTypeToColor[d.dataset]; })
-            .style('stroke', function(d, i) { return sampleTypeToColor[d.dataset]; })
+            .style('fill', function(d, i) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
+            .style('stroke', function(d, i) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('stroke-width', 2);
 
       var activatingMutations = activatingG.selectAll('.symbols')
@@ -103,8 +112,14 @@ function transcriptChart(style) {
                 return d3.svg.symbolTypes[data.get('mutationTypesToSymbols')[d.ty]];
               })
               .size(style.symbolWidth))
-            .style('fill', function(d, i) { return sampleTypeToColor[d.dataset]; })
-            .style('stroke', function(d, i) { return sampleTypeToColor[d.dataset]; })
+            .style('fill', function(d, i) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
+            .style('stroke', function(d, i) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('stroke-width', 2);
 
       // Draw domain data with labels with mouse over
@@ -179,7 +194,13 @@ function transcriptChart(style) {
         }
 
         // render mutation glpyhs and move/color them
-        activatingMutations.attr('transform', function(d, i) {
+        activatingMutations.each(function(d){
+          if (filteredTypes.indexOf(d.ty) === -1) d.visible = true;
+          else d.visible = false;
+        });
+        activatingMutations.filter(function(d){ return !d.visible; }).style({"stroke-opacity": 0, "fill-opacity": 0});
+        activatingMutations.filter(function(d){ return d.visible; })
+          .attr('transform', function(d, i) {
                 var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex,
                     curIndex = Math.round(d.locus/curRes),
                     px = x(curIndex*curRes),
@@ -203,12 +224,26 @@ function transcriptChart(style) {
 
                 return 'translate(' + px + ', ' + py + ')';
             })// end symbols.attr('transform')
-            .style('fill', function(d) { return sampleTypeToColor[d.dataset]; })
+            .style('fill', function(d) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('fill-opacity', 1)
-            .style('stroke', function(d) { return sampleTypeToColor[d.dataset]; })
+            .style('stroke', function(d) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('stroke-opacity', 1);
             // .call(gd3.annotation());
-        inactivatingMutations.attr('transform', function(d, i) {
+
+        inactivatingMutations.each(function(d){
+          if (filteredTypes.indexOf(d.ty) === -1) d.visible = true;
+          else d.visible = false;
+        });
+        inactivatingMutations.filter(function(d){ return !d.visible; })
+          .style({"stroke-opacity": 0, "fill-opacity": 0});
+        inactivatingMutations.filter(function(d){ return d.visible; })
+          .attr('transform', function(d, i) {
                 var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex,
                     curIndex = Math.round(d.locus/curRes),
                     px = x(curIndex*curRes),
@@ -232,9 +267,14 @@ function transcriptChart(style) {
 
                 return 'translate(' + px + ', ' + py + ')';
             })// end symbols.attr('transform')
-            .style('fill', function(d) { return sampleTypeToColor[d.dataset]; })
+            .style('fill', function(d) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('fill-opacity', 1)
-            .style('stroke', function(d) { return sampleTypeToColor[d.dataset]; })
+            .style('stroke', function(d) {if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
+              return sampleTypeToColor[d.dataset];
+            })
             .style('stroke-opacity', 1);
             // .call(gd3.annotation());
 
@@ -432,13 +472,94 @@ function transcriptChart(style) {
 
       } // end renderScrollers()
 
+      /////////////////////////////////////////////////////////////////////////
+      // Render the legend
+      if (showLegend) renderLegend();
+      function renderLegend() {
+        var mutationTypes = data.types,
+            numTypes = mutationTypes.length,
+            numRows = Math.ceil(numTypes/2);
+
+        // Select the svg element, if it exists.
+        var svg = selection.append('div')
+            .selectAll('.gd3SvgTranscriptLegend')
+            .data([data])
+            .enter()
+              .append('svg')
+              .attr('class', 'gd3SvgTranscriptLegend')
+              .attr('font-size', 10)
+              .attr('width', width),
+            legendGroup = svg.append('g');
+
+        var legend = legendGroup.selectAll('.symbolGroup')
+            .data(mutationTypes)
+            .enter()
+            .append('g')
+            .attr('transform', function(d, i) {
+              var x = (i % numRows) * width / numRows + style.margin.left + style.margin.right;
+              var y = Math.round(i/numTypes) * style.legendSymbolHeight + (Math.round(i/numTypes)+2) + style.margin.top;
+              return 'translate(' + x + ', ' + y + ')';
+            })
+            .style("cursor", "pointer")
+            .on("click.dispatch-mutation-type", function(d){
+              // Hide/show the symbol in the legend depending on whether it's active
+              var index = filteredTypes.indexOf(d),
+                  visible = index === -1;
+
+              if (visible){
+                filteredTypes.push(d);
+              } else {
+                filteredTypes.splice(index, 1);
+              }
+
+              d3.select(this).selectAll("*")
+                .style("fill-opacity", visible ? 0.5 : 1)
+                .style("stroke-opacity", visible ? 0.5 : 1);
+
+              // Send out the dispatch
+              gd3.dispatch.filterMutationType({types: filteredTypes});
+            });
+
+        legend.append('path')
+          .attr('class', 'symbol')
+          .attr('d', d3.svg.symbol()
+              .type(function(d, i) {
+                return d3.svg.symbolTypes[data.mutationTypesToSymbols[d]];
+              })
+              .size(2 * style.legendSymbolHeight)
+          )
+          .style('stroke', '#95A5A6')
+          .style('stroke-width', 2)
+          .style('fill', '#95A5A6')
+
+        legend.append('text')
+          .attr('dx', 7)
+          .attr('dy', 3)
+          .text(function(d) { return d.replace(/_/g, ' ')});
+
+        legend.attr('height', legendGroup.node().getBBox().height);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      // Dispatch
+
       // Add dispatch to increase the size of mutations with
       // from the same sample on mouseover
       var allMutations = mutationsG.selectAll("path")
-        .on("mouseover", function(d){
+        .on("mouseover.dispatch-sample", function(d){
           gd3.dispatch.sample({ sample: d.sample, over: true});
-        }).on("mouseout", function(d){
+        }).on("mouseout.dispatch-sample", function(d){
           gd3.dispatch.sample({ sample: d.sample, over: false});
+        }).on("click.dispatch-mutation", function(d){
+          var domain = null;
+          gd3.dispatch.mutation({
+            dataset: d.dataset,
+            gene: data.geneName,
+            mutation_class: "snv",
+            mutation_type: d.ty,
+            locus: d.locus,
+            domain: data.domain(d.locus)
+          })
         });
 
       gd3.dispatch.on("sample.transcript", function(d){
@@ -455,12 +576,26 @@ function transcriptChart(style) {
           allMutations.style("opacity", over ? 0.25 : 1);
           affectedMutations.style("opacity", 1);
         }
+      });
+
+      gd3.dispatch.on('filterMutationType.' + instanceIDConst, function(d) {
+        if(!d || !d.types) return;
+
+        filteredTypes = d.types.filter(function(s) {
+          return data.types.indexOf(s) > -1;
+        });
+
+        updateTranscript();
       })
     }); // End selection
   }
 
-  function showScrollers(val) {
-    showScrollers = val;
+  chart.showScrollers = function showScrollers(state) {
+    showScrollers = state;
+  }
+
+  chart.showLegend = function showLegend(state) {
+    showLegend = state;
   }
 
   return chart;
