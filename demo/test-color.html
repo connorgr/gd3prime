@@ -224,7 +224,6 @@
 
         d3.json('testData/example2-mutation-matrix.json', function(data) {
           data.annotations = annData;
-          console.log(Object.keys(data.annotations.sampleToAnnotations).length, data.samples.length);
 
           var categories = ['BLCA', 'BRCA', 'COADREAD', 'GBM','HNSC','KIRC','LAML','LUAD','LUSC','OV','UCEC'];
           gd3.color.categories(categories);
