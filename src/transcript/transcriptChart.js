@@ -435,9 +435,9 @@ function transcriptChart(style) {
       // Add dispatch to increase the size of mutations with
       // from the same sample on mouseover
       var allMutations = mutationsG.selectAll("path")
-        .on("mouseover", function(d){
+        .on("mouseover.dispatch-sample", function(d){
           gd3.dispatch.sample({ sample: d.sample, over: true});
-        }).on("mouseout", function(d){
+        }).on("mouseout.dispatch-sample", function(d){
           gd3.dispatch.sample({ sample: d.sample, over: false});
         }).on("click.dispatch-mutation", function(d){
           var domain = null;

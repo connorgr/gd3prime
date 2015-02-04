@@ -734,9 +734,9 @@ function mutmtxChart(style) {
         // Define the dispatch events
         columns.select('g.mutmtx-sampleMutationCells')
           .selectAll('g')
-          .on("mouseover", function(d){
+          .on("mouseover.dispatch-sample", function(d){
             gd3.dispatch.sample({ sample: data.maps.columnIdToLabel[d.colId], over: true});
-          }).on("mouseout", function(d){
+          }).on("mouseout.dispatch-sample", function(d){
             gd3.dispatch.sample({ sample: data.maps.columnIdToLabel[d.colId], over: false});
           }).on("click.dispatch-mutation", function(d){
             gd3.dispatch.mutation({

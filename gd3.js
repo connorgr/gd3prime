@@ -299,12 +299,12 @@
           "stroke-width": 1,
           stroke: "black",
           "stroke-opacity": 0
-        }).on("mouseover", function(d) {
+        }).on("mouseover.dispatch-sample", function(d) {
           gd3.dispatch.sample({
             sample: d.sample,
             opacity: 1
           });
-        }).on("mouseout", function(d) {
+        }).on("mouseout.dispatch-sample", function(d) {
           gd3.dispatch.sample({
             sample: d.sample,
             opacity: 0
@@ -1090,7 +1090,7 @@
           y2: 0
         } ];
         var guidelinesG = svgGroup.append("g").attr("class", "gd3heatmapGuidlines"), guidelines = guidelinesG.selectAll("line").data(guidelineData).enter().append("line").style("stroke", "#000").style("stroke-width", 1);
-        heatmapCells.on("mouseover", function(cell) {
+        heatmapCells.on("mouseover.dispatch-sample", function(cell) {
           var xOffset = +heatmap.attr("transform").replace(")", "").replace("translate(", "").split(",")[0];
           var thisEl = d3.select(this), h = +thisEl.attr("height"), w = +thisEl.attr("width"), x = +thisEl.attr("x") + xOffset, y = +thisEl.attr("y");
           var visibleHeight = +heatmap.node().getBBox().height, visibleWidth = +heatmap.node().getBBox().width + xOffset;
@@ -1112,7 +1112,7 @@
             sample: cell.x,
             over: true
           });
-        }).on("mouseout", function(cell) {
+        }).on("mouseout.dispatch-sample", function(cell) {
           guidelines.attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", 0);
           if (renderLegend) legendRefLine.style("opacity", 0);
           d3.select(this).style("stroke", "none");
@@ -1893,12 +1893,12 @@
             stroke: "black",
             "stroke-opacity": 0
           });
-          columns.select("g.mutmtx-sampleMutationCells").selectAll("g").on("mouseover", function(d) {
+          columns.select("g.mutmtx-sampleMutationCells").selectAll("g").on("mouseover.dispatch-sample", function(d) {
             gd3.dispatch.sample({
               sample: data.maps.columnIdToLabel[d.colId],
               over: true
             });
-          }).on("mouseout", function(d) {
+          }).on("mouseout.dispatch-sample", function(d) {
             gd3.dispatch.sample({
               sample: data.maps.columnIdToLabel[d.colId],
               over: false
@@ -2845,12 +2845,12 @@
             "stroke-width": 1
           }).call(dragSlider);
         }
-        var allMutations = mutationsG.selectAll("path").on("mouseover", function(d) {
+        var allMutations = mutationsG.selectAll("path").on("mouseover.dispatch-sample", function(d) {
           gd3.dispatch.sample({
             sample: d.sample,
             over: true
           });
-        }).on("mouseout", function(d) {
+        }).on("mouseout.dispatch-sample", function(d) {
           gd3.dispatch.sample({
             sample: d.sample,
             over: false
