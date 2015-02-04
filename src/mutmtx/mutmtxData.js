@@ -11,7 +11,9 @@ function mutmtxData(inputData) {
       rows: []
     },
     maps: {
-      cellTypeToGlyph: {},
+      cellTypeToTick: inputData.cellTypeToTick || {snv: 'full', amp: 'up', del: 'down'},
+      cellTypeToLabel: inputData.cellTypeToLabel || {snv: 'SNV', inactive_snv: 'Inactivating SNV', amp: 'Amplification', del: 'Deletion'},
+      cellTypeToGlyph: { 'snv': null},
       columnIdToLabel: {},
       columnIdToCategory: {},
       columnIdToTypes: {},
@@ -124,12 +126,14 @@ function mutmtxData(inputData) {
       rowAndCount.push([k,numSamples]);
     });
 
+    var sortedRowIds = [];
     rowAndCount.sort(function(a,b) { return a[1] < b[1] ? 1 : -1; });
     rowAndCount.forEach(function(d, i) {
       var name = d[0],
           numSamples = d[1];
       data.maps.rowIdToLabel[i.toString()] = name;
       data.labels.rows.push(name + ' ('+numSamples+')');
+      sortedRowIds.push(name);
     });
 
 
@@ -146,7 +150,7 @@ function mutmtxData(inputData) {
 
     // Build matrix data and maps
     var cellTypes = []
-    Object.keys(inputData.M).forEach(function(rowLabel, rowId) {
+    sortedRowIds.forEach(function(rowLabel, rowId) {
       var columns = Object.keys(inputData.M[rowLabel]);
       rowId = rowId.toString();
       // Add rowId -> columns mapping
@@ -193,6 +197,14 @@ function mutmtxData(inputData) {
       types.sort(function(a,b) { return typeLog[a] < typeLog[b]; });
       data.maps.columnIdToTypes[colId] = types;
     });
+    data.types.forEach(function(t){
+      if (!(t in data.maps.cellTypeToTick)){
+        data.maps.cellTypeToTick[t] = 'full';
+      }
+      if (!(t in data.maps.cellTypeToLabel)){
+        data.maps.cellTypeToLabel[t] = t.replace("_", " ");
+      }
+    })
 
     // Load the cell type to glyph mapping if it exists, else create it
     if (inputData.cellTypesToGlyph) {
@@ -206,9 +218,13 @@ function mutmtxData(inputData) {
       });
       var types = Object.keys(typesTmp).sort(function(a,b) { typesTmp[a] > typesTmp[b] });
 
-      data.maps.cellTypeToGlyph[types.shift()] = null;
       types.forEach(function(d,i) {
-        data.maps.cellTypeToGlyph[d] = data.glyphs[i%data.glyphs.length];
+        if (d in data.maps.cellTypeToGlyph) return;
+        if (data.maps.cellTypeToTick[d] != 'full'){
+          data.maps.cellTypeToGlyph[d] = null;
+        } else {
+          data.maps.cellTypeToGlyph[d] = data.glyphs[i%data.glyphs.length];
+        }
       });
     } // end glyph mapping
   }

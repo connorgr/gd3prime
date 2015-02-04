@@ -31,6 +31,7 @@ function transcriptData(data) {
       proteinDomainDB: proteinDomainDB,
       proteinDomains: cdata.domains[proteinDomainDB] || []
     };
+    d.types = Object.keys(d.mutationTypesToSymbols);
 
     var datasetNames = cdata.mutations.map(function(m) { return m.dataset; });
         tmpMutationCategories = {};
