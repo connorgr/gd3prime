@@ -75,6 +75,10 @@
       var m3 = body.append('div');
       body.append('hr');
       var t1 = body.append('div');
+      body.append('hr');
+      var cna1 = body.append('div');
+      body.append('br');
+      var cna2 = body.append('div');
 
       // clear the palette information for the next example
       gd3.color.categoryPalette = undefined;
@@ -160,6 +164,13 @@
         d3.select('#test3')
             .datum(vizData[2])
             .call(gd3.transcript(params));
+      });
+
+      d3.json('testData/example-cna.json', function(data) {
+        cna1.datum(data.MYC)
+          .call(gd3.cna());
+        cna2.datum(data.PDGFRA)
+          .call(gd3.cna());
       });
     </script>
   </body>

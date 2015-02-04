@@ -145,7 +145,10 @@ function cnaChart(style) {
           maxSegmentX = d3.max(data.get('segmentDomain'));
 
       segs = segments.append('rect')
-          .attr('fill', function(d){ return segmentTypeToColor[samplesToTypes[d.sample]] })
+          .attr('fill', function(d){
+            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(samplesToTypes[d.sample]);
+            return segmentTypeToColor[samplesToTypes[d.sample]]
+          })
           .attr('width', function(d) {
             return x(d.end, minSegmentX, maxSegmentX) - x(d.start, minSegmentX, maxSegmentX);
           })
