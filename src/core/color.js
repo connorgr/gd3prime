@@ -112,10 +112,6 @@ gd3.color.annotations = function() {
 
   // Define the annotation scale in the annotationPalettes object
   gd3.color.annotationPalettes[annotation] = scale;
-
-  console.log('doo itttt')
-
-  return scale;
 }
 
 // Create a palette for category data (e.g., cancer type) given the categories

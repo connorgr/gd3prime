@@ -78,8 +78,6 @@
     }
     scale.range(colors);
     gd3.color.annotationPalettes[annotation] = scale;
-    console.log("doo itttt");
-    return scale;
   };
   gd3.color.categories = function() {
     function isArrayTest() {
@@ -1289,29 +1287,21 @@
             }).map(function(d) {
               return d[0];
             });
-            var colorInfo = data.annotations.annotationToColor[category], annColor;
-            if (Object.prototype.toString.call(colorInfo) === "[object Array]") {
-              annColor = d3.scale.linear().domain([ colorInfo[0], colorInfo[1] ]).range(style.annotationContinuousColorScale).interpolate(d3.interpolateLab);
-            } else {
-              var domain = Object.keys(colorInfo), range = domain.map(function(d) {
-                return colorInfo[d];
-              });
-              annColor = d3.scale.ordinal().domain(domain).range(range);
-            }
+            var annColor;
             if (gd3.color.annotations(category)) {
               annColor = gd3.color.annotations(category);
             } else {
               var values = Object.keys(data.annotations.sampleToAnnotations).map(function(key) {
-                return data.annotations.sampleToAnnotations[key][i];
+                return data.annotations.sampleToAnnotations[key][categoryIndex];
               });
               values = d3.set(values).values();
-              console.log(values);
               if (values.length <= 10) gd3.color.annotations(category, values, "discrete"); else {
                 values = values.map(function(v) {
                   return +v;
                 });
-                annColor = gd3.color.annotations(category, [ d3.min(values), d3.max(values) ], "continuous");
+                gd3.color.annotations(category, [ d3.min(values), d3.max(values) ], "continuous");
               }
+              annColor = gd3.color.annotations(category);
             }
             var annotationRects = thisEl.selectAll("rect").data(sampleIndex).enter().append("rect").attr("height", style.annotationCellHeight).attr("width", style.cellWidth).attr("x", function(d) {
               return xs.indexOf(d) * style.cellWidth;

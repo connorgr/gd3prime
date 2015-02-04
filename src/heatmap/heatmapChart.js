@@ -230,16 +230,16 @@ function heatmapChart(style) {
           }
           else { // Else we need to create an annotation color
             var values = Object.keys(data.annotations.sampleToAnnotations).map(function(key) {
-              return data.annotations.sampleToAnnotations[key][i];
+              return data.annotations.sampleToAnnotations[key][categoryIndex];
             });
             values = d3.set(values).values();
-            console.log(values);
 
             if(values.length <= 10) gd3.color.annotations(category, values, 'discrete');
             else {
               values = values.map(function(v) { return +v; });
-              annColor = gd3.color.annotations(category, [d3.min(values), d3.max(values)], 'continuous');
+              gd3.color.annotations(category, [d3.min(values), d3.max(values)], 'continuous');
             }
+            annColor = gd3.color.annotations(category);
           }
 
           // Render the cells for each category
