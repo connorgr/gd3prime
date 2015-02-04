@@ -18,7 +18,7 @@
     <script>
       var body = d3.select('body');
       var palettes = body.append('div');
-      palettes.append('h1').text('Default palettes')
+      palettes.append('h1').text('Default category palettes')
       palettes.append('p').text('The first four colors used are color blind friendly.');
 
       var data = [],
@@ -63,6 +63,38 @@
                 .style('background-color', function(d) { return d; });
 
       body.append('hr');
+
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      body.append('h1').text('Default annotation palettes');
+
+      body.append('p').text('Discrete annotation palettes');
+
+      body.append('div').selectAll('div')
+          .data(gd3.color.palettes.annotation_discrete)
+          .enter()
+          .append('div')
+          .selectAll('div')
+              .data(function(d) { return d; })
+              .enter()
+              .append('div')
+                  .style(swatchStyle)
+                  .style('background-color', function(d) { return d; });
+
+      body.append('p').text('Continuous annotation palettes');
+
+      body.append('div').selectAll('div')
+          .data(gd3.color.palettes.annotation_continuous)
+          .enter()
+          .append('div')
+          .selectAll('div')
+              .data(function(d) { return d; })
+              .enter()
+              .append('div')
+                  .style(swatchStyle)
+                  .style('background-color', function(d) { return d; });
+
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       body.append('h2').text('For mutation matrix examples, try sorting by category');
       body.append('p').text('Mutation matrix with default coloring, no categories specified');
@@ -167,10 +199,45 @@
       });
 
       d3.json('testData/example-cna.json', function(data) {
-        cna1.datum(data.MYC)
-          .call(gd3.cna());
         cna2.datum(data.PDGFRA)
           .call(gd3.cna());
+      });
+
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // Test annoatation coloring
+      body.append('hr');
+      body.append('hr');
+
+      var mutmtxA = body.append('div'),
+          aBreak = body.append('br').append('br'),
+          hmapA = body.append('div');
+
+      d3.json('testData/exampleAnnotations.json', function(annData) {
+
+        gd3.color.annotations('Gender', ['female', 'male'], 'discrete', ['#ff0000', '#0000ff']);
+
+        var values = Object.keys(annData.sampleToAnnotations).map(function(key) {
+              return annData.sampleToAnnotations[key][0];
+            });
+        values = d3.set(values).values().map(function(d) { return + d; });
+        gd3.color.annotations('Survival (days)', [d3.min(values), d3.max(values)], 'continuous', ['#88ff88', '#000000']);
+
+        d3.json('testData/example2-mutation-matrix.json', function(data) {
+          data.annotations = annData;
+
+          var categories = ['BLCA', 'BRCA', 'COADREAD', 'GBM','HNSC','KIRC','LAML','LUAD','LUSC','OV','UCEC'];
+          gd3.color.categories(categories);
+
+          mutmtxA.datum(data)
+            .call(gd3.mutationMatrix({style:mutmtxStyle}));
+        });
+
+        d3.json('testData/example-heatmap.json', function(data) {
+          data.annotations = annData;
+          var hStyle = {width: 800};
+          hmapA.datum(data)
+              .call(gd3.heatmap({style:hStyle}));
+        });
       });
     </script>
   </body>

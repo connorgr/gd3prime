@@ -200,9 +200,10 @@ function transcriptChart(style) {
               activeCategories = filteredCategories.indexOf(d.dataset) === -1;
           d.visible = activeCategories && activeType;
         });
-        activatingMutations.filter(function(d){ return !d.visible; }).style({"stroke-opacity": 0, "fill-opacity": 0});
+        activatingMutations.filter(function(d){ return !d.visible; })
+            .style({"stroke-opacity": 0, "fill-opacity": 0});
         activatingMutations.filter(function(d){ return d.visible; })
-          .attr('transform', function(d, i) {
+            .attr('transform', function(d, i) {
                 var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex,
                     curIndex = Math.round(d.locus/curRes),
                     px = x(curIndex*curRes),
@@ -487,11 +488,11 @@ function transcriptChart(style) {
 
         // Select the svg element, if it exists.
         var svg = selection.append('div')
-            .selectAll('.gd3SvgTranscriptLegend')
+            .selectAll('.gd3-transcript-legend-svg')
             .data([data])
             .enter()
               .append('svg')
-              .attr('class', 'gd3SvgTranscriptLegend')
+              .attr('class', 'gd3-transcript-legend-svg')
               .attr('font-size', 10)
               .attr('width', width),
             legendGroup = svg.append('g');
@@ -501,8 +502,8 @@ function transcriptChart(style) {
             .enter()
             .append('g')
             .attr('transform', function(d, i) {
-              var x = (i % numRows) * width / numRows + style.margin.left + style.margin.right;
-              var y = Math.round(i/numTypes) * style.legendSymbolHeight + (Math.round(i/numTypes)+2) + style.margin.top;
+              var x = (i % numRows) * width / numRows + style.margin.left + style.margin.right,
+                  y = Math.round(i/numTypes) * style.legendSymbolHeight + (Math.round(i/numTypes)+2) + style.margin.top;
               return 'translate(' + x + ', ' + y + ')';
             })
             .style("cursor", "pointer")
@@ -535,7 +536,7 @@ function transcriptChart(style) {
           )
           .style('stroke', '#95A5A6')
           .style('stroke-width', 2)
-          .style('fill', '#95A5A6')
+          .style('fill', '#95A5A6');
 
         legend.append('text')
           .attr('dx', 7)
