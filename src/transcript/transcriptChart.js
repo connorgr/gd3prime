@@ -295,8 +295,11 @@ function transcriptChart(style) {
         domains.attr('width', function(d, i) { return x(d.end) - x(d.start); });
 
         domainLabels.attr('x', function(d, i) {
-          var w = d3.select(this.parentNode).select('rect').attr('width');
-          return w/2;
+          // TO-DO: WHY??????????? Shouldn't this.parentNode always be defined?
+          if (this.parentNode){
+            var w = d3.select(this.parentNode).select('rect').attr('width');
+            return w/2;
+          } else { return d3.select(this).attr('x'); }
         });
       } // end updateTranscript()
 

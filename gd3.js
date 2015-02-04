@@ -2954,8 +2954,12 @@
             return x(d.end) - x(d.start);
           });
           domainLabels.attr("x", function(d, i) {
-            var w = d3.select(this.parentNode).select("rect").attr("width");
-            return w / 2;
+            if (this.parentNode) {
+              var w = d3.select(this.parentNode).select("rect").attr("width");
+              return w / 2;
+            } else {
+              return d3.select(this).attr("x");
+            }
           });
         }
         function renderScrollers() {
