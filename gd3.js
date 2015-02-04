@@ -223,7 +223,7 @@
             dataset: samplesToTypes[d.sample],
             ty: s.ty
           });
-          if (sampleTypes.indexOf(samplesToTypes[d.sample])) {
+          if (sampleTypes.indexOf(samplesToTypes[d.sample]) === -1) {
             sampleTypes.push(samplesToTypes[s.sample]);
           }
         });
@@ -231,24 +231,33 @@
       segJSON.sort(function(a, b) {
         if (a.dataset != b.dataset) return d3.ascending(a.dataset, b.dataset); else return d3.ascending(a.end - a.start, b.end - b.start);
       });
-      var ampIndex = 0, delIndex = 0;
-      segJSON.forEach(function(d) {
-        if (d.ty == "amp") d.index = ampIndex++;
-        if (d.ty == "del") d.index = delIndex++;
+      var sampleTypeToInclude = {};
+      sampleTypes.sort().forEach(function(d) {
+        sampleTypeToInclude[d] = true;
       });
       var d = {
-        gene: cdata.gene,
-        numAmps: ampIndex,
-        numDels: delIndex,
         genes: geneJSON,
         sampleTypes: sampleTypes,
         samplesToTypes: samplesToTypes,
         segments: segJSON,
-        segmentDomain: [ minSegXLoc, maxSegXLoc ]
+        segmentDomain: [ minSegXLoc, maxSegXLoc ],
+        sampleTypeToInclude: sampleTypeToInclude
       };
       d.get = function(arg) {
         if (arg == "genes") return d.genes; else if (arg == "sampleTypes") return d.sampleTypes; else if (arg == "samplesToTypes") return d.samplesToTypes; else if (arg == "segments") return d.segments; else if (arg == "amps") return d.amps; else if (arg == "dels") return d.dels; else if (arg == "segmentDomain") return d.segmentDomain; else return undefined;
       };
+      d.recomputeSegmentIndices = function() {
+        var ampIndex = 0, delIndex = 0;
+        d.segments.forEach(function(datum) {
+          if (d.sampleTypeToInclude[datum.dataset]) {
+            if (datum.ty == "amp") datum.index = ampIndex++;
+            if (datum.ty == "del") datum.index = delIndex++;
+          }
+        });
+        d.numAmps = ampIndex;
+        d.numDels = delIndex;
+      };
+      d.recomputeSegmentIndices();
       return d;
     }
     var cnaData = braph(data);
@@ -263,10 +272,6 @@
         for (var i = 0; i < data.get("sampleTypes").length; i++) {
           segmentTypeToColor[data.get("sampleTypes")[i]] = d3color(i);
         }
-        var sampleTypesToInclude = {}, samplesToTypes = data.get("samplesToTypes");
-        data.sampleTypes.sort().forEach(function(d) {
-          sampleTypesToInclude[d] = true;
-        });
         var svgActual = d3.select(this).selectAll("svg").data([ data ]).enter().append("svg").attr("height", height).attr("width", width);
         var svg = svgActual.append("g");
         var bgMasks = svg.selectAll(".cna-bg").data([ {
@@ -384,10 +389,10 @@
             return x(d.end) - x(d.start);
           });
           var activeIntervals = segments.filter(function(d) {
-            return sampleTypesToInclude[samplesToTypes[d.sample]];
+            return data.sampleTypeToInclude[samplesToTypes[d.sample]];
           }).style("opacity", 1);
           segments.filter(function(d) {
-            return !sampleTypesToInclude[samplesToTypes[d.sample]];
+            return !data.sampleTypeToInclude[samplesToTypes[d.sample]];
           }).style("opacity", 0);
         }
         segs.attr({
@@ -417,6 +422,16 @@
           segs.filter(function(d) {
             return d.sample == sample;
           }).attr("stroke-opacity", opacity);
+        });
+        gd3.dispatch.on("filterCategory.cnas", function(d) {
+          if (!d || !d.categories) return;
+          data.sampleTypes.forEach(function(s) {
+            data.sampleTypeToInclude[s] = true;
+          });
+          d.categories.forEach(function(s) {
+            data.sampleTypeToInclude[s] = false;
+          });
+          updateAllComponents();
         });
       });
     }
@@ -1463,6 +1478,10 @@
     var data = {
       datasets: [],
       glyphs: [ "square", "triangle-up", "cross", "circle", "diamond", "triangle-down" ],
+      hiddenColumns: {
+        byCategory: [],
+        byType: []
+      },
       ids: {
         columns: [],
         rows: []
@@ -1483,8 +1502,15 @@
           amp: "Amplification",
           del: "Deletion"
         },
-        cellTypeToGlyph: {
-          snv: null
+        cellTypeToGlyph: inputData.cellTypeToGlyph || {
+          snv: null,
+          inactive_snv: "square"
+        },
+        cellTypeToSortIndex: inputData.cellTypeToSortIndex || {
+          snv: 0,
+          inactive_snv: 1,
+          del: 2,
+          amp: 3
         },
         columnIdToLabel: {},
         columnIdToCategory: {},
@@ -1508,9 +1534,13 @@
       if (!attr) return null; else if (attr === "datasets") return data.datasets; else if (attr === "ids") return data.ids; else if (attr === "labels") return data.labels;
     };
     data.reorderColumns = function(ordering) {
+      function sortByVisibility(c1, c2) {
+        var c1Hidden = data.hiddenColumns.byCategory[c1] || data.hiddenColumns.byType[c1] ? true : false, c2Hidden = data.hiddenColumns.byCategory[c2] || data.hiddenColumns.byType[c2] ? true : false;
+        if (c1Hidden == c2Hidden) return 0; else if (c1Hidden) return 1; else if (c2Hidden) return -1; else return 0;
+      }
       function sortByCellType(c1, c2) {
         var c1Type = data.maps.columnIdToTypes[c1][0], c2Type = data.maps.columnIdToTypes[c2][0];
-        return d3.ascending(c1Type, c2Type);
+        return d3.ascending(data.maps.cellTypeToSortIndex[c1Type], data.maps.cellTypeToSortIndex[c2Type]);
       }
       function sortByExclusivity(c1, c2) {
         var c1X = data.matrix.columnIdToActiveRows[c1].length > 1, c2X = data.matrix.columnIdToActiveRows[c2].length > 1;
@@ -1529,7 +1559,7 @@
       }
       var sortFns;
       if (ordering) {
-        sortFns = [];
+        sortFns = [ sortByVisibility ];
         ordering.forEach(function(d) {
           if (d == "First active row") sortFns.push(sortByFirstActiveRow);
           if (d == "Column category") sortFns.push(sortByColumnCategory);
@@ -1537,7 +1567,7 @@
           if (d == "Name") sortFns.push(sortByName);
         });
       } else {
-        sortFns = [ sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByCellType, sortByName ];
+        sortFns = [ sortByVisibility, sortByFirstActiveRow, sortByColumnCategory, sortByExclusivity, sortByCellType, sortByName ];
       }
       data.ids.columns.sort(function(c1, c2) {
         var sortResult;
@@ -1548,6 +1578,14 @@
           }
         }
         return sortResult;
+      });
+    };
+    data.recomputeLabels = function() {
+      data.labels.rows = data.labels.rows.map(function(rowLabel) {
+        var rowId = rowLabel.split(" (")[0], count = Object.keys(inputData.M[rowId]).reduce(function(sum, colId) {
+          if (data.hiddenColumns.byCategory[colId] || data.hiddenColumns.byType[colId]) return sum; else return sum + 1;
+        }, 0);
+        return rowId + " (" + count + ")";
       });
     };
     function defaultParse() {
@@ -1779,6 +1817,15 @@
           categoriesToFilter = d.categories.filter(function(s) {
             return data.datasets.indexOf(s) > -1;
           });
+          data.hiddenColumns.byCategory = {};
+          Object.keys(data.maps.columnIdToCategory).forEach(function(cid) {
+            var category = data.maps.columnIdToCategory[cid];
+            if (categoriesToFilter.indexOf(category) > -1) {
+              data.hiddenColumns.byCategory[cid] = category;
+            }
+          });
+          data.reorderColumns(sortingOptionsData);
+          data.recomputeLabels();
           rerenderMutationMatrix();
         });
         gd3.dispatch.on("filterType.mutmtx", function(d) {
@@ -1786,6 +1833,15 @@
           typesToFilter = d.types.filter(function(s) {
             return data.types.indexOf(s) > -1;
           });
+          data.hiddenColumns.byType = {};
+          Object.keys(data.maps.columnIdToTypes).forEach(function(cid) {
+            var types = data.maps.columnIdToTypes[cid];
+            data.hiddenColumns.byType[cid] = types.every(function(type) {
+              return typesToFilter.indexOf(type) > -1;
+            });
+          });
+          data.reorderColumns(sortingOptionsData);
+          data.recomputeLabels();
           rerenderMutationMatrix();
         });
         if (drawLegend) drawLegendFn(selection.append("div").style("width", style.width));
@@ -1976,6 +2032,9 @@
           var t = zoom.translate(), tx = t[0], ty = t[1], scale = zoom.scale();
           tx = Math.min(tx, 0);
           zoom.translate([ tx, ty ]);
+          rowLabels.data(data.labels.rows).text(function(d) {
+            return d;
+          });
           var colWidth = wholeVisX(1) - wholeVisX(0);
           if (transition && transition == true) {
             columns.transition().attr("transform", function(d) {
@@ -1990,11 +2049,8 @@
           }
           columns.style("opacity", 1);
           columns.filter(function(d) {
-            var c = data.maps.columnIdToCategory[d], typeFilter = data.maps.columnIdToTypes[d].reduce(function(cur, elem) {
-              return cur || typesToFilter.indexOf(elem) > -1;
-            }, false);
-            return categoriesToFilter.indexOf(c) > -1 || typeFilter;
-          }).style("opacity", .2);
+            return data.hiddenColumns.byCategory[d] || data.hiddenColumns.byType[d];
+          }).style("opacity", 0);
           columns.filter(function(d) {
             return wholeVisX(data.ids.columns.indexOf(d)) < style.labelWidth;
           }).style("opacity", .2);
@@ -2006,10 +2062,15 @@
             var cellType = d.cell.type, glyph = data.maps.cellTypeToGlyph[cellType], gWidth = d3.min([ colWidth, style.rowHeight - style.rowHeight / 2 ]);
             return d3.svg.symbol().type(glyph).size(gWidth * gWidth)();
           });
+          cells.style("opacity", function(d) {
+            var visibleType = typesToFilter.indexOf(d.cell.type) === -1, visibleCategory = categoriesToFilter.indexOf(d.cell.dataset) === -1;
+            return visibleType && visibleCategory ? 1 : 0;
+          });
         }
+        var cells;
         function renderMutationMatrix() {
           var colWidth = wholeVisX(1) - wholeVisX(0);
-          var cells = columns.append("g").attr("class", "mutmtx-sampleMutationCells").selectAll("g").data(function(colId) {
+          cells = columns.append("g").attr("class", "mutmtx-sampleMutationCells").selectAll("g").data(function(colId) {
             var activeRows = data.matrix.columnIdToActiveRows[colId], colLabel = data.maps.columnIdToLabel[colId];
             return activeRows.map(function(rowId) {
               var rowLabel = data.maps.rowIdToLabel[rowId];
@@ -2763,16 +2824,11 @@
         proteinDomains: cdata.domains[proteinDomainDB] || []
       };
       d.types = Object.keys(d.mutationTypesToSymbols);
-      var datasetNames = cdata.mutations.map(function(m) {
+      d.datasets = d3.set(cdata.mutations.map(function(m) {
         return m.dataset;
-      });
-      tmpMutationCategories = {};
-      datasetNames.forEach(function(d) {
-        tmpMutationCategories[d] = null;
-      });
-      d.mutationCategories = Object.keys(tmpMutationCategories);
+      })).values();
       d.get = function(str) {
-        if (str == "length") return d.length; else if (str == "mutationCategories") return d.mutationCategories; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else if (str == "proteinDomains") return d.proteinDomains; else return null;
+        if (str == "length") return d.length; else if (str == "datasets") return d.datasets; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else if (str == "proteinDomains") return d.proteinDomains; else return null;
       };
       d.isMutationInactivating = function(mut) {
         return d.inactivatingMutations[mut];
@@ -2796,10 +2852,10 @@
     function chart(selection) {
       selection.each(function(data) {
         data = transcriptData(data);
-        var filteredTypes = [], instanceIDConst = "gd3-transcript-" + Date.now();
+        var filteredTypes = [], filteredCategories = [], instanceIDConst = "gd3-transcript-" + Date.now();
         var d3color = d3.scale.category20(), sampleTypeToColor = {};
-        for (var i = 0; i < data.get("mutationCategories").length; i++) {
-          sampleTypeToColor[data.get("mutationCategories")[i]] = d3color(i);
+        for (var i = 0; i < data.get("datasets").length; i++) {
+          sampleTypeToColor[data.get("datasets")[i]] = d3color(i);
         }
         var height = style.height, scrollbarWidth = showScrollers ? style.scollbarWidth : 0, width = style.width - scrollbarWidth - style.margin.left - style.margin.right;
         var mutationResolution = Math.floor(width / style.symbolWidth);
@@ -2875,7 +2931,8 @@
             topIndex[i] = 0;
           }
           activatingMutations.each(function(d) {
-            if (filteredTypes.indexOf(d.ty) === -1) d.visible = true; else d.visible = false;
+            var activeType = filteredTypes.indexOf(d.ty) === -1, activeCategories = filteredCategories.indexOf(d.dataset) === -1;
+            d.visible = activeCategories && activeType;
           });
           activatingMutations.filter(function(d) {
             return !d.visible;
@@ -2943,8 +3000,12 @@
             return x(d.end) - x(d.start);
           });
           domainLabels.attr("x", function(d, i) {
-            var w = d3.select(this.parentNode).select("rect").attr("width");
-            return w / 2;
+            if (this.parentNode) {
+              var w = d3.select(this.parentNode).select("rect").attr("width");
+              return w / 2;
+            } else {
+              return d3.select(this).attr("x");
+            }
           });
         }
         function renderScrollers() {
@@ -3094,6 +3155,13 @@
           if (!d || !d.types) return;
           filteredTypes = d.types.filter(function(s) {
             return data.types.indexOf(s) > -1;
+          });
+          updateTranscript();
+        });
+        gd3.dispatch.on("filterCategory." + instanceIDConst, function(d) {
+          if (!d || !d.categories) return;
+          filteredCategories = d.categories.filter(function(s) {
+            return data.datasets.indexOf(s) > -1;
           });
           updateTranscript();
         });

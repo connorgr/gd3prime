@@ -32,12 +32,7 @@ function transcriptData(data) {
       proteinDomains: cdata.domains[proteinDomainDB] || []
     };
     d.types = Object.keys(d.mutationTypesToSymbols);
-
-    var datasetNames = cdata.mutations.map(function(m) { return m.dataset; });
-        tmpMutationCategories = {};
-    datasetNames.forEach(function(d){ tmpMutationCategories[d] = null; });
-    d.mutationCategories = Object.keys(tmpMutationCategories);
-
+    d.datasets = d3.set(cdata.mutations.map(function(m) { return m.dataset; })).values();
 
     // for (var mutation in d.mutations) {
     //   var m = d.mutations[mutation];
@@ -76,7 +71,7 @@ function transcriptData(data) {
 
     d.get = function(str) {
       if (str == 'length') return d.length;
-      else if (str == 'mutationCategories') return d.mutationCategories;
+      else if (str == 'datasets') return d.datasets;
       else if (str == 'mutations') return d.mutations;
       else if (str == 'mutationTypesToSymbols') return d.mutationTypesToSymbols;
       else if (str == 'proteinDomains') return d.proteinDomains;

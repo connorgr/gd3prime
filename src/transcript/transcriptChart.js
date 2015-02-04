@@ -8,13 +8,14 @@ function transcriptChart(style) {
     selection.each(function(data) {
       data = transcriptData(data);
       var filteredTypes = [], // store list of mutation types to exclude
+          filteredCategories = [], // store list of datasets types to exclude
           instanceIDConst = 'gd3-transcript-'+Date.now();
 
       // Determine coloration
       var d3color = d3.scale.category20(),
           sampleTypeToColor = {};
-      for (var i = 0; i < data.get('mutationCategories').length; i++) {
-        sampleTypeToColor[data.get('mutationCategories')[i]] = d3color(i);
+      for (var i = 0; i < data.get('datasets').length; i++) {
+        sampleTypeToColor[data.get('datasets')[i]] = d3color(i);
       }
 
       var height = style.height,
@@ -195,8 +196,9 @@ function transcriptChart(style) {
 
         // render mutation glpyhs and move/color them
         activatingMutations.each(function(d){
-          if (filteredTypes.indexOf(d.ty) === -1) d.visible = true;
-          else d.visible = false;
+          var activeType = filteredTypes.indexOf(d.ty) === -1,
+              activeCategories = filteredCategories.indexOf(d.dataset) === -1;
+          d.visible = activeCategories && activeType;
         });
         activatingMutations.filter(function(d){ return !d.visible; })
             .style({"stroke-opacity": 0, "fill-opacity": 0});
@@ -294,8 +296,11 @@ function transcriptChart(style) {
         domains.attr('width', function(d, i) { return x(d.end) - x(d.start); });
 
         domainLabels.attr('x', function(d, i) {
-          var w = d3.select(this.parentNode).select('rect').attr('width');
-          return w/2;
+          // TO-DO: WHY??????????? Shouldn't this.parentNode always be defined?
+          if (this.parentNode){
+            var w = d3.select(this.parentNode).select('rect').attr('width');
+            return w/2;
+          } else { return d3.select(this).attr('x'); }
         });
       } // end updateTranscript()
 
@@ -587,7 +592,16 @@ function transcriptChart(style) {
         });
 
         updateTranscript();
-      })
+      });
+
+      gd3.dispatch.on('filterCategory.' + instanceIDConst, function(d) {
+        if(!d || !d.categories) return;
+        filteredCategories = d.categories.filter(function(s) {
+          return data.datasets.indexOf(s) > -1;
+        });
+
+        updateTranscript();
+      });
     }); // End selection
   }
 

@@ -61,7 +61,7 @@ function mutmtxChart(style) {
                     .attr('y', function(d,i) { return style.rowHeight*data.labels.rows.indexOf(d) + style.rowHeight - 3})
                     .style('font-family', style.fontFamily)
                     .style('font-size', style.fontSize)
-                    .text(function(d){return d});
+                    .text(function(d){return d;});
 
       // Adjust the label width to minimize the label area and maximize matrix area
       var maxTextWidth = -Infinity;
@@ -255,6 +255,18 @@ function mutmtxChart(style) {
         categoriesToFilter = d.categories.filter(function(s) {
           return data.datasets.indexOf(s) > -1;
         });
+
+        data.hiddenColumns.byCategory = {};
+
+        Object.keys(data.maps.columnIdToCategory).forEach(function(cid) {
+          var category = data.maps.columnIdToCategory[cid];
+          if (categoriesToFilter.indexOf(category) > -1) {
+            data.hiddenColumns.byCategory[cid] = category;
+          }
+        });
+
+        data.reorderColumns(sortingOptionsData);
+        data.recomputeLabels();
         rerenderMutationMatrix();
       });
 
@@ -264,6 +276,18 @@ function mutmtxChart(style) {
         typesToFilter = d.types.filter(function(s) {
           return data.types.indexOf(s) > -1;
         });
+
+        data.hiddenColumns.byType = {};
+
+        Object.keys(data.maps.columnIdToTypes).forEach(function(cid) {
+          var types = data.maps.columnIdToTypes[cid];
+          data.hiddenColumns.byType[cid] = types.every(function(type){
+            return typesToFilter.indexOf(type) > -1;
+          });
+        });
+
+        data.reorderColumns(sortingOptionsData);
+        data.recomputeLabels();
         rerenderMutationMatrix();
       })
 
@@ -638,6 +662,9 @@ function mutmtxChart(style) {
 
         zoom.translate([tx, ty]);
 
+        // Update the row labels with their current counts
+        rowLabels.data(data.labels.rows).text(function(d){ return d; });
+
         var colWidth = wholeVisX(1)-wholeVisX(0);
         if(transition && transition == true) {
           columns.transition().attr('transform', function(d) {
@@ -654,12 +681,8 @@ function mutmtxChart(style) {
         // Fade columns that have categories or types in filter lists
         columns.style("opacity", 1);
         columns.filter(function(d) {
-          var c = data.maps.columnIdToCategory[d],
-              typeFilter = data.maps.columnIdToTypes[d].reduce(function(cur, elem) {
-                      return cur || typesToFilter.indexOf(elem) > -1;
-                  }, false);
-          return categoriesToFilter.indexOf(c) > -1 || typeFilter;
-        }).style('opacity', 0.2);
+          return data.hiddenColumns.byCategory[d] || data.hiddenColumns.byType[d];
+        }).style('opacity', 0.0);
 
 
         // Fade columns out of the viewport
@@ -669,27 +692,35 @@ function mutmtxChart(style) {
 
         // Redraw each cell and any glyphs the cell might have
         columns.selectAll('rect').attr('width', colWidth);
-        columns.selectAll('.gd3mutmtx-cellClyph').attr('transform', function (d) {
-              var str = d3.select(this).attr('transform'),
-                  then = str.replace('translate','').replace(')','').split(','),
-                  x = colWidth/2,
-                  y = +then[1],
-                  now = 'translate('+x+','+y+')';
-              return now;
-            })
-            .attr('d', function(d) {
-              var cellType = d.cell.type,
-                  glyph = data.maps.cellTypeToGlyph[cellType],
-                  gWidth = d3.min([colWidth, style.rowHeight - style.rowHeight/2]);
-              return d3.svg.symbol().type(glyph).size(gWidth*gWidth)();
-            });
+        columns.selectAll('.gd3mutmtx-cellClyph')
+          .attr('transform', function (d) {
+            var str = d3.select(this).attr('transform'),
+                then = str.replace('translate','').replace(')','').split(','),
+                x = colWidth/2,
+                y = +then[1],
+                now = 'translate('+x+','+y+')';
+            return now;
+          })
+          .attr('d', function(d) {
+            var cellType = d.cell.type,
+                glyph = data.maps.cellTypeToGlyph[cellType],
+                gWidth = d3.min([colWidth, style.rowHeight - style.rowHeight/2]);
+            return d3.svg.symbol().type(glyph).size(gWidth*gWidth)();
+          });
+
+        // Hide cells that are of a filtered type and/or category
+        cells.style("opacity", function(d){
+            var visibleType = typesToFilter.indexOf(d.cell.type) === -1,
+                visibleCategory = categoriesToFilter.indexOf(d.cell.dataset) === -1;
+            return visibleType && visibleCategory ? 1 : 0;
+          })
       }
 
-
+      var cells;
       function renderMutationMatrix() {
         var colWidth = wholeVisX(1)-wholeVisX(0);
 
-        var cells = columns.append('g')
+        cells = columns.append('g')
             .attr('class', 'mutmtx-sampleMutationCells')
             .selectAll('g')
             .data(function(colId){

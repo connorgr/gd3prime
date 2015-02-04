@@ -20,11 +20,6 @@ function cnaChart(style) {
         segmentTypeToColor[data.get('sampleTypes')[i]] = d3color(i);
       }
 
-      // Initialize the CNA browser to include all sample types
-      var sampleTypesToInclude = {},
-          samplesToTypes = data.get('samplesToTypes');
-      data.sampleTypes.sort().forEach(function(d){ sampleTypesToInclude[d] = true; });
-
       // Select the svg element, if it exists.
       var svgActual = d3.select(this)
           .selectAll('svg')
@@ -230,14 +225,17 @@ function cnaChart(style) {
         .attr("width", function(d, i){ return x(d.end) - x(d.start); })
 
         // Fade in/out intervals that are from datasets not currently active
-        var activeIntervals = segments.filter(function(d){ return sampleTypesToInclude[samplesToTypes[d.sample]]; })
+        var activeIntervals = segments.filter(function(d){ return data.sampleTypeToInclude[samplesToTypes[d.sample]]; })
           .style("opacity", 1);
-        segments.filter(function(d){ return !sampleTypesToInclude[samplesToTypes[d.sample]]; })
+        segments.filter(function(d){ return !data.sampleTypeToInclude[samplesToTypes[d.sample]]; })
           .style("opacity", 0);
 
       }
 
+      /////////////////////////////////////////////////////////////////////////
       // Set up dispatch
+
+      // Assign actions for dispatch events
       segs.attr({"stroke-width": 1, "stroke": "black", "stroke-opacity": 0})
         .on("mouseover.dispatch-sample", function(d){
           gd3.dispatch.sample({ sample: d.sample, opacity: 1});
@@ -247,12 +245,26 @@ function cnaChart(style) {
           gd3.dispatch.mutation({dataset: d.dataset, gene: data.gene, mutation_class: d.ty });
         });
 
+      // Highlight the segments corresponding to the given sample
       gd3.dispatch.on("sample.cna", function(d){
         var opacity = d.opacity,
             sample = d.sample;
         segs.attr("stroke-opacity", 0)
         segs.filter(function(d){ return d.sample == sample; })
           .attr("stroke-opacity", opacity)
+      });
+
+      // Filter the visible segments given a list of categories (datasets/sample types)
+      gd3.dispatch.on('filterCategory.cnas', function(d) {
+        if(!d || !d.categories) return;
+
+        data.sampleTypes.forEach(function(s){
+          data.sampleTypeToInclude[s] = true;
+        })
+        d.categories.forEach(function(s) {
+          data.sampleTypeToInclude[s] = false;
+        });
+        updateAllComponents();
       });
     });//end selection.each()
   }
