@@ -7,6 +7,7 @@ function mutmtxChart(style) {
       drawSortingMenu = true,
       drawCoverage = true,
       drawColumnLabels = true,
+      showColumnCategories = true,
       stickyLegend = false,
       typesToFilter = [];
 
@@ -344,64 +345,65 @@ function mutmtxChart(style) {
       // Legend should be a DIV d3 selection
       function drawLegendFn(legend) {
         legend.style('font-size', style.fontSize + 'px')
-        var columnCategories = legend.append('div')
-                .style('min-width', legend.style('width'))
-                .style('width', legend.style('width')),
-            cellTypes = legend.append('div');
+        if (showColumnCategories){
+          var columnCategories = legend.append('div')
+                  .style('min-width', legend.style('width'))
+                  .style('width', legend.style('width'));
 
-        // Tabulate categories
-        var categories = {};
-        Object.keys(data.maps.columnIdToCategory).forEach(function(k) {
-          categories[data.maps.columnIdToCategory[k]] = null;
-        });
-        categories = Object.keys(categories).sort();
-        var categoryLegendKeys = columnCategories.selectAll('div')
-            .data(categories)
-            .enter()
-            .append('div')
-                .style('display', 'inline-block')
-                .style('font-family', style.fontFamily)
-                .style('font-size', style.fontSize)
-                .style('margin-right', function(d,i) {
-                    return i == categories.length - 1 ? '0px' : '10px';
-                })
-                .on('click', function(d) {
-                  var filtering = categoriesToFilter;
-                  if(categoriesToFilter.indexOf(d) > -1) {
-                    filtering.splice(filtering.indexOf(d), 1);
-                    d3.select(this).style('opacity', 1);
-                  } else {
-                    filtering.push(d);
-                    d3.select(this).style('opacity', 0.2);
-                  }
-                  console.log(filtering);
-                  gd3.dispatch.filterCategory( { categories: filtering });
-                });
-        // Append the color blocks
-        categoryLegendKeys.append('div')
-            .style('background', function(d) {
-              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d);
-              return colCategoryToColor[d];
-            })
-            .style('display', 'inline-block')
-            .style('height', style.fontSize + 'px')
-            .style('width', (style.fontSize/2) + 'px');
-        categoryLegendKeys.append('span')
-            .style('display', 'inline-block')
-            .style('margin-left', '2px')
-            .text(function(d) { return d; });
-        // Resize the category legend key widths based on max bounding box
-        var categoryLegendKeyWidths = [];
-        categoryLegendKeys.each(function () {
-          var cWidth = this.getBoundingClientRect().width;
-          categoryLegendKeyWidths.push(cWidth);
-        });
-        categoryLegendKeys.style('width', d3.max(categoryLegendKeyWidths) + 'px')
-            .style('min-width', d3.max(categoryLegendKeyWidths) + 'px');
+          // Tabulate categories
+          var categories = {};
+          Object.keys(data.maps.columnIdToCategory).forEach(function(k) {
+            categories[data.maps.columnIdToCategory[k]] = null;
+          });
+          categories = Object.keys(categories).sort();
+          var categoryLegendKeys = columnCategories.selectAll('div')
+              .data(categories)
+              .enter()
+              .append('div')
+                  .style('display', 'inline-block')
+                  .style('font-family', style.fontFamily)
+                  .style('font-size', style.fontSize)
+                  .style('margin-right', function(d,i) {
+                      return i == categories.length - 1 ? '0px' : '10px';
+                  })
+                  .on('click', function(d) {
+                    var filtering = categoriesToFilter;
+                    if(categoriesToFilter.indexOf(d) > -1) {
+                      filtering.splice(filtering.indexOf(d), 1);
+                      d3.select(this).style('opacity', 1);
+                    } else {
+                      filtering.push(d);
+                      d3.select(this).style('opacity', 0.2);
+                    }
+                    gd3.dispatch.filterCategory( { categories: filtering });
+                  });
+          // Append the color blocks
+          categoryLegendKeys.append('div')
+              .style('background', function(d) {
+                if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d);
+                return colCategoryToColor[d];
+              })
+              .style('display', 'inline-block')
+              .style('height', style.fontSize + 'px')
+              .style('width', (style.fontSize/2) + 'px');
+          categoryLegendKeys.append('span')
+              .style('display', 'inline-block')
+              .style('margin-left', '2px')
+              .text(function(d) { return d; });
+          // Resize the category legend key widths based on max bounding box
+          var categoryLegendKeyWidths = [];
+          categoryLegendKeys.each(function () {
+            var cWidth = this.getBoundingClientRect().width;
+            categoryLegendKeyWidths.push(cWidth);
+          });
+          categoryLegendKeys.style('width', d3.max(categoryLegendKeyWidths) + 'px')
+              .style('min-width', d3.max(categoryLegendKeyWidths) + 'px');
+        }
 
         // Tabulate cell type glyphs, if present
         if(Object.keys(data.maps.cellTypeToGlyph).length > 1) {
-          var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
+          var cellTypes = legend.append('div'),
+              cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
           var cellTypeLegendKeys = cellTypes.selectAll('div')
               .data(cellTypesData)
               .enter()
@@ -422,15 +424,23 @@ function mutmtxChart(style) {
                       filtering.push(d);
                       d3.select(this).style('opacity', 0.2);
                     }
-                    console.log(filtering);
                     gd3.dispatch.filterType( { types: filtering });
                   });;
 
           cellTypeLegendKeys.append('svg')
-              .attr('height', style.fontSize + 'px')
+              .attr('height', function(d){
+                var tickType = data.maps.cellTypeToTick[d];
+                if (tickType == 'down' || tickType == 'up') return (style.fontSize/2) + 'px';
+                else return style.fontSize + 'px';
+              })
               .attr('width', style.fontSize + 'px')
               .style('background', d3color(0))
               .style('margin-right', '2px')
+              .style('margin-bottom', function(d){
+                var tickType = data.maps.cellTypeToTick[d];
+                if (tickType == 'up') return (style.fontSize/2) + 'px';
+                else '0px';
+              })
               .each(function(type) {
                 var glyph = data.maps.cellTypeToGlyph[type]
                 if(!glyph || glyph == null) return;
@@ -447,7 +457,7 @@ function mutmtxChart(style) {
               });
 
           cellTypeLegendKeys.append('span')
-              .text(function(d) { return d; });
+              .text(function(d) { return data.maps.cellTypeToLabel[d]; });
         }
 
 
@@ -682,6 +692,7 @@ function mutmtxChart(style) {
             .data(function(colId){
               var activeRows = data.matrix.columnIdToActiveRows[colId],
                   colLabel = data.maps.columnIdToLabel[colId];
+
               return activeRows.map(function(rowId){
                 var rowLabel = data.maps.rowIdToLabel[rowId];
                 return {colId: colId,
@@ -703,8 +714,16 @@ function mutmtxChart(style) {
           thisCell.append('rect')
               .attr('data-column-id', d.colId)
               .attr('x', 0)
-              .attr('y', y)
-              .attr('height', style.rowHeight)
+              .attr('y', function(d){
+                var tickType = data.maps.cellTypeToTick[d.cell.type];
+                if (tickType == 'down') return y + style.rowHeight/2;
+                else return y;
+              })
+              .attr('height', function(d){
+                var tickType = data.maps.cellTypeToTick[d.cell.type];
+                if (tickType == 'up' || tickType == 'down') return style.rowHeight/2;
+                else return style.rowHeight;
+              })
               .attr('width', colWidth)
               .style('fill', function() {
                   if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.cell.dataset);
@@ -803,6 +822,11 @@ function mutmtxChart(style) {
 
   chart.showSortingMenu = function(state) {
     drawSortingMenu = state;
+    return chart;
+  }
+
+  chart.showColumnCategories = function(state) {
+    showColumnCategories = state;
     return chart;
   }
 

@@ -2,7 +2,7 @@
   var gd3 = {
     version: "0.2.1"
   };
-  gd3.dispatch = d3.dispatch("sample", "interaction", "sort", "filterCategory", "filterType", "mutation");
+  gd3.dispatch = d3.dispatch("sample", "interaction", "sort", "filterCategory", "filterType", "mutation", "filterMutationType");
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -1433,7 +1433,20 @@
         rows: []
       },
       maps: {
-        cellTypeToGlyph: {},
+        cellTypeToTick: inputData.cellTypeToTick || {
+          snv: "full",
+          amp: "up",
+          del: "down"
+        },
+        cellTypeToLabel: inputData.cellTypeToLabel || {
+          snv: "SNV",
+          inactive_snv: "Inactivating SNV",
+          amp: "Amplification",
+          del: "Deletion"
+        },
+        cellTypeToGlyph: {
+          snv: null
+        },
         columnIdToLabel: {},
         columnIdToCategory: {},
         columnIdToTypes: {},
@@ -1515,6 +1528,7 @@
         var numSamples = Object.keys(inputData.M[k]).length;
         rowAndCount.push([ k, numSamples ]);
       });
+      var sortedRowIds = [];
       rowAndCount.sort(function(a, b) {
         return a[1] < b[1] ? 1 : -1;
       });
@@ -1522,6 +1536,7 @@
         var name = d[0], numSamples = d[1];
         data.maps.rowIdToLabel[i.toString()] = name;
         data.labels.rows.push(name + " (" + numSamples + ")");
+        sortedRowIds.push(name);
       });
       data.ids.columns = Object.keys(data.maps.columnIdToLabel);
       data.ids.rows = Object.keys(data.maps.rowIdToLabel);
@@ -1532,7 +1547,7 @@
       });
       data.datasets = Object.keys(setOfDatasets);
       var cellTypes = [];
-      Object.keys(inputData.M).forEach(function(rowLabel, rowId) {
+      sortedRowIds.forEach(function(rowLabel, rowId) {
         var columns = Object.keys(inputData.M[rowLabel]);
         rowId = rowId.toString();
         data.matrix.rowIdToActiveColumns[rowId] = columns;
@@ -1566,6 +1581,14 @@
         });
         data.maps.columnIdToTypes[colId] = types;
       });
+      data.types.forEach(function(t) {
+        if (!(t in data.maps.cellTypeToTick)) {
+          data.maps.cellTypeToTick[t] = "full";
+        }
+        if (!(t in data.maps.cellTypeToLabel)) {
+          data.maps.cellTypeToLabel[t] = t.replace("_", " ");
+        }
+      });
       if (inputData.cellTypesToGlyph) {
         data.maps.cellTypeToGlyph = inputData.cellTypeToGlyph;
       } else {
@@ -1577,9 +1600,13 @@
         var types = Object.keys(typesTmp).sort(function(a, b) {
           typesTmp[a] > typesTmp[b];
         });
-        data.maps.cellTypeToGlyph[types.shift()] = null;
         types.forEach(function(d, i) {
-          data.maps.cellTypeToGlyph[d] = data.glyphs[i % data.glyphs.length];
+          if (d in data.maps.cellTypeToGlyph) return;
+          if (data.maps.cellTypeToTick[d] != "full") {
+            data.maps.cellTypeToGlyph[d] = null;
+          } else {
+            data.maps.cellTypeToGlyph[d] = data.glyphs[i % data.glyphs.length];
+          }
         });
       }
     }
@@ -1599,7 +1626,7 @@
     return data;
   }
   function mutmtxChart(style) {
-    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, drawCoverage = true, drawColumnLabels = true, stickyLegend = false, typesToFilter = [];
+    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, drawCoverage = true, drawColumnLabels = true, showColumnCategories = true, stickyLegend = false, typesToFilter = [];
     var sortingOptionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
     function chart(selection) {
       selection.each(function(data) {
@@ -1750,43 +1777,44 @@
         }
         function drawLegendFn(legend) {
           legend.style("font-size", style.fontSize + "px");
-          var columnCategories = legend.append("div").style("min-width", legend.style("width")).style("width", legend.style("width")), cellTypes = legend.append("div");
-          var categories = {};
-          Object.keys(data.maps.columnIdToCategory).forEach(function(k) {
-            categories[data.maps.columnIdToCategory[k]] = null;
-          });
-          categories = Object.keys(categories).sort();
-          var categoryLegendKeys = columnCategories.selectAll("div").data(categories).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
-            return i == categories.length - 1 ? "0px" : "10px";
-          }).on("click", function(d) {
-            var filtering = categoriesToFilter;
-            if (categoriesToFilter.indexOf(d) > -1) {
-              filtering.splice(filtering.indexOf(d), 1);
-              d3.select(this).style("opacity", 1);
-            } else {
-              filtering.push(d);
-              d3.select(this).style("opacity", .2);
-            }
-            console.log(filtering);
-            gd3.dispatch.filterCategory({
-              categories: filtering
+          if (showColumnCategories) {
+            var columnCategories = legend.append("div").style("min-width", legend.style("width")).style("width", legend.style("width"));
+            var categories = {};
+            Object.keys(data.maps.columnIdToCategory).forEach(function(k) {
+              categories[data.maps.columnIdToCategory[k]] = null;
             });
-          });
-          categoryLegendKeys.append("div").style("background", function(d) {
-            if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d);
-            return colCategoryToColor[d];
-          }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px");
-          categoryLegendKeys.append("span").style("display", "inline-block").style("margin-left", "2px").text(function(d) {
-            return d;
-          });
-          var categoryLegendKeyWidths = [];
-          categoryLegendKeys.each(function() {
-            var cWidth = this.getBoundingClientRect().width;
-            categoryLegendKeyWidths.push(cWidth);
-          });
-          categoryLegendKeys.style("width", d3.max(categoryLegendKeyWidths) + "px").style("min-width", d3.max(categoryLegendKeyWidths) + "px");
+            categories = Object.keys(categories).sort();
+            var categoryLegendKeys = columnCategories.selectAll("div").data(categories).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
+              return i == categories.length - 1 ? "0px" : "10px";
+            }).on("click", function(d) {
+              var filtering = categoriesToFilter;
+              if (categoriesToFilter.indexOf(d) > -1) {
+                filtering.splice(filtering.indexOf(d), 1);
+                d3.select(this).style("opacity", 1);
+              } else {
+                filtering.push(d);
+                d3.select(this).style("opacity", .2);
+              }
+              gd3.dispatch.filterCategory({
+                categories: filtering
+              });
+            });
+            categoryLegendKeys.append("div").style("background", function(d) {
+              if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d);
+              return colCategoryToColor[d];
+            }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px");
+            categoryLegendKeys.append("span").style("display", "inline-block").style("margin-left", "2px").text(function(d) {
+              return d;
+            });
+            var categoryLegendKeyWidths = [];
+            categoryLegendKeys.each(function() {
+              var cWidth = this.getBoundingClientRect().width;
+              categoryLegendKeyWidths.push(cWidth);
+            });
+            categoryLegendKeys.style("width", d3.max(categoryLegendKeyWidths) + "px").style("min-width", d3.max(categoryLegendKeyWidths) + "px");
+          }
           if (Object.keys(data.maps.cellTypeToGlyph).length > 1) {
-            var cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
+            var cellTypes = legend.append("div"), cellTypesData = Object.keys(data.maps.cellTypeToGlyph);
             var cellTypeLegendKeys = cellTypes.selectAll("div").data(cellTypesData).enter().append("div").style("cursor", "pointer").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
               return i == cellTypesData.length - 1 ? "0px" : "10px";
             }).on("click", function(d) {
@@ -1798,12 +1826,17 @@
                 filtering.push(d);
                 d3.select(this).style("opacity", .2);
               }
-              console.log(filtering);
               gd3.dispatch.filterType({
                 types: filtering
               });
             });
-            cellTypeLegendKeys.append("svg").attr("height", style.fontSize + "px").attr("width", style.fontSize + "px").style("background", d3color(0)).style("margin-right", "2px").each(function(type) {
+            cellTypeLegendKeys.append("svg").attr("height", function(d) {
+              var tickType = data.maps.cellTypeToTick[d];
+              if (tickType == "down" || tickType == "up") return style.fontSize / 2 + "px"; else return style.fontSize + "px";
+            }).attr("width", style.fontSize + "px").style("background", d3color(0)).style("margin-right", "2px").style("margin-bottom", function(d) {
+              var tickType = data.maps.cellTypeToTick[d];
+              if (tickType == "up") return style.fontSize / 2 + "px"; else "0px";
+            }).each(function(type) {
               var glyph = data.maps.cellTypeToGlyph[type];
               if (!glyph || glyph == null) return;
               d3.select(this).append("path").attr("d", function(type) {
@@ -1812,7 +1845,7 @@
               }).attr("transform", "translate(" + style.fontSize / 2 + "," + style.fontSize / 2 + ")").style("fill", style.glyphColor).style("stroke", style.glyphStrokeColor).style("strokew-width", .5);
             });
             cellTypeLegendKeys.append("span").text(function(d) {
-              return d;
+              return data.maps.cellTypeToLabel[d];
             });
           }
           if (data.annotations) {
@@ -1945,7 +1978,13 @@
           }).enter().append("g");
           cells.each(function(d) {
             var thisCell = d3.select(this), y = style.rowHeight * data.ids.rows.indexOf(d.row);
-            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", y).attr("height", style.rowHeight).attr("width", colWidth).style("fill", function() {
+            thisCell.append("rect").attr("data-column-id", d.colId).attr("x", 0).attr("y", function(d) {
+              var tickType = data.maps.cellTypeToTick[d.cell.type];
+              if (tickType == "down") return y + style.rowHeight / 2; else return y;
+            }).attr("height", function(d) {
+              var tickType = data.maps.cellTypeToTick[d.cell.type];
+              if (tickType == "up" || tickType == "down") return style.rowHeight / 2; else return style.rowHeight;
+            }).attr("width", colWidth).style("fill", function() {
               if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.cell.dataset);
               return colCategoryToColor[d.cell.dataset];
             });
@@ -2023,6 +2062,10 @@
     };
     chart.showSortingMenu = function(state) {
       drawSortingMenu = state;
+      return chart;
+    };
+    chart.showColumnCategories = function(state) {
+      showColumnCategories = state;
       return chart;
     };
     return chart;
@@ -2673,6 +2716,7 @@
         proteinDomainDB: proteinDomainDB,
         proteinDomains: cdata.domains[proteinDomainDB] || []
       };
+      d.types = Object.keys(d.mutationTypesToSymbols);
       var datasetNames = cdata.mutations.map(function(m) {
         return m.dataset;
       });
@@ -2702,10 +2746,12 @@
     return tData;
   }
   function transcriptChart(style) {
-    var showScrollers = true;
+    var showScrollers = true, showLegend = true;
     function chart(selection) {
       selection.each(function(data) {
         data = transcriptData(data);
+        var filteredTypes = [];
+        var instanceIDConst = "gd3-transcript-" + Date.now();
         var d3color = d3.scale.category20(), sampleTypeToColor = {};
         for (var i = 0; i < data.get("mutationCategories").length; i++) {
           sampleTypeToColor[data.get("mutationCategories")[i]] = d3color(i);
@@ -2783,7 +2829,18 @@
             bottomIndex[i] = 0;
             topIndex[i] = 0;
           }
-          activatingMutations.attr("transform", function(d, i) {
+          activatingMutations.each(function(d) {
+            if (filteredTypes.indexOf(d.ty) === -1) d.visible = true; else d.visible = false;
+          });
+          activatingMutations.filter(function(d) {
+            return !d.visible;
+          }).style({
+            "stroke-opacity": 0,
+            "fill-opacity": 0
+          });
+          activatingMutations.filter(function(d) {
+            return d.visible;
+          }).attr("transform", function(d, i) {
             var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex, curIndex = Math.round(d.locus / curRes), px = x(curIndex * curRes), py;
             if (indexDict[curIndex] == undefined) indexDict[curIndex] = 0;
             if (data.isMutationInactivating(d.ty)) {
@@ -2802,7 +2859,18 @@
             if (gd3.color.categoryPalette) return gd3.color.categoryPalette(d.dataset);
             return sampleTypeToColor[d.dataset];
           }).style("stroke-opacity", 1);
-          inactivatingMutations.attr("transform", function(d, i) {
+          inactivatingMutations.each(function(d) {
+            if (filteredTypes.indexOf(d.ty) === -1) d.visible = true; else d.visible = false;
+          });
+          inactivatingMutations.filter(function(d) {
+            return !d.visible;
+          }).style({
+            "stroke-opacity": 0,
+            "fill-opacity": 0
+          });
+          inactivatingMutations.filter(function(d) {
+            return d.visible;
+          }).attr("transform", function(d, i) {
             var indexDict = data.isMutationInactivating(d.ty) ? bottomIndex : topIndex, curIndex = Math.round(d.locus / curRes), px = x(curIndex * curRes), py;
             if (indexDict[curIndex] == undefined) indexDict[curIndex] = 0;
             if (data.isMutationInactivating(d.ty)) {
@@ -2920,6 +2988,34 @@
             "stroke-width": 1
           }).call(dragSlider);
         }
+        if (showLegend) renderLegend();
+        function renderLegend() {
+          var mutationTypes = data.types, numTypes = mutationTypes.length, numRows = Math.ceil(numTypes / 2);
+          var svg = selection.append("div").selectAll(".gd3SvgTranscriptLegend").data([ data ]).enter().append("svg").attr("class", "gd3SvgTranscriptLegend").attr("font-size", 10).attr("width", width), legendGroup = svg.append("g");
+          var legend = legendGroup.selectAll(".symbolGroup").data(mutationTypes).enter().append("g").attr("transform", function(d, i) {
+            var x = i % numRows * width / numRows + style.margin.left + style.margin.right;
+            var y = Math.round(i / numTypes) * style.legendSymbolHeight + (Math.round(i / numTypes) + 2) + style.margin.top;
+            return "translate(" + x + ", " + y + ")";
+          }).style("cursor", "pointer").on("click.dispatch-mutation-type", function(d) {
+            var index = filteredTypes.indexOf(d), visible = index === -1;
+            if (visible) {
+              filteredTypes.push(d);
+            } else {
+              filteredTypes.splice(index, 1);
+            }
+            d3.select(this).selectAll("*").style("fill-opacity", visible ? .5 : 1).style("stroke-opacity", visible ? .5 : 1);
+            gd3.dispatch.filterMutationType({
+              types: filteredTypes
+            });
+          });
+          legend.append("path").attr("class", "symbol").attr("d", d3.svg.symbol().type(function(d, i) {
+            return d3.svg.symbolTypes[data.mutationTypesToSymbols[d]];
+          }).size(2 * style.legendSymbolHeight)).style("stroke", "#95A5A6").style("stroke-width", 2).style("fill", "#95A5A6");
+          legend.append("text").attr("dx", 7).attr("dy", 3).text(function(d) {
+            return d.replace(/_/g, " ");
+          });
+          legend.attr("height", legendGroup.node().getBBox().height);
+        }
         var allMutations = mutationsG.selectAll("path").on("mouseover.dispatch-sample", function(d) {
           gd3.dispatch.sample({
             sample: d.sample,
@@ -2950,11 +3046,21 @@
             affectedMutations.style("opacity", 1);
           }
         });
+        gd3.dispatch.on("filterMutationType." + instanceIDConst, function(d) {
+          if (!d || !d.types) return;
+          filteredTypes = d.types.filter(function(s) {
+            return data.types.indexOf(s) > -1;
+          });
+          updateTranscript();
+        });
       });
     }
-    function showScrollers(val) {
-      showScrollers = val;
-    }
+    chart.showScrollers = function showScrollers(state) {
+      showScrollers = state;
+    };
+    chart.showLegend = function showLegend(state) {
+      showLegend = state;
+    };
     return chart;
   }
   function transcriptStyle(style) {
@@ -2964,12 +3070,15 @@
       numXTicks: style.numXTicks || 5,
       symbolWidth: style.symbolWidth || 20,
       transcriptBarHeight: style.transcriptBarHeight || 20,
+      legendSymbolHeight: style.legendSymbolHeight || 14,
       width: style.width || 500,
       xTickPadding: style.xTickPadding || 1.25,
       scollbarWidth: style.scrollbarWidth || 15,
       margin: style.margin || {
         left: 5,
-        right: 5
+        right: 5,
+        top: 5,
+        bottom: 0
       }
     };
   }
