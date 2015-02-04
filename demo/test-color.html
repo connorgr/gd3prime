@@ -213,17 +213,21 @@
           hmapA = body.append('div');
 
       d3.json('testData/exampleAnnotations.json', function(annData) {
-        annData.categories.forEach(function(c) {
-          var type = annData.annotationToColor[c].typeOfScale || 'discrete';
-          if(type == 'discrete') {
-            var data = Object.keys(annData.annotationToColor[c]);
-            gd3.color.annotations(c,data,'discrete');
-          } else {
-            var obj = annData.annotationToColor[c],
-                data = [obj.min, obj.max];
-            gd3.color.annotations(c,data,'continuous');
-          }
-        });
+        // annData.categories.forEach(function(c) {
+        //   console.log(annData);
+
+        //   var type = annData.annotationToColor[c].typeOfScale || 'discrete';
+        //   if(type == 'discrete') {
+        //     var data = Object.keys(annData.annotationToColor[c]);
+        //     gd3.color.annotations(c,data,'discrete');
+        //   } else {
+        //     var obj = annData.annotationToColor[c],
+        //         data = [obj.min, obj.max];
+        //     gd3.color.annotations(c,data,'continuous');
+        //   }
+        // });
+
+
         d3.json('testData/example2-mutation-matrix.json', function(data) {
           data.annotations = annData;
 
@@ -232,14 +236,19 @@
 
           mutmtxA.datum(data)
             .call(gd3.mutationMatrix({style:mutmtxStyle}));
+
+          Object.keys(gd3.color.annotations()).forEach(function(name) {
+            var scale = gd3.color.annotations()[name];
+            console.log(name, scale.domain(), scale.range());
+          });
         });
 
-        d3.json('testData/example-heatmap.json', function(data) {
-          data.annotations = annData;
-          var hStyle = {width: 800};
-          hmapA.datum(data)
-              .call(gd3.heatmap({style:hStyle}));
-        });
+        // d3.json('testData/example-heatmap.json', function(data) {
+        //   data.annotations = annData;
+        //   var hStyle = {width: 800};
+        //   hmapA.datum(data)
+        //       .call(gd3.heatmap({style:hStyle}));
+        // });
       });
     </script>
   </body>

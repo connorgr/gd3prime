@@ -29,19 +29,19 @@ gd3.color.palettes.categorical = {
 };
 
 gd3.color.palettes.annotation_discrete = [
-  d3.scale.category20b().range(),
-  d3.scale.category20c().range()
+  ["#ad494a", "#a55194", "#8ca252", "#8c6d31",  "#843c39", "#393b79", "#7b4173", "#637939", "#e7ba52", "#bd9e39", "#cedb9c", "#ce6dbd", "#d6616b", "#9c9ede", "#b5cf6b", "#5254a3", "#e7969c", "#6b6ecf", "#e7cb94", "#de9ed6"],
+  ["#fd8d3c", "#31a354", "#9e9ac8", "#969696", "#756bb1", "#3182bd", "#636363", "#e6550d", "#a1d99b", "#74c476", "#fdd0a2", "#bdbdbd", "#bcbddc", "#c6dbef", "#fdae6b", "#6baed6", "#dadaeb", "#9ecae1", "#c7e9c0", "#d9d9d9"]
 ];
 
 // These default to the colorbrewer sequential, single-hue palettes
 // The blue scale has been discluded because of its use for the heatmap chart
 // Additionally, the ordering of scales is made to be as colorblind-friendly as possible
 gd3.color.palettes.annotation_continuous = [
-  ['rgb(247,252,245)','rgb(229,245,224)','rgb(199,233,192)','rgb(161,217,155)','rgb(116,196,118)','rgb(65,171,93)','rgb(35,139,69)','rgb(0,109,44)','rgb(0,68,27)'],
-  ['rgb(252,251,253)','rgb(239,237,245)','rgb(218,218,235)','rgb(188,189,220)','rgb(158,154,200)','rgb(128,125,186)','rgb(106,81,163)','rgb(84,39,143)','rgb(63,0,125)'],
-  ['rgb(240,240,240)','rgb(217,217,217)','rgb(189,189,189)','rgb(150,150,150)','rgb(115,115,115)','rgb(82,82,82)','rgb(37,37,37)','rgb(0,0,0)'],
-  ['rgb(255,245,235)','rgb(254,230,206)','rgb(253,208,162)','rgb(253,174,107)','rgb(253,141,60)','rgb(241,105,19)','rgb(217,72,1)','rgb(166,54,3)','rgb(127,39,4)'],
-  ['rgb(255,245,240)','rgb(254,224,210)','rgb(252,187,161)','rgb(252,146,114)','rgb(251,106,74)','rgb(239,59,44)','rgb(203,24,29)','rgb(165,15,21)','rgb(103,0,13)']
+  ['rgb(247,252,245)','rgb(0,68,27)'],
+  ['rgb(252,251,253)','rgb(63,0,125)'],
+  ['rgb(240,240,240)','rgb(0,0,0)'],
+  ['rgb(255,245,235)','rgb(127,39,4)'],
+  ['rgb(255,245,240)','rgb(103,0,13)']
 ];
 
 // The behavior for annotations is as follows:
@@ -84,7 +84,6 @@ gd3.color.annotations = function() {
     scale = d3.scale.ordinal().domain(data);
   }
 
-
   // Define the color scale range of the annotation
   var colors;
   if(arguments.length > 3) {
@@ -95,10 +94,17 @@ gd3.color.annotations = function() {
   } else {
     var numOfType = Object.keys(gd3.color.annotationPalettes).filter(function(d) {
           return gd3.color.annotationToType[d] == type;
-        }).length,
-        palettes = gd3.color.palettes,
-        paletteIndex = (type == 'discrete' ? palettes.annotation_discrete : palettes.annotation_continuous) % numOfType,
-        palette = (type == 'discrete' ? palettes.annotation_discrete : palettes.annotation_continuous)[paletteIndex];
+        }).length, // # of previously defined of this type of scale
+        palettes = gd3.color.palettes;
+
+        var paletteIndex;
+        if(type == 'discrete') {
+          paletteIndex = palettes.annotation_discrete.length % (numOfType + 1);
+        } else {
+          paletteIndex = palettes.annotation_continuous.length % (numOfType + 1);
+        }
+
+        var palette = (type == 'discrete' ? palettes.annotation_discrete : palettes.annotation_continuous)[paletteIndex];
 
     colors = palette;
   }
@@ -106,6 +112,8 @@ gd3.color.annotations = function() {
 
   // Define the annotation scale in the annotationPalettes object
   gd3.color.annotationPalettes[annotation] = scale;
+
+  console.log('doo itttt')
 
   return scale;
 }

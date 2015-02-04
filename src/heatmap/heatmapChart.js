@@ -245,6 +245,11 @@ function heatmapChart(style) {
                   .attr('x', function(d) { return xs.indexOf(d)*style.cellWidth; })
                   .style('fill', function(d) {
                       var value = data.annotations.sampleToAnnotations[d][categoryIndex];
+                      // if(gd3.color.annotations(category)) {
+                      //   console.log(gd3.color.annotations(category).domain(), category);
+                      //   return gd3.color.annotations(category)(value);
+                      // }
+                      // console.log(gd3.color.annotations(category), category, value);
                       return annColor(value);
                   });
 

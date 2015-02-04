@@ -36,8 +36,8 @@
     11: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99" ],
     12: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928" ]
   };
-  gd3.color.palettes.annotation_discrete = [ d3.scale.category20b().range(), d3.scale.category20c().range() ];
-  gd3.color.palettes.annotation_continuous = [ [ "rgb(247,252,245)", "rgb(229,245,224)", "rgb(199,233,192)", "rgb(161,217,155)", "rgb(116,196,118)", "rgb(65,171,93)", "rgb(35,139,69)", "rgb(0,109,44)", "rgb(0,68,27)" ], [ "rgb(252,251,253)", "rgb(239,237,245)", "rgb(218,218,235)", "rgb(188,189,220)", "rgb(158,154,200)", "rgb(128,125,186)", "rgb(106,81,163)", "rgb(84,39,143)", "rgb(63,0,125)" ], [ "rgb(240,240,240)", "rgb(217,217,217)", "rgb(189,189,189)", "rgb(150,150,150)", "rgb(115,115,115)", "rgb(82,82,82)", "rgb(37,37,37)", "rgb(0,0,0)" ], [ "rgb(255,245,235)", "rgb(254,230,206)", "rgb(253,208,162)", "rgb(253,174,107)", "rgb(253,141,60)", "rgb(241,105,19)", "rgb(217,72,1)", "rgb(166,54,3)", "rgb(127,39,4)" ], [ "rgb(255,245,240)", "rgb(254,224,210)", "rgb(252,187,161)", "rgb(252,146,114)", "rgb(251,106,74)", "rgb(239,59,44)", "rgb(203,24,29)", "rgb(165,15,21)", "rgb(103,0,13)" ] ];
+  gd3.color.palettes.annotation_discrete = [ [ "#ad494a", "#a55194", "#8ca252", "#8c6d31", "#843c39", "#393b79", "#7b4173", "#637939", "#e7ba52", "#bd9e39", "#cedb9c", "#ce6dbd", "#d6616b", "#9c9ede", "#b5cf6b", "#5254a3", "#e7969c", "#6b6ecf", "#e7cb94", "#de9ed6" ], [ "#fd8d3c", "#31a354", "#9e9ac8", "#969696", "#756bb1", "#3182bd", "#636363", "#e6550d", "#a1d99b", "#74c476", "#fdd0a2", "#bdbdbd", "#bcbddc", "#c6dbef", "#fdae6b", "#6baed6", "#dadaeb", "#9ecae1", "#c7e9c0", "#d9d9d9" ] ];
+  gd3.color.palettes.annotation_continuous = [ [ "rgb(247,252,245)", "rgb(0,68,27)" ], [ "rgb(252,251,253)", "rgb(63,0,125)" ], [ "rgb(240,240,240)", "rgb(0,0,0)" ], [ "rgb(255,245,235)", "rgb(127,39,4)" ], [ "rgb(255,245,240)", "rgb(103,0,13)" ] ];
   gd3.color.annotations = function() {
     if (arguments.length == 0) return gd3.color.annotationPalettes;
     if (arguments.length == 1) return gd3.color.annotationPalettes[arguments[0]];
@@ -66,11 +66,19 @@
     } else {
       var numOfType = Object.keys(gd3.color.annotationPalettes).filter(function(d) {
         return gd3.color.annotationToType[d] == type;
-      }).length, palettes = gd3.color.palettes, paletteIndex = (type == "discrete" ? palettes.annotation_discrete : palettes.annotation_continuous) % numOfType, palette = (type == "discrete" ? palettes.annotation_discrete : palettes.annotation_continuous)[paletteIndex];
+      }).length, palettes = gd3.color.palettes;
+      var paletteIndex;
+      if (type == "discrete") {
+        paletteIndex = palettes.annotation_discrete.length % (numOfType + 1);
+      } else {
+        paletteIndex = palettes.annotation_continuous.length % (numOfType + 1);
+      }
+      var palette = (type == "discrete" ? palettes.annotation_discrete : palettes.annotation_continuous)[paletteIndex];
       colors = palette;
     }
     scale.range(colors);
     gd3.color.annotationPalettes[annotation] = scale;
+    console.log("doo itttt");
     return scale;
   };
   gd3.color.categories = function() {
@@ -1675,20 +1683,24 @@
             return d;
           });
           var annColoring = data.annotations.annotationToColor;
-          Object.keys(annColoring).forEach(function(d, i) {
-            var coloring = annColoring[d];
-            if (Object.keys(coloring).length == 0) {
-              var names = Object.keys(data.annotations.sampleToAnnotations), max = d3.max(names, function(name) {
-                return data.annotations.sampleToAnnotations[name][i];
-              }), min = d3.min(names, function(name) {
-                return data.annotations.sampleToAnnotations[name][i];
+          Object.keys(annColoring).forEach(function(annotation, i) {
+            if (gd3.color.annotations(annotation)) {
+              console.log("predefined");
+              return;
+            } else {
+              var values = Object.keys(data.annotations.sampleToAnnotations).map(function(key) {
+                return data.annotations.sampleToAnnotations[key][i];
               });
-              annColoring[d] = {
-                max: max,
-                min: min,
-                scale: d3.scale.linear().domain([ min, max ]).range(style.annotationContinuousScale).interpolate(d3.interpolateLab),
-                typeOfScale: "continuous"
-              };
+              values = d3.set(values).values();
+              console.log(values);
+              if (values.length <= 10) gd3.color.annotations(annotation, values, "discrete"); else {
+                values = values.map(function(v) {
+                  return +v;
+                });
+                console.log(values);
+                console.log("+++");
+                gd3.color.annotations(annotation, [ d3.min(values), d3.max(values) ], "continuous");
+              }
             }
           });
           var maxTextHeight = 0;
@@ -1704,8 +1716,8 @@
               var spacing = style.annotationRowSpacing * (i + 1);
               return mtxOffset + spacing + style.annotationRowHeight * i;
             }).attr("width", 20).style("fill", function(d, i) {
-              var coloring = annColoring[categories[i]];
-              if (coloring.typeOfScale == "continuous") return coloring.scale(d); else if (Object.keys(coloring).length > 0) return coloring[d]; else return "#000";
+              var annotation = categories[i];
+              return gd3.color.annotations(annotation)(d);
             });
             if (drawColumnLabels) {
               var annTextOffset = annData.length * (style.annotationRowHeight + style.annotationRowSpacing) + style.annotationRowSpacing + mtxOffset;
