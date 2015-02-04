@@ -137,29 +137,25 @@ function mutmtxChart(style) {
 
         var annColoring = data.annotations.annotationToColor;
 
-        // For each coloring see if there is a predefined categorical set,
-        // otherwise assume that it is continuous and create a scale
-        Object.keys(annColoring).forEach(function(d,i) {
-          var coloring = annColoring[d];
-          if(Object.keys(coloring).length == 0) {
-            // Find the maximum and minimum values for the category
-            var names = Object.keys(data.annotations.sampleToAnnotations),
-                max = d3.max(names, function(name) {
-                  return data.annotations.sampleToAnnotations[name][i];
-                }),
-                min = d3.min(names, function(name) {
-                  return data.annotations.sampleToAnnotations[name][i];
-                });
+        // For each coloring see:
+        //    If there is a predefined categorical set, do nothing
+        //    Elsetherwise define a scale
+        Object.keys(annColoring).forEach(function(annotation,i) {
+          // If the annotation is already defined, continue
+          if(gd3.color.annotations(annotation)) {
+            return;
+          }
+          else { // Else we need to create an annotation color
+            var values = Object.keys(data.annotations.sampleToAnnotations).map(function(key) {
+              return data.annotations.sampleToAnnotations[key][i];
+            });
+            values = d3.set(values).values();
 
-            annColoring[d] = {
-                max: max,
-                min: min,
-                scale: d3.scale.linear()
-                    .domain([min,max])
-                    .range(style.annotationContinuousScale)
-                    .interpolate(d3.interpolateLab),
-                typeOfScale: 'continuous'
-            };
+            if(values.length <= 10) gd3.color.annotations(annotation, values, 'discrete');
+            else {
+              values = values.map(function(v) { return +v; });
+              gd3.color.annotations(annotation, [d3.min(values), d3.max(values)], 'continuous');
+            }
           }
         });
 
@@ -191,11 +187,8 @@ function mutmtxChart(style) {
                   })
                   .attr('width', 20)
                   .style('fill', function(d,i) {
-                    var coloring = annColoring[ categories[i] ];
-
-                    if(coloring.typeOfScale == 'continuous') return coloring.scale(d);
-                    else if(Object.keys(coloring).length > 0) return coloring[d];
-                    else return '#000';
+                    var annotation = categories[i];
+                    return gd3.color.annotations(annotation)(d);
                   });
 
           if (drawColumnLabels){
@@ -470,13 +463,14 @@ function mutmtxChart(style) {
 
           annotationLegends.each(function(annotationName) {
             var thisEl = d3.select(this),
-                scale = data.annotations.annotationToColor[annotationName];
+                scale = gd3.color.annotations(annotationName),
+                scaleType = gd3.color.annotationToType[annotationName];
 
             thisEl.style('font-family', style.fontFamily)
                 .style('font-size', style.fontSize);
             thisEl.append('span').text(annotationName+': ');
 
-            if(scale.typeOfScale && scale.typeOfScale == 'continuous') {
+            if(scaleType && scaleType == 'continuous') {
               var scaleHeight = style.fontSize,
                   scaleWidth = style.fontSize*5;
 
@@ -486,7 +480,7 @@ function mutmtxChart(style) {
                   .attr('width', scaleWidth)
                   .style('margin-left', '2px')
                   .style('margin-right', '2px');
-              thisEl.append('span').text(scale.max);
+              thisEl.append('span').text(scale.domain());
               thisEl.selectAll('*').style('display','inline-block');
 
               // Create a unique ID for the color map gradient in case multiple heatmaps are made

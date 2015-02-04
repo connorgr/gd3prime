@@ -18,6 +18,7 @@
   gd3.color = {};
   gd3.color.categoryPalette;
   gd3.color.annotationPalettes = {};
+  gd3.color.annotationToType = {};
   gd3.color.palettes = {};
   gd3.color.palettes.categorical_cbSafe = {
     1: [ "#1f78b4" ],
@@ -35,18 +36,48 @@
     11: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99" ],
     12: [ "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928" ]
   };
+  gd3.color.palettes.annotation_discrete = [ [ "#ad494a", "#a55194", "#8ca252", "#8c6d31", "#843c39", "#393b79", "#7b4173", "#637939", "#e7ba52", "#bd9e39", "#cedb9c", "#ce6dbd", "#d6616b", "#9c9ede", "#b5cf6b", "#5254a3", "#e7969c", "#6b6ecf", "#e7cb94", "#de9ed6" ], [ "#fd8d3c", "#31a354", "#9e9ac8", "#969696", "#756bb1", "#3182bd", "#636363", "#e6550d", "#a1d99b", "#74c476", "#fdd0a2", "#bdbdbd", "#bcbddc", "#c6dbef", "#fdae6b", "#6baed6", "#dadaeb", "#9ecae1", "#c7e9c0", "#d9d9d9" ] ];
+  gd3.color.palettes.annotation_continuous = [ [ "rgb(247,252,245)", "rgb(0,68,27)" ], [ "rgb(252,251,253)", "rgb(63,0,125)" ], [ "rgb(240,240,240)", "rgb(0,0,0)" ], [ "rgb(255,245,235)", "rgb(127,39,4)" ], [ "rgb(255,245,240)", "rgb(103,0,13)" ] ];
   gd3.color.annotations = function() {
     if (arguments.length == 0) return gd3.color.annotationPalettes;
     if (arguments.length == 1) return gd3.color.annotationPalettes[arguments[0]];
     if (Object.prototype.toString.call(arguments[1]) !== "[object Array]") {
       throw "annotations() must be passed: (1) the annotation name, (2) an array of annotation values" + ' OR the range of values, (3) [optionally] a string declaring if the data is "discrete"' + ' or "continuous"';
     }
-    if (arguments.length > 2 && Object.prototype.toString.call(arguments[2] !== "[object String]")) {
-      throw "annotations() third argument must be a string";
-    }
-    if (arguments.length > 2 && (arguments[2] != "discrete" || arguments[2] != "continuous")) {
+    if (arguments.length > 2 && arguments[2] != "discrete" && arguments[2] != "continuous") {
       throw 'annotations() third argument must either be "discrete" or "continuous"';
     }
+    var scale;
+    var annotation = arguments[0], data = arguments[1];
+    var type;
+    if (arguments.length > 2) type = arguments[2]; else if (data.length == 2 && typeof data[0] === "number" && typeof data[1] === "number") type = "continuous"; else type = "discrete";
+    gd3.color.annotationToType[annotation] = type;
+    if (type == "continuous") {
+      scale = d3.scale.linear().domain([ d3.min(data), d3.max(data) ]);
+    } else {
+      scale = d3.scale.ordinal().domain(data);
+    }
+    var colors;
+    if (arguments.length > 3) {
+      if (Object.prototype.toString.call(arguments[3]) !== "[object Array]") {
+        throw "annotations()'s third argument must be an array of colors you wish to use in your annotation scale";
+      }
+      colors = arguments[3];
+    } else {
+      var numOfType = Object.keys(gd3.color.annotationPalettes).filter(function(d) {
+        return gd3.color.annotationToType[d] == type;
+      }).length, palettes = gd3.color.palettes;
+      var paletteIndex;
+      if (type == "discrete") {
+        paletteIndex = palettes.annotation_discrete.length % (numOfType + 1);
+      } else {
+        paletteIndex = palettes.annotation_continuous.length % (numOfType + 1);
+      }
+      var palette = (type == "discrete" ? palettes.annotation_discrete : palettes.annotation_continuous)[paletteIndex];
+      colors = palette;
+    }
+    scale.range(colors);
+    gd3.color.annotationPalettes[annotation] = scale;
   };
   gd3.color.categories = function() {
     function isArrayTest() {
@@ -1256,14 +1287,21 @@
             }).map(function(d) {
               return d[0];
             });
-            var colorInfo = data.annotations.annotationToColor[category], annColor;
-            if (Object.prototype.toString.call(colorInfo) === "[object Array]") {
-              annColor = d3.scale.linear().domain([ colorInfo[0], colorInfo[1] ]).range(style.annotationContinuousColorScale).interpolate(d3.interpolateLab);
+            var annColor;
+            if (gd3.color.annotations(category)) {
+              annColor = gd3.color.annotations(category);
             } else {
-              var domain = Object.keys(colorInfo), range = domain.map(function(d) {
-                return colorInfo[d];
+              var values = Object.keys(data.annotations.sampleToAnnotations).map(function(key) {
+                return data.annotations.sampleToAnnotations[key][categoryIndex];
               });
-              annColor = d3.scale.ordinal().domain(domain).range(range);
+              values = d3.set(values).values();
+              if (values.length <= 10) gd3.color.annotations(category, values, "discrete"); else {
+                values = values.map(function(v) {
+                  return +v;
+                });
+                gd3.color.annotations(category, [ d3.min(values), d3.max(values) ], "continuous");
+              }
+              annColor = gd3.color.annotations(category);
             }
             var annotationRects = thisEl.selectAll("rect").data(sampleIndex).enter().append("rect").attr("height", style.annotationCellHeight).attr("width", style.cellWidth).attr("x", function(d) {
               return xs.indexOf(d) * style.cellWidth;
@@ -1677,20 +1715,20 @@
             return d;
           });
           var annColoring = data.annotations.annotationToColor;
-          Object.keys(annColoring).forEach(function(d, i) {
-            var coloring = annColoring[d];
-            if (Object.keys(coloring).length == 0) {
-              var names = Object.keys(data.annotations.sampleToAnnotations), max = d3.max(names, function(name) {
-                return data.annotations.sampleToAnnotations[name][i];
-              }), min = d3.min(names, function(name) {
-                return data.annotations.sampleToAnnotations[name][i];
+          Object.keys(annColoring).forEach(function(annotation, i) {
+            if (gd3.color.annotations(annotation)) {
+              return;
+            } else {
+              var values = Object.keys(data.annotations.sampleToAnnotations).map(function(key) {
+                return data.annotations.sampleToAnnotations[key][i];
               });
-              annColoring[d] = {
-                max: max,
-                min: min,
-                scale: d3.scale.linear().domain([ min, max ]).range(style.annotationContinuousScale).interpolate(d3.interpolateLab),
-                typeOfScale: "continuous"
-              };
+              values = d3.set(values).values();
+              if (values.length <= 10) gd3.color.annotations(annotation, values, "discrete"); else {
+                values = values.map(function(v) {
+                  return +v;
+                });
+                gd3.color.annotations(annotation, [ d3.min(values), d3.max(values) ], "continuous");
+              }
             }
           });
           var maxTextHeight = 0;
@@ -1706,8 +1744,8 @@
               var spacing = style.annotationRowSpacing * (i + 1);
               return mtxOffset + spacing + style.annotationRowHeight * i;
             }).attr("width", 20).style("fill", function(d, i) {
-              var coloring = annColoring[categories[i]];
-              if (coloring.typeOfScale == "continuous") return coloring.scale(d); else if (Object.keys(coloring).length > 0) return coloring[d]; else return "#000";
+              var annotation = categories[i];
+              return gd3.color.annotations(annotation)(d);
             });
             if (drawColumnLabels) {
               var annTextOffset = annData.length * (style.annotationRowHeight + style.annotationRowSpacing) + style.annotationRowSpacing + mtxOffset;
@@ -1851,14 +1889,14 @@
           if (data.annotations) {
             var annotationLegends = legend.append("div").selectAll("div").data(data.annotations.categories).enter().append("div");
             annotationLegends.each(function(annotationName) {
-              var thisEl = d3.select(this), scale = data.annotations.annotationToColor[annotationName];
+              var thisEl = d3.select(this), scale = gd3.color.annotations(annotationName), scaleType = gd3.color.annotationToType[annotationName];
               thisEl.style("font-family", style.fontFamily).style("font-size", style.fontSize);
               thisEl.append("span").text(annotationName + ": ");
-              if (scale.typeOfScale && scale.typeOfScale == "continuous") {
+              if (scaleType && scaleType == "continuous") {
                 var scaleHeight = style.fontSize, scaleWidth = style.fontSize * 5;
                 thisEl.append("span").text(scale.min);
                 var gradientSvg = thisEl.append("svg").attr("height", scaleHeight).attr("width", scaleWidth).style("margin-left", "2px").style("margin-right", "2px");
-                thisEl.append("span").text(scale.max);
+                thisEl.append("span").text(scale.domain());
                 thisEl.selectAll("*").style("display", "inline-block");
                 var now = Date.now(), gradientId = "gd3-mutmtx-gradient" + now;
                 var gradient = gradientSvg.append("svg:defs").append("svg:linearGradient").attr("id", gradientId).attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
