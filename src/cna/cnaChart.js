@@ -239,11 +239,12 @@ function cnaChart(style) {
 
       // Set up dispatch
       segs.attr({"stroke-width": 1, "stroke": "black", "stroke-opacity": 0})
-        .on("mouseover", function(d){
-          console.log(d.ty)
+        .on("mouseover.dispatch-sample", function(d){
           gd3.dispatch.sample({ sample: d.sample, opacity: 1});
-        }).on("mouseout", function(d){
+        }).on("mouseout.dispatch-sample", function(d){
           gd3.dispatch.sample({ sample: d.sample, opacity: 0});
+        }).on("click.dispatch-mutation", function(d){
+          gd3.dispatch.mutation({dataset: d.dataset, gene: data.gene, mutation_class: d.ty });
         });
 
       gd3.dispatch.on("sample.cna", function(d){

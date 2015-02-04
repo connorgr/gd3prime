@@ -63,7 +63,8 @@ function graphChart(style) {
       var link = graph.append('g').selectAll('.link')
           .data(data.links)
           .enter()
-          .append('g');
+          .append('g')
+          .attr('class', 'gd3Link');
 
       // Draw categories for each edge
       if(data.edgeCategories) {
@@ -246,7 +247,7 @@ function graphChart(style) {
       }
 
       // Add dispatch
-      link.on("click", function(d){
+      link.on("click.dispatch-interaction", function(d){
         gd3.dispatch.interaction({ source: d.source.name, target: d.target.name });
       })
     });

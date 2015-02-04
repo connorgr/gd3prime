@@ -6,6 +6,7 @@ function mutmtxChart(style) {
       drawLegend = false,
       drawSortingMenu = true,
       drawCoverage = true,
+      drawColumnLabels = true,
       stickyLegend = false,
       typesToFilter = [];
 
@@ -196,22 +197,25 @@ function mutmtxChart(style) {
                     else return '#000';
                   });
 
-          var annTextOffset = annData.length
-              * (style.annotationRowHeight + style.annotationRowSpacing)
-              + style.annotationRowSpacing
-              + mtxOffset;
+          if (drawColumnLabels){
+            var annTextOffset = annData.length
+                * (style.annotationRowHeight + style.annotationRowSpacing)
+                + style.annotationRowSpacing
+                + mtxOffset;
 
-          var annText = aGroup.append('text')
-              .attr('x', annTextOffset)
-              .attr('text-anchor', 'start')
-              .attr('transform', 'rotate(90)')
-              .style('font-family', style.fontFamily)
-              .style('font-size', style.annotationFontSize)
-              .text(annotationKey);
+            var annText = aGroup.append('text')
+                .attr('x', annTextOffset)
+                .attr('text-anchor', 'start')
+                .attr('transform', 'rotate(90)')
+                .style('font-family', style.fontFamily)
+                .style('font-size', style.annotationFontSize)
+                .text(annotationKey);
 
-          // width because of rotation
-          var annTextHeight = annText.node().getBBox().width + style.annotationRowSpacing;
-          maxTextHeight =  annTextHeight > maxTextHeight ? annTextHeight : maxTextHeight;
+            // width because of rotation
+            var annTextHeight = annText.node().getBBox().width + style.annotationRowSpacing;
+            maxTextHeight =  d3.max([annTextHeight, maxTextHeight]);
+          }
+
         });
 
         // Modify the SVG height based on the sample annotations
@@ -676,9 +680,16 @@ function mutmtxChart(style) {
             .attr('class', 'mutmtx-sampleMutationCells')
             .selectAll('g')
             .data(function(colId){
-              var activeRows = data.matrix.columnIdToActiveRows[colId];
+              var activeRows = data.matrix.columnIdToActiveRows[colId],
+                  colLabel = data.maps.columnIdToLabel[colId];
               return activeRows.map(function(rowId){
-                return {colId: colId, row:rowId, cell:data.matrix.cells[[rowId, colId].join()]}
+                var rowLabel = data.maps.rowIdToLabel[rowId];
+                return {colId: colId,
+                        row:rowId,
+                        rowLabel: rowLabel,
+                        colLabel: colLabel,
+                        cell:data.matrix.cells[[rowId, colId].join()]
+                      }
               });
             })
             .enter()
@@ -729,11 +740,22 @@ function mutmtxChart(style) {
         // Define the dispatch events
         columns.select('g.mutmtx-sampleMutationCells')
           .selectAll('g')
-          .on("mouseover", function(d){
+          .on("mouseover.dispatch-sample", function(d){
             gd3.dispatch.sample({ sample: data.maps.columnIdToLabel[d.colId], over: true});
-          }).on("mouseout", function(d){
+          }).on("mouseout.dispatch-sample", function(d){
             gd3.dispatch.sample({ sample: data.maps.columnIdToLabel[d.colId], over: false});
+          }).on("click.dispatch-mutation", function(d){
+            gd3.dispatch.mutation({
+              gene: d.rowLabel,
+              dataset: d.cell.dataset,
+              mutation_class: d.cell.type == "inactive_snv" ? "snv" : d.cell.type
+            })
           });
+
+        gd3.dispatch.sort({
+          columnLabels: data.ids.columns.map(function(d) { return data.maps.columnIdToLabel[d]; }),
+          sortingOptionsData: sortingOptionsData
+        });
 
         gd3.dispatch.on("sample.mutmtx", function(d){
           var over = d.over, // flag if mouseover or mouseout
@@ -771,6 +793,11 @@ function mutmtxChart(style) {
 
   chart.showCoverage = function(state) {
     drawCoverage = state;
+    return chart;
+  }
+
+  chart.showColumnLabels = function(state) {
+    drawColumnLabels = state;
     return chart;
   }
 

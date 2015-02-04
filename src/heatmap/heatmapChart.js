@@ -71,7 +71,7 @@ function heatmapChart(style) {
                   .style('stroke', '#000')
                   .style('stroke-width', 1);
 
-      heatmapCells.on('mouseover', function(cell) {
+      heatmapCells.on('mouseover.dispatch-sample', function(cell) {
         var xOffset = +heatmap.attr('transform').replace(')','').replace('translate(','').split(',')[0];
         var thisEl = d3.select(this),
             h = +thisEl.attr('height'),
@@ -106,11 +106,17 @@ function heatmapChart(style) {
 
         gd3.dispatch.sample({ sample: cell.x, over: true});
 
-      }).on('mouseout', function(cell) {
+      }).on('mouseout.dispatch-sample', function(cell) {
         guidelines.attr('x1',0).attr('x2',0).attr('y1',0).attr('y2',0);
         if (renderLegend) legendRefLine.style("opacity", 0);
         d3.select(this).style('stroke', 'none');
         gd3.dispatch.sample({ sample: cell.x, over: false});
+      }).on('click.dispatch-mutation', function(cell){
+        gd3.dispatch.mutation({
+          gene: cell.y,
+          dataset: data.columnIdToDataset[cell.x],
+          mutation_class: "expression"
+        })
       })
 
       var legendG = svgGroup.append('g');

@@ -183,7 +183,6 @@ function tooltipView(style) {
 
   // use the given data to generate an HTML string and proceed as normal
   view.useData = function(data) {
-    console.log('useData');
     function depth(d) {
       return Array.isArray(d) ? depth(d[0])+1 : 0;
     }

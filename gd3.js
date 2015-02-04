@@ -2,7 +2,7 @@
   var gd3 = {
     version: "0.2.1"
   };
-  gd3.dispatch = d3.dispatch("sample", "interaction", "sort", "filterCategory", "filterType");
+  gd3.dispatch = d3.dispatch("sample", "interaction", "sort", "filterCategory", "filterType", "mutation");
   function gd3_class(ctor, properties) {
     try {
       for (var key in properties) {
@@ -191,6 +191,7 @@
         if (d.ty == "del") d.index = delIndex++;
       });
       var d = {
+        gene: cdata.gene,
         numAmps: ampIndex,
         numDels: delIndex,
         genes: geneJSON,
@@ -347,16 +348,21 @@
           "stroke-width": 1,
           stroke: "black",
           "stroke-opacity": 0
-        }).on("mouseover", function(d) {
-          console.log(d.ty);
+        }).on("mouseover.dispatch-sample", function(d) {
           gd3.dispatch.sample({
             sample: d.sample,
             opacity: 1
           });
-        }).on("mouseout", function(d) {
+        }).on("mouseout.dispatch-sample", function(d) {
           gd3.dispatch.sample({
             sample: d.sample,
             opacity: 0
+          });
+        }).on("click.dispatch-mutation", function(d) {
+          gd3.dispatch.mutation({
+            dataset: d.dataset,
+            gene: data.gene,
+            mutation_class: d.ty
           });
         });
         gd3.dispatch.on("sample.cna", function(d) {
@@ -908,7 +914,7 @@
         var force = d3.layout.force().charge(-400).linkDistance(100).size([ forceWidth, forceHeight ]);
         var x = d3.scale.linear().range([ 0, forceWidth ]), y = d3.scale.linear().range([ 0, forceHeight ]);
         force.nodes(data.nodes).links(data.links).start();
-        var link = graph.append("g").selectAll(".link").data(data.links).enter().append("g");
+        var link = graph.append("g").selectAll(".link").data(data.links).enter().append("g").attr("class", "gd3Link");
         if (data.edgeCategories) {
           link.each(function(d) {
             var thisEdge = d3.select(this);
@@ -985,7 +991,7 @@
             thisEl.append("text").attr("x", 16).attr("y", (i + 1) * style.legendFontSize + titleHeight + scaleHeight).style("font-size", style.legendFontSize).text(category);
           });
         }
-        link.on("click", function(d) {
+        link.on("click.dispatch-interaction", function(d) {
           gd3.dispatch.interaction({
             source: d.source.name,
             target: d.target.name
@@ -1053,17 +1059,32 @@
         if (tmp > data.maxCellValue) data.maxCellValue = tmp;
         if (tmp < data.minCellValue) data.minCellValue = tmp;
       }
+      var datasetCatIndex = -1;
       if (data.annotations) {
         if (!data.annotations.annotationToColor) data.annotations.annotationToColor = {};
-        data.annotations.categories.forEach(function(category) {
+        data.annotations.categories.forEach(function(category, categoryIndex) {
           var entry = data.annotations.annotationToColor[category];
           if (entry && Object.keys(entry).length > 0) return;
-          var categoryIndex = data.annotations.categories.indexOf(category);
           var annotationNames = Object.keys(data.annotations.sampleToAnnotations), values = annotationNames.map(function(n) {
             return data.annotations.sampleToAnnotations[n][categoryIndex];
           });
           entry = [ d3.min(values), d3.max(values) ];
           data.annotations.annotationToColor[category] = entry;
+        });
+        data.columnIdToDataset = {};
+        data.annotations.categories.forEach(function(c, i) {
+          if (c.toLowerCase() === "cancer type" || c.toLowerCase() === "dataset") {
+            datasetCatIndex = i;
+          }
+        });
+      }
+      if (datasetCatIndex !== -1) {
+        data.xs.forEach(function(n) {
+          data.columnIdToDataset[n] = data.annotations.sampleToAnnotations[n][datasetCatIndex];
+        });
+      } else {
+        data.xs.forEach(function(n) {
+          data.columnIdToDataset[n] = null;
         });
       }
     }
@@ -1118,7 +1139,7 @@
           y2: 0
         } ];
         var guidelinesG = svgGroup.append("g").attr("class", "gd3heatmapGuidlines"), guidelines = guidelinesG.selectAll("line").data(guidelineData).enter().append("line").style("stroke", "#000").style("stroke-width", 1);
-        heatmapCells.on("mouseover", function(cell) {
+        heatmapCells.on("mouseover.dispatch-sample", function(cell) {
           var xOffset = +heatmap.attr("transform").replace(")", "").replace("translate(", "").split(",")[0];
           var thisEl = d3.select(this), h = +thisEl.attr("height"), w = +thisEl.attr("width"), x = +thisEl.attr("x") + xOffset, y = +thisEl.attr("y");
           var visibleHeight = +heatmap.node().getBBox().height, visibleWidth = +heatmap.node().getBBox().width + xOffset;
@@ -1140,13 +1161,19 @@
             sample: cell.x,
             over: true
           });
-        }).on("mouseout", function(cell) {
+        }).on("mouseout.dispatch-sample", function(cell) {
           guidelines.attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", 0);
           if (renderLegend) legendRefLine.style("opacity", 0);
           d3.select(this).style("stroke", "none");
           gd3.dispatch.sample({
             sample: cell.x,
             over: false
+          });
+        }).on("click.dispatch-mutation", function(cell) {
+          gd3.dispatch.mutation({
+            gene: cell.y,
+            dataset: data.columnIdToDataset[cell.x],
+            mutation_class: "expression"
           });
         });
         var legendG = svgGroup.append("g");
@@ -1545,11 +1572,20 @@
     defaultParse();
     if (inputData.annotations) {
       data.annotations = inputData.annotations;
+    } else {
+      data.annotations = {
+        categories: [],
+        sampleToAnnotations: {},
+        annotationToColor: {}
+      };
+      data.ids.columns.forEach(function(s) {
+        data.annotations.sampleToAnnotations[data.maps.columnIdToLabel[s]] = [];
+      });
     }
     return data;
   }
   function mutmtxChart(style) {
-    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, drawCoverage = true, stickyLegend = false, typesToFilter = [];
+    var categoriesToFilter = [], drawHoverLegend = true, drawLegend = false, drawSortingMenu = true, drawCoverage = true, drawColumnLabels = true, stickyLegend = false, typesToFilter = [];
     var sortingOptionsData = [ "First active row", "Column category", "Exclusivity", "Name" ];
     function chart(selection) {
       selection.each(function(data) {
@@ -1632,10 +1668,12 @@
               var coloring = annColoring[categories[i]];
               if (coloring.typeOfScale == "continuous") return coloring.scale(d); else if (Object.keys(coloring).length > 0) return coloring[d]; else return "#000";
             });
-            var annTextOffset = annData.length * (style.annotationRowHeight + style.annotationRowSpacing) + style.annotationRowSpacing + mtxOffset;
-            var annText = aGroup.append("text").attr("x", annTextOffset).attr("text-anchor", "start").attr("transform", "rotate(90)").style("font-family", style.fontFamily).style("font-size", style.annotationFontSize).text(annotationKey);
-            var annTextHeight = annText.node().getBBox().width + style.annotationRowSpacing;
-            maxTextHeight = annTextHeight > maxTextHeight ? annTextHeight : maxTextHeight;
+            if (drawColumnLabels) {
+              var annTextOffset = annData.length * (style.annotationRowHeight + style.annotationRowSpacing) + style.annotationRowSpacing + mtxOffset;
+              var annText = aGroup.append("text").attr("x", annTextOffset).attr("text-anchor", "start").attr("transform", "rotate(90)").style("font-family", style.fontFamily).style("font-size", style.annotationFontSize).text(annotationKey);
+              var annTextHeight = annText.node().getBBox().width + style.annotationRowSpacing;
+              maxTextHeight = d3.max([ annTextHeight, maxTextHeight ]);
+            }
           });
           var svgHeight = svg.attr("height"), numAnnotations = data.annotations.sampleToAnnotations[names[0]].length, svgHeight = parseInt(svgHeight) + numAnnotations * (style.annotationRowHeight + 2);
           svg.attr("height", svgHeight + maxTextHeight);
@@ -1879,11 +1917,14 @@
         function renderMutationMatrix() {
           var colWidth = wholeVisX(1) - wholeVisX(0);
           var cells = columns.append("g").attr("class", "mutmtx-sampleMutationCells").selectAll("g").data(function(colId) {
-            var activeRows = data.matrix.columnIdToActiveRows[colId];
+            var activeRows = data.matrix.columnIdToActiveRows[colId], colLabel = data.maps.columnIdToLabel[colId];
             return activeRows.map(function(rowId) {
+              var rowLabel = data.maps.rowIdToLabel[rowId];
               return {
                 colId: colId,
                 row: rowId,
+                rowLabel: rowLabel,
+                colLabel: colLabel,
                 cell: data.matrix.cells[[ rowId, colId ].join()]
               };
             });
@@ -1905,16 +1946,28 @@
             stroke: "black",
             "stroke-opacity": 0
           });
-          columns.select("g.mutmtx-sampleMutationCells").selectAll("g").on("mouseover", function(d) {
+          columns.select("g.mutmtx-sampleMutationCells").selectAll("g").on("mouseover.dispatch-sample", function(d) {
             gd3.dispatch.sample({
               sample: data.maps.columnIdToLabel[d.colId],
               over: true
             });
-          }).on("mouseout", function(d) {
+          }).on("mouseout.dispatch-sample", function(d) {
             gd3.dispatch.sample({
               sample: data.maps.columnIdToLabel[d.colId],
               over: false
             });
+          }).on("click.dispatch-mutation", function(d) {
+            gd3.dispatch.mutation({
+              gene: d.rowLabel,
+              dataset: d.cell.dataset,
+              mutation_class: d.cell.type == "inactive_snv" ? "snv" : d.cell.type
+            });
+          });
+          gd3.dispatch.sort({
+            columnLabels: data.ids.columns.map(function(d) {
+              return data.maps.columnIdToLabel[d];
+            }),
+            sortingOptionsData: sortingOptionsData
           });
           gd3.dispatch.on("sample.mutmtx", function(d) {
             var over = d.over, sample = d.sample, affectedColumns = columnNames.filter(function(d) {
@@ -1948,6 +2001,10 @@
     };
     chart.showCoverage = function(state) {
       drawCoverage = state;
+      return chart;
+    };
+    chart.showColumnLabels = function(state) {
+      drawColumnLabels = state;
       return chart;
     };
     chart.showSortingMenu = function(state) {
@@ -2246,7 +2303,6 @@
       return view;
     };
     view.useData = function(data) {
-      console.log("useData");
       function depth(d) {
         return Array.isArray(d) ? depth(d[0]) + 1 : 0;
       }
@@ -2601,7 +2657,7 @@
         mutations: cdata.mutations,
         mutationTypesToSymbols: cdata.mutationTypesToSymbols || defaultMutationTypesToSymbols,
         proteinDomainDB: proteinDomainDB,
-        proteinDomains: cdata.domains[proteinDomainDB]
+        proteinDomains: cdata.domains[proteinDomainDB] || []
       };
       var datasetNames = cdata.mutations.map(function(m) {
         return m.dataset;
@@ -2616,6 +2672,15 @@
       };
       d.isMutationInactivating = function(mut) {
         return d.inactivatingMutations[mut];
+      };
+      d.domain = function(locus) {
+        var loc = locus * 1;
+        for (var i = 0; i < d.proteinDomains.length; i++) {
+          if (d.proteinDomains[i].start < loc && d.proteinDomains[i].end > loc) {
+            return d.proteinDomains[i].name;
+          }
+        }
+        return null;
       };
       return d;
     }
@@ -2644,7 +2709,7 @@
           updateTranscript();
         });
         svg.call(zoom);
-        var mutationsG = tG.append("g").attr("class", "transcriptMutations"), inactivatingG = mutationsG.append("g"), activatingG = mutationsG.append("g");
+        var mutationsG = tG.append("g").attr("class", "gd3TranscriptMutations"), inactivatingG = mutationsG.append("g"), activatingG = mutationsG.append("g");
         var inactivatingData = data.get("mutations").filter(function(d) {
           return data.isMutationInactivating(d.ty);
         }), activatingData = data.get("mutations").filter(function(d) {
@@ -2841,15 +2906,25 @@
             "stroke-width": 1
           }).call(dragSlider);
         }
-        var allMutations = mutationsG.selectAll("path").on("mouseover", function(d) {
+        var allMutations = mutationsG.selectAll("path").on("mouseover.dispatch-sample", function(d) {
           gd3.dispatch.sample({
             sample: d.sample,
             over: true
           });
-        }).on("mouseout", function(d) {
+        }).on("mouseout.dispatch-sample", function(d) {
           gd3.dispatch.sample({
             sample: d.sample,
             over: false
+          });
+        }).on("click.dispatch-mutation", function(d) {
+          var domain = null;
+          gd3.dispatch.mutation({
+            dataset: d.dataset,
+            gene: data.geneName,
+            mutation_class: "snv",
+            mutation_type: d.ty,
+            locus: d.locus,
+            domain: data.domain(d.locus)
           });
         });
         gd3.dispatch.on("sample.transcript", function(d) {
