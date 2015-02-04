@@ -213,20 +213,14 @@
           hmapA = body.append('div');
 
       d3.json('testData/exampleAnnotations.json', function(annData) {
-        // annData.categories.forEach(function(c) {
-        //   console.log(annData);
 
-        //   var type = annData.annotationToColor[c].typeOfScale || 'discrete';
-        //   if(type == 'discrete') {
-        //     var data = Object.keys(annData.annotationToColor[c]);
-        //     gd3.color.annotations(c,data,'discrete');
-        //   } else {
-        //     var obj = annData.annotationToColor[c],
-        //         data = [obj.min, obj.max];
-        //     gd3.color.annotations(c,data,'continuous');
-        //   }
-        // });
+        gd3.color.annotations('Gender', ['female', 'male'], 'discrete', ['#ff0000', '#0000ff']);
 
+        var values = Object.keys(annData.sampleToAnnotations).map(function(key) {
+              return annData.sampleToAnnotations[key][0];
+            });
+        values = d3.set(values).values().map(function(d) { return + d; });
+        gd3.color.annotations('Survival (days)', [d3.min(values), d3.max(values)], 'continuous', ['#88ff88', '#000000']);
 
         d3.json('testData/example2-mutation-matrix.json', function(data) {
           data.annotations = annData;
@@ -236,11 +230,6 @@
 
           mutmtxA.datum(data)
             .call(gd3.mutationMatrix({style:mutmtxStyle}));
-
-          Object.keys(gd3.color.annotations()).forEach(function(name) {
-            var scale = gd3.color.annotations()[name];
-            console.log(name, scale.domain(), scale.range());
-          });
         });
 
         d3.json('testData/example-heatmap.json', function(data) {

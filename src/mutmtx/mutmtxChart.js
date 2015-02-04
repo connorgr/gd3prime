@@ -142,7 +142,6 @@ function mutmtxChart(style) {
         Object.keys(annColoring).forEach(function(annotation,i) {
           // If the annotation is already defined, continue
           if(gd3.color.annotations(annotation)) {
-            console.log('predefined');
             return;
           }
           else { // Else we need to create an annotation color
@@ -150,13 +149,10 @@ function mutmtxChart(style) {
               return data.annotations.sampleToAnnotations[key][i];
             });
             values = d3.set(values).values();
-            console.log(values);
 
             if(values.length <= 10) gd3.color.annotations(annotation, values, 'discrete');
             else {
               values = values.map(function(v) { return +v; });
-              console.log(values);
-              console.log('+++')
               gd3.color.annotations(annotation, [d3.min(values), d3.max(values)], 'continuous');
             }
           }
@@ -191,7 +187,6 @@ function mutmtxChart(style) {
                   .attr('width', 20)
                   .style('fill', function(d,i) {
                     var annotation = categories[i];
-                    //console.log(d, typeof(d), gd3.color.annotations(annotation)(d));
                     return gd3.color.annotations(annotation)(d);
                   });
 
@@ -458,13 +453,14 @@ function mutmtxChart(style) {
 
           annotationLegends.each(function(annotationName) {
             var thisEl = d3.select(this),
-                scale = data.annotations.annotationToColor[annotationName];
+                scale = gd3.color.annotations(annotationName),
+                scaleType = gd3.color.annotationToType[annotationName];
 
             thisEl.style('font-family', style.fontFamily)
                 .style('font-size', style.fontSize);
             thisEl.append('span').text(annotationName+': ');
 
-            if(scale.typeOfScale && scale.typeOfScale == 'continuous') {
+            if(scaleType && scaleType == 'continuous') {
               var scaleHeight = style.fontSize,
                   scaleWidth = style.fontSize*5;
 
@@ -474,7 +470,7 @@ function mutmtxChart(style) {
                   .attr('width', scaleWidth)
                   .style('margin-left', '2px')
                   .style('margin-right', '2px');
-              thisEl.append('span').text(scale.max);
+              thisEl.append('span').text(scale.domain());
               thisEl.selectAll('*').style('display','inline-block');
 
               // Create a unique ID for the color map gradient in case multiple heatmaps are made
