@@ -164,19 +164,26 @@ function mutmtxChart(style) {
 
         // add annotation data for each sample in the matrix
         columns.each(function(annKey) {
-          var annotationKey = names.reduce(function(prev,cur,i,array) {
-            if(annKey.indexOf(cur) > -1) return cur;
-            else return prev;
-          }, null);
-
-          if (annotationKey == null) return;
-          var annData = data.annotations.sampleToAnnotations[annotationKey];
-
           // Get the offset caused by the matrix cells
           var mtxOffset = style.rowHeight * data.ids.rows.length;
 
           // render annotation data;
           var aGroup = d3.select(this).append('g').attr('id','annotation-'+annKey);
+
+          var annotationKey = names.reduce(function(prev,cur,i,array) {
+            if(annKey.indexOf(cur) > -1) return cur;
+            else return prev;
+          }, null);
+
+          var annData;
+          // If there isn't annotation data, create place holders
+          if (annotationKey == null) {
+            annData = data.annotations.categories.map(function(d) { return null; });
+          } else {
+          // // Else, there is annotation data and render it as normal
+            annData = data.annotations.sampleToAnnotations[annotationKey];
+          }
+
           aGroup.selectAll('rect').data(annData).enter()
               .append('rect')
                   .attr('height',style.annotationRowHeight)
@@ -187,6 +194,7 @@ function mutmtxChart(style) {
                   })
                   .attr('width', 20)
                   .style('fill', function(d,i) {
+                    if(d == null) return gd3.color.noData;
                     var annotation = categories[i];
                     return gd3.color.annotations(annotation)(d);
                   });
@@ -337,7 +345,8 @@ function mutmtxChart(style) {
 
       // Legend should be a DIV d3 selection
       function drawLegendFn(legend) {
-        legend.style('font-size', style.fontSize + 'px')
+        legend.style('font-size', style.fontSize + 'px');
+
         if (showColumnCategories){
           var columnCategories = legend.append('div')
                   .style('min-width', legend.style('width'))
@@ -496,7 +505,7 @@ function mutmtxChart(style) {
                       .attr('x2', '100%')
                       .attr('y2', '0%');
 
-              var scaleRange = scale.scale.range();
+              var scaleRange = scale.range();
               scaleRange.forEach(function(c, i){
                 gradient.append('svg:stop')
                     .attr('offset', i*1./(scaleRange.length-1))
@@ -510,7 +519,7 @@ function mutmtxChart(style) {
                   .attr('fill', 'url(#'+gradientId+')');
             } else {
               var annKeys = thisEl.selectAll('div')
-                  .data(Object.keys(scale))
+                  .data(scale.domain())
                   .enter()
                   .append('div')
                       .style('display', 'inline-block')
@@ -520,7 +529,7 @@ function mutmtxChart(style) {
                           return i == Object.keys(scale).length - 1 ? '0px' : '10px';
                       });
               annKeys.append('div')
-                  .style('background', function(d) { return scale[d]; })
+                  .style('background', function(d) { return scale(d); })
                   .style('display', 'inline-block')
                   .style('height', style.fontSize + 'px')
                   .style('width', (style.fontSize/2) + 'px');

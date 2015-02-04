@@ -16,6 +16,7 @@
     }
   }
   gd3.color = {};
+  gd3.color.noData = "#eeeeee";
   gd3.color.categoryPalette;
   gd3.color.annotationPalettes = {};
   gd3.color.annotationToType = {};
@@ -1733,17 +1734,24 @@
           });
           var maxTextHeight = 0;
           columns.each(function(annKey) {
+            var mtxOffset = style.rowHeight * data.ids.rows.length;
+            var aGroup = d3.select(this).append("g").attr("id", "annotation-" + annKey);
             var annotationKey = names.reduce(function(prev, cur, i, array) {
               if (annKey.indexOf(cur) > -1) return cur; else return prev;
             }, null);
-            if (annotationKey == null) return;
-            var annData = data.annotations.sampleToAnnotations[annotationKey];
-            var mtxOffset = style.rowHeight * data.ids.rows.length;
-            var aGroup = d3.select(this).append("g").attr("id", "annotation-" + annKey);
+            var annData;
+            if (annotationKey == null) {
+              annData = data.annotations.categories.map(function(d) {
+                return null;
+              });
+            } else {
+              annData = data.annotations.sampleToAnnotations[annotationKey];
+            }
             aGroup.selectAll("rect").data(annData).enter().append("rect").attr("height", style.annotationRowHeight).attr("x", 0).attr("y", function(d, i) {
               var spacing = style.annotationRowSpacing * (i + 1);
               return mtxOffset + spacing + style.annotationRowHeight * i;
             }).attr("width", 20).style("fill", function(d, i) {
+              if (d == null) return gd3.color.noData;
               var annotation = categories[i];
               return gd3.color.annotations(annotation)(d);
             });
@@ -1900,17 +1908,17 @@
                 thisEl.selectAll("*").style("display", "inline-block");
                 var now = Date.now(), gradientId = "gd3-mutmtx-gradient" + now;
                 var gradient = gradientSvg.append("svg:defs").append("svg:linearGradient").attr("id", gradientId).attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
-                var scaleRange = scale.scale.range();
+                var scaleRange = scale.range();
                 scaleRange.forEach(function(c, i) {
                   gradient.append("svg:stop").attr("offset", i * 1 / (scaleRange.length - 1)).attr("stop-color", c).attr("stop-opacity", 1);
                 });
                 gradientSvg.append("rect").attr("height", scaleHeight).attr("width", scaleWidth).attr("fill", "url(#" + gradientId + ")");
               } else {
-                var annKeys = thisEl.selectAll("div").data(Object.keys(scale)).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
+                var annKeys = thisEl.selectAll("div").data(scale.domain()).enter().append("div").style("display", "inline-block").style("font-family", style.fontFamily).style("font-size", style.fontSize).style("margin-right", function(d, i) {
                   return i == Object.keys(scale).length - 1 ? "0px" : "10px";
                 });
                 annKeys.append("div").style("background", function(d) {
-                  return scale[d];
+                  return scale(d);
                 }).style("display", "inline-block").style("height", style.fontSize + "px").style("width", style.fontSize / 2 + "px");
                 annKeys.append("span").style("display", "inline-block").style("margin-left", "2px").text(function(d) {
                   return d;
@@ -2788,8 +2796,7 @@
     function chart(selection) {
       selection.each(function(data) {
         data = transcriptData(data);
-        var filteredTypes = [];
-        var instanceIDConst = "gd3-transcript-" + Date.now();
+        var filteredTypes = [], instanceIDConst = "gd3-transcript-" + Date.now();
         var d3color = d3.scale.category20(), sampleTypeToColor = {};
         for (var i = 0; i < data.get("mutationCategories").length; i++) {
           sampleTypeToColor[data.get("mutationCategories")[i]] = d3color(i);
@@ -3029,10 +3036,9 @@
         if (showLegend) renderLegend();
         function renderLegend() {
           var mutationTypes = data.types, numTypes = mutationTypes.length, numRows = Math.ceil(numTypes / 2);
-          var svg = selection.append("div").selectAll(".gd3SvgTranscriptLegend").data([ data ]).enter().append("svg").attr("class", "gd3SvgTranscriptLegend").attr("font-size", 10).attr("width", width), legendGroup = svg.append("g");
+          var svg = selection.append("div").selectAll(".gd3-transcript-legend-svg").data([ data ]).enter().append("svg").attr("class", "gd3-transcript-legend-svg").attr("font-size", 10).attr("width", width), legendGroup = svg.append("g");
           var legend = legendGroup.selectAll(".symbolGroup").data(mutationTypes).enter().append("g").attr("transform", function(d, i) {
-            var x = i % numRows * width / numRows + style.margin.left + style.margin.right;
-            var y = Math.round(i / numTypes) * style.legendSymbolHeight + (Math.round(i / numTypes) + 2) + style.margin.top;
+            var x = i % numRows * width / numRows + style.margin.left + style.margin.right, y = Math.round(i / numTypes) * style.legendSymbolHeight + (Math.round(i / numTypes) + 2) + style.margin.top;
             return "translate(" + x + ", " + y + ")";
           }).style("cursor", "pointer").on("click.dispatch-mutation-type", function(d) {
             var index = filteredTypes.indexOf(d), visible = index === -1;

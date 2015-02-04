@@ -1,5 +1,7 @@
 gd3.color = {};
 
+gd3.color.noData = '#eeeeee';
+
 gd3.color.categoryPalette;
 gd3.color.annotationPalettes = {};
 gd3.color.annotationToType = {};
