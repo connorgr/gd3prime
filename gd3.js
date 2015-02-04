@@ -2771,16 +2771,11 @@
         proteinDomains: cdata.domains[proteinDomainDB] || []
       };
       d.types = Object.keys(d.mutationTypesToSymbols);
-      var datasetNames = cdata.mutations.map(function(m) {
+      d.datasets = d3.set(cdata.mutations.map(function(m) {
         return m.dataset;
-      });
-      tmpMutationCategories = {};
-      datasetNames.forEach(function(d) {
-        tmpMutationCategories[d] = null;
-      });
-      d.mutationCategories = Object.keys(tmpMutationCategories);
+      })).values();
       d.get = function(str) {
-        if (str == "length") return d.length; else if (str == "mutationCategories") return d.mutationCategories; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else if (str == "proteinDomains") return d.proteinDomains; else return null;
+        if (str == "length") return d.length; else if (str == "datasets") return d.datasets; else if (str == "mutations") return d.mutations; else if (str == "mutationTypesToSymbols") return d.mutationTypesToSymbols; else if (str == "proteinDomains") return d.proteinDomains; else return null;
       };
       d.isMutationInactivating = function(mut) {
         return d.inactivatingMutations[mut];
@@ -2804,11 +2799,10 @@
     function chart(selection) {
       selection.each(function(data) {
         data = transcriptData(data);
-        var filteredTypes = [];
-        var instanceIDConst = "gd3-transcript-" + Date.now();
+        var filteredTypes = [], filteredCategories = [], instanceIDConst = "gd3-transcript-" + Date.now();
         var d3color = d3.scale.category20(), sampleTypeToColor = {};
-        for (var i = 0; i < data.get("mutationCategories").length; i++) {
-          sampleTypeToColor[data.get("mutationCategories")[i]] = d3color(i);
+        for (var i = 0; i < data.get("datasets").length; i++) {
+          sampleTypeToColor[data.get("datasets")[i]] = d3color(i);
         }
         var height = style.height, scrollbarWidth = showScrollers ? style.scollbarWidth : 0, width = style.width - scrollbarWidth - style.margin.left - style.margin.right;
         var mutationResolution = Math.floor(width / style.symbolWidth);
@@ -2884,7 +2878,8 @@
             topIndex[i] = 0;
           }
           activatingMutations.each(function(d) {
-            if (filteredTypes.indexOf(d.ty) === -1) d.visible = true; else d.visible = false;
+            var activeType = filteredTypes.indexOf(d.ty) === -1, activeCategories = filteredCategories.indexOf(d.dataset) === -1;
+            d.visible = activeCategories && activeType;
           });
           activatingMutations.filter(function(d) {
             return !d.visible;
@@ -2952,7 +2947,7 @@
             return x(d.end) - x(d.start);
           });
           domainLabels.attr("x", function(d, i) {
-            var w = d3.select(this.parentNode).select("rect").attr("width");
+            var w = d3.select(d3.select(this).node().parentNode).select("rect").attr("width");
             return w / 2;
           });
         }
@@ -3104,6 +3099,13 @@
           if (!d || !d.types) return;
           filteredTypes = d.types.filter(function(s) {
             return data.types.indexOf(s) > -1;
+          });
+          updateTranscript();
+        });
+        gd3.dispatch.on("filterCategory." + instanceIDConst, function(d) {
+          if (!d || !d.categories) return;
+          filteredCategories = d.categories.filter(function(s) {
+            return data.datasets.indexOf(s) > -1;
           });
           updateTranscript();
         });
