@@ -2379,7 +2379,6 @@
         if (d3.event.keyCode == 27) {
           sticky = false;
           view.hide();
-          console.log("hi");
         }
       });
       var tipObjects = selection.selectAll(".gd3-tipobj").on("click", function() {
@@ -2407,7 +2406,7 @@
       var args = Array.prototype.slice.call(arguments);
       if (args[args.length - 1] instanceof SVGElement) target = args.pop();
       var content = html.apply(this, args), nodel = d3.select(node);
-      var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px">X</span><br />';
+      var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px;">X</span><br/>';
       nodel.html(xout);
       content.forEach(function(tipElem) {
         tipElem.render(nodel);
@@ -2420,16 +2419,6 @@
         sticky = sticky ? false : true;
         view.hide();
       });
-      function renderTest() {
-        var thisEl = d3.select(this), display = thisEl.style("display");
-        render = display == "none" ? "none" : display;
-        var base = "gd3-tooltip-", isVote = thisEl.classed(base + "votecount") || thisEl.classed(base + "dvote") || thisEl.classed(base + "uvote");
-        if (isVote) {
-          return display;
-        }
-        return render;
-      }
-      nodel.selectAll("*").style("display", renderTest);
       var clickEventObjs = nodel.selectAll(".clickEventObj");
       if (clickEventObjs.empty() == false) {
         clickEventObjs.each(function() {
@@ -2500,24 +2489,9 @@
         }
       }
       if (dimensionality == 0) {
-        var selection = data.render(nodel);
-        registerClickEvent(selection);
-        html = nodel.html();
-        html = html == null ? html : d3.functor(html);
-        d3.select(ghostNode).remove();
+        html = d3.functor([ data ]);
       } else if (dimensionality == 1) {
-        data.forEach(function(d) {
-          var selection = d.render(nodel);
-          registerClickEvent(selection);
-          if (selection.selectAll("*").empty() == false) {
-            selection.selectAll("*").each(function() {
-              registerClickEvent(d3.select(this));
-            });
-          }
-        });
-        html = nodel.html();
-        html = html == null ? html : d3.functor(html);
-        d3.select(ghostNode).remove();
+        html = d3.functor(data);
       } else {
         html = d3.functor(function(d, i) {
           return data[i];
@@ -2686,7 +2660,7 @@
   gd3_tooltipTextPrototype.render = function(selection) {
     var text = selection.append("span").text(this.text);
     text.attr("data-summaryElement", this.summaryElement);
-    if (this.summaryElement) text.style("display", "none");
+    if (this.summaryElement) text.style("display", "none"); else text.style("display", "block");
     return text;
   };
   gd3.tooltip.vote = gd3_tooltipVote;
@@ -2706,13 +2680,8 @@
     return this.voteCount + " votes";
   };
   gd3_tooltipVotePrototype.render = function(selection) {
-    console.log(this.voteCountFn, this.voteCountFn());
     var votingArea = selection.append("span").attr("class", "gd3-tooltip-vote"), downVote = votingArea.append("span").text("▼").attr("class", "gd3-tooltip-dvote"), upVote = votingArea.append("span").text("▲").attr("class", "gd3-tooltip-uvote"), voteCount = votingArea.append("span").attr("class", "gd3-tooltip-votecount").text(this.voteCountFn());
     if (this.voteDirectionFn) {
-      console.log("------");
-      console.log(this.voteDirectionFn());
-      console.log(this.voteDirectionFn() == "up");
-      console.log("------");
       if (this.voteDirectionFn() == "down") {
         downVote.classed("gd3-vote-active", true);
         downVote.style("color", "goldenrod");
@@ -2807,7 +2776,7 @@
   };
   gd3_tooltipTablePrototype.render = function(selection) {
     var thisTooltip = this;
-    table = selection.append("table").attr("class", "gd3-tooltip-table table"), rows = table.selectAll("tr").data(thisTooltip.table).enter().append("tr"), 
+    table = selection.append("table").attr("class", "gd3-tooltip-table"), rows = table.selectAll("tr").data(thisTooltip.table).enter().append("tr"), 
     cells = rows.selectAll("td").data(function(d) {
       return d;
     }).enter().append("td");
@@ -3145,7 +3114,7 @@
           legend.append("text").attr("dx", 7).attr("dy", 3).text(function(d) {
             return d.replace(/_/g, " ");
           });
-          legend.attr("height", legendGroup.node().getBBox().height);
+          svg.attr("height", legendGroup.node().getBBox().height);
         }
         var allMutations = mutationsG.selectAll("path").on("mouseover.dispatch-sample", function(d) {
           gd3.dispatch.sample({

@@ -55,13 +55,12 @@ function tooltipView(style) {
     });
     node = node.node();
 
-    // Create a listener for the body to close on keypress
+    // Create a listener for the body to close on keypress (ESC)
     var uniqueID = Date.now();
     d3.select('body').on('keydown.gd3-tooltip-exit-'+uniqueID, function() {
       if (d3.event.keyCode == 27) {
         sticky = false;
         view.hide();
-        console.log('hi');
       }
     });
 
@@ -102,12 +101,11 @@ function tooltipView(style) {
     var args = Array.prototype.slice.call(arguments);
     if(args[args.length - 1] instanceof SVGElement) target = args.pop();
 
-    // console.log(html, this, args);
 
     var content = html.apply(this, args),
         nodel   = d3.select(node);
-    // console.log(content)
-    var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px">X</span><br />';
+
+    var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px;">X</span><br/>';
     nodel.html(xout);
 
     content.forEach(function(tipElem) {
@@ -115,33 +113,12 @@ function tooltipView(style) {
     });
     nodel.style({ opacity: 1, 'pointer-events': 'all' });
 
-    // console.log(nodel.node());
-
-    //nodel.html(xout + content).style({ opacity: 1, 'pointer-events': 'all' });
-
     nodel.select('.gd3-tooltip-xout')
       .on('click', function () {
         // Activate tipObejcts.on('click') and tipObjects.on('mouseover')
         sticky = sticky ? false : true;
         view.hide();
       });
-
-    // Show only the elements that are not already hidden
-    // TO-DO REMOVE THIS FUNCTION
-    function renderTest() {
-      var thisEl = d3.select(this),
-          display = thisEl.style('display');
-          render = display == 'none' ? 'none' : display;
-
-      var base = 'gd3-tooltip-',
-          isVote = thisEl.classed(base+'votecount') || thisEl.classed(base+'dvote') || thisEl.classed(base+'uvote');
-      if(isVote) {
-        return display;
-      }
-
-      return render;
-    }
-    nodel.selectAll('*').style('display', renderTest);
 
     var clickEventObjs = nodel.selectAll('.clickEventObj');
     if (clickEventObjs.empty() == false) {
@@ -235,41 +212,10 @@ function tooltipView(style) {
 
     // Alter the rendering behavior based on the dimensionality of data
     if(dimensionality == 0) {
-      var selection = data.render(nodel);
-      // register click events if any exist
-      registerClickEvent(selection);
-
-      html = nodel.html();
-      html = html == null ? html : d3.functor(html);
-      d3.select(ghostNode).remove();
+      html = d3.functor([data]);
     } else if (dimensionality == 1) {
-      data.forEach(function(d) {
-        var selection = d.render(nodel);
-
-        // register click events if any exist
-        registerClickEvent(selection);
-        if(selection.selectAll('*').empty() == false) {
-          selection.selectAll('*').each(function() { registerClickEvent(d3.select(this)); });
-        }
-      });
-      html = nodel.html();
-      html = html == null ? html : d3.functor(html);
-      d3.select(ghostNode).remove();
+      html = d3.functor(data);
     } else {
-      // var htmls = [];
-      // data.forEach(function(d) {
-      //   nodel.selectAll('*').remove();
-      //   d.forEach(function(datum) {
-      //     var selection = datum.render(nodel);
-
-      //     // register click events if any exist
-      //     registerClickEvent(selection);
-      //     if(selection.selectAll('*').empty() == false) {
-      //       selection.selectAll('*').each(function() { registerClickEvent(d3.select(this)); });
-      //     }
-      //   });
-      //   htmls.push(nodel.html());
-      // });
       html = d3.functor(function(d,i) {return data[i]; });
     }
 

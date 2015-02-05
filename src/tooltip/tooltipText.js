@@ -20,5 +20,6 @@ gd3_tooltipTextPrototype.render = function(selection) {
   var text = selection.append('span').text(this.text);
   text.attr('data-summaryElement', this.summaryElement);
   if(this.summaryElement) text.style('display', 'none');
+  else text.style('display', 'block');
   return text;
 }

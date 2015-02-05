@@ -22,7 +22,6 @@ gd3_tooltipVotePrototype.toString = function() {
 };
 
 gd3_tooltipVotePrototype.render = function(selection) {
-  console.log(this.voteCountFn, this.voteCountFn())
   var votingArea = selection.append('span').attr('class', 'gd3-tooltip-vote'),
       downVote = votingArea.append('span').text('▼').attr('class', 'gd3-tooltip-dvote'),
       upVote = votingArea.append('span').text('▲').attr('class', 'gd3-tooltip-uvote'),
@@ -31,10 +30,6 @@ gd3_tooltipVotePrototype.render = function(selection) {
         .text(this.voteCountFn());
 
   if(this.voteDirectionFn) {
-    console.log("------");
-    console.log(this.voteDirectionFn());
-    console.log(this.voteDirectionFn() == "up");
-    console.log("------");
     if (this.voteDirectionFn() == "down") {
       downVote.classed("gd3-vote-active", true);
       downVote.style("color", "goldenrod");

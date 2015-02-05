@@ -543,7 +543,7 @@ function transcriptChart(style) {
           .attr('dy', 3)
           .text(function(d) { return d.replace(/_/g, ' ')});
 
-        legend.attr('height', legendGroup.node().getBBox().height);
+        svg.attr('height', legendGroup.node().getBBox().height);
       }
 
       /////////////////////////////////////////////////////////////////////////
