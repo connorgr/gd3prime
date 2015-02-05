@@ -80,12 +80,21 @@ function tooltipView(style) {
     var args = Array.prototype.slice.call(arguments);
     if(args[args.length - 1] instanceof SVGElement) target = args.pop();
 
+    // console.log(html, this, args);
+
     var content = html.apply(this, args),
         nodel   = d3.select(node);
-
+    // console.log(content)
     var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px">X</span><br />';
 
-    nodel.html(xout + content).style({ opacity: 1, 'pointer-events': 'all' });
+    content.forEach(function(tipElem) {
+      tipElem.render(nodel);
+    });
+    nodel.style({ opacity: 1, 'pointer-events': 'all' });
+
+    // console.log(nodel.node());
+
+    //nodel.html(xout + content).style({ opacity: 1, 'pointer-events': 'all' });
 
     nodel.select('.gd3-tooltip-xout')
       .on('click', function () {
@@ -223,21 +232,21 @@ function tooltipView(style) {
       html = html == null ? html : d3.functor(html);
       d3.select(ghostNode).remove();
     } else {
-      var htmls = [];
-      data.forEach(function(d) {
-        nodel.selectAll('*').remove();
-        d.forEach(function(datum) {
-          var selection = datum.render(nodel);
+      // var htmls = [];
+      // data.forEach(function(d) {
+      //   nodel.selectAll('*').remove();
+      //   d.forEach(function(datum) {
+      //     var selection = datum.render(nodel);
 
-          // register click events if any exist
-          registerClickEvent(selection);
-          if(selection.selectAll('*').empty() == false) {
-            selection.selectAll('*').each(function() { registerClickEvent(d3.select(this)); });
-          }
-        });
-        htmls.push(nodel.html());
-      });
-      html = d3.functor(function(d,i) { return htmls[i]; });
+      //     // register click events if any exist
+      //     registerClickEvent(selection);
+      //     if(selection.selectAll('*').empty() == false) {
+      //       selection.selectAll('*').each(function() { registerClickEvent(d3.select(this)); });
+      //     }
+      //   });
+      //   htmls.push(nodel.html());
+      // });
+      html = d3.functor(function(d,i) {return data[i]; });
     }
 
     return view;

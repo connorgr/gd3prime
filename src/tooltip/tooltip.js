@@ -40,7 +40,7 @@ gd3.tooltip.datum = function(d) {
   else if(d.type == 'link') elem = new gd3.tooltip.link(d.href, d.body);
   else if(d.type == 'table') elem = new gd3.tooltip.table(d.table);
   else if(d.type == 'text') elem = new gd3.tooltip.text(d.text);
-  else if(d.type == 'vote') elem = new gd3.tooltip.vote(d.downvoteFn, d.upvoteFn, d.voteCount);
+  else if(d.type == 'vote') elem = new gd3.tooltip.vote(d.downvoteFn, d.upvoteFn, d.voteCountFn, d.voteDirectionFn);
 
   if (elem == null) return new gd3.tooltip.text(d.toString());
   return elem.showSummary(d.defaultHidden);

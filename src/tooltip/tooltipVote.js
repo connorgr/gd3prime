@@ -3,25 +3,43 @@ import "tooltipElement";
 gd3.tooltip.vote = gd3_tooltipVote;
 var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElement;
 
-function gd3_tooltipVote(downvoteFn, upvoteFn, voteCount, activeColor) {
-  if (!this instanceof gd3_tooltipVote) return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount);
+function gd3_tooltipVote(downvoteFn, upvoteFn, voteCountFn, voteDirectionFn) {
+  if (!this instanceof gd3_tooltipVote) {
+    return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount, voteDirectionFn);
+  }
 
   this.downvoteFn = downvoteFn;
   this.upvoteFn = upvoteFn;
-  this.voteCount = voteCount;
+  this.voteCountFn = voteCountFn;
+  this.voteDirectionFn = voteDirectionFn;
 
   return this;
 }
 
 gd3_tooltipVotePrototype.toString = function() {
+  if (typeof(this.voteCount) == 'function') return this.voteCount() + ' votes';
   return this.voteCount + ' votes';
 };
 
 gd3_tooltipVotePrototype.render = function(selection) {
   var votingArea = selection.append('span').attr('class', 'gd3-tooltip-vote'),
       downVote = votingArea.append('span').text('▼').attr('class', 'gd3-tooltip-dvote'),
-      voteCount = votingArea.append('span').text(this.voteCount).attr('class', 'gd3-tooltip-votecount'),
-      upVote = votingArea.append('span').text('▲').attr('class', 'gd3-tooltip-uvote');
+      upVote = votingArea.append('span').text('▲').attr('class', 'gd3-tooltip-uvote'),
+      voteCount = votingArea.append('span')
+        .attr('class', 'gd3-tooltip-votecount')
+        .text(this.voteCountFn());
+
+  console.log('------');
+  console.log(this.voteDirectionFn());
+  console.log(this.voteDirectionFn() == 'up')
+  console.log('------');
+  if (this.voteDirectionFn() == 'down'){
+    downVote.classed('gd3-vote-active', true);
+    downVote.style('color', 'goldenrod');
+  } else  if (this.voteDirectionFn() == 'up'){
+    upVote.classed('gd3-vote-active', true);
+    upVote.style('color', 'goldenrod');
+  }
 
   votingArea.style('display', 'block');
   votingArea.selectAll('span').style({
@@ -37,19 +55,13 @@ gd3_tooltipVotePrototype.render = function(selection) {
         upVote = d3.select(this.parentNode).select('.gd3-tooltip-uvote'),
         voteCount = d3.select(this.parentNode).select('.gd3-tooltip-votecount');
 
-
-    var voteMod = 1;
-
     upVote.style('color', null);
 
     // Do nothing if the vote is already active
     if (downVote.classed('gd3-vote-active') == true) {
       downVote.classed('gd3-vote-active', false);
-      voteMod = -1;
       downVote.style('color', null);
     } else {
-      // Change the vote count back to neutral
-      if (upVote.classed('gd3-vote-active') == true) voteMod = voteMod + 1;
       // Alter classes
       downVote.classed('gd3-vote-active', true);
       upVote.classed('gd3-vote-active', false);
@@ -58,10 +70,13 @@ gd3_tooltipVotePrototype.render = function(selection) {
       downVote.style('color', 'goldenrod');
     }
 
-    voteCount.text( parseInt(voteCount.text()) - voteMod );
-
     // Vote function always functions on click and passes current state
-    thisVote.downvoteFn(d, downVote.classed('gd3-vote-active'));
+    var vote = thisVote.downvoteFn(d, downVote.classed('gd3-vote-active'));
+    if (vote){
+      upVote.classed('gd3-vote-active', false);
+      downVote.classed('gd3-vote-active', true);
+    }
+    voteCount.text( voteCount.datum().voteCountFn() );
   });
 
 
@@ -71,17 +86,12 @@ gd3_tooltipVotePrototype.render = function(selection) {
         upVote = d3.select(this),
         voteCount = d3.select(this.parentNode).select('.gd3-tooltip-votecount');
 
-    var voteMod = 1;
-
     downVote.style('color', null);
 
     if (upVote.classed('gd3-vote-active') == true) {
       upVote.classed('gd3-vote-active', false);
-      voteMod = -1;
       upVote.style('color', null);
     } else {
-      // Change the vote count back to neutral
-      if (downVote.classed('gd3-vote-active') == true) voteMod = voteMod + 1;
       // Alter classes
       downVote.classed('gd3-vote-active', false);
       upVote.classed('gd3-vote-active', true);
@@ -90,10 +100,14 @@ gd3_tooltipVotePrototype.render = function(selection) {
       upVote.style('color', 'goldenrod');
     }
 
-    voteCount.text( parseInt(voteCount.text()) + voteMod );
 
     // Vote function always functions on click and passes current state
-    thisVote.upvoteFn(d, upVote.classed('gd3-vote-active'));
+    var vote = thisVote.upvoteFn(d, upVote.classed('gd3-vote-active'));
+    if (vote){
+      downVote.classed('gd3-vote-active', false);
+      upVote.classed('gd3-vote-active', true);
+    }
+    voteCount.text( voteCount.datum().voteCountFn() );
   });
 
 
