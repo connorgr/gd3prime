@@ -37,7 +37,17 @@ function tooltipView(style) {
     var tipObjects = selection.selectAll('.gd3-tipobj')
         .on('click', function() {
             sticky = sticky ? false : true;
-            if(sticky) view.render();
+            if(sticky) {
+              // view.render();
+              if(d3.event.type != 'click') return;
+
+                d3.select(node).selectAll('*').each(function() {
+                  var thisEl = d3.select(this),
+                      isSummaryElement = thisEl.attr('data-summaryElement');
+                  if(isSummaryElement) thisEl.style('display', 'block');
+                });
+                //positionTooltip();
+              }
             else view.hide();
         })
         .on('mouseover', view.render )
@@ -86,6 +96,7 @@ function tooltipView(style) {
         nodel   = d3.select(node);
     // console.log(content)
     var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px">X</span><br />';
+    nodel.html(xout);
 
     content.forEach(function(tipElem) {
       tipElem.render(nodel);
@@ -104,10 +115,11 @@ function tooltipView(style) {
       });
 
     // Show only the elements that are not already hidden
+    // TO-DO REMOVE THIS FUNCTION
     function renderTest() {
       var thisEl = d3.select(this),
           display = thisEl.style('display');
-          render = display == 'none' ? 'none' : 'block';
+          render = display == 'none' ? 'none' : display;
 
       var base = 'gd3-tooltip-',
           isVote = thisEl.classed(base+'votecount') || thisEl.classed(base+'dvote') || thisEl.classed(base+'uvote');

@@ -5,7 +5,7 @@ var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElemen
 
 function gd3_tooltipVote(downvoteFn, upvoteFn, voteCountFn, voteDirectionFn) {
   if (!this instanceof gd3_tooltipVote) {
-    return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount, voteDirectionFn);
+    return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCountFn, voteDirectionFn);
   }
 
   this.downvoteFn = downvoteFn;
@@ -22,6 +22,7 @@ gd3_tooltipVotePrototype.toString = function() {
 };
 
 gd3_tooltipVotePrototype.render = function(selection) {
+  console.log(this.voteCountFn, this.voteCountFn())
   var votingArea = selection.append('span').attr('class', 'gd3-tooltip-vote'),
       downVote = votingArea.append('span').text('▼').attr('class', 'gd3-tooltip-dvote'),
       upVote = votingArea.append('span').text('▲').attr('class', 'gd3-tooltip-uvote'),
@@ -29,16 +30,18 @@ gd3_tooltipVotePrototype.render = function(selection) {
         .attr('class', 'gd3-tooltip-votecount')
         .text(this.voteCountFn());
 
-  console.log('------');
-  console.log(this.voteDirectionFn());
-  console.log(this.voteDirectionFn() == 'up')
-  console.log('------');
-  if (this.voteDirectionFn() == 'down'){
-    downVote.classed('gd3-vote-active', true);
-    downVote.style('color', 'goldenrod');
-  } else  if (this.voteDirectionFn() == 'up'){
-    upVote.classed('gd3-vote-active', true);
-    upVote.style('color', 'goldenrod');
+  if(this.voteDirectionFn) {
+    console.log("------");
+    console.log(this.voteDirectionFn());
+    console.log(this.voteDirectionFn() == "up");
+    console.log("------");
+    if (this.voteDirectionFn() == "down") {
+      downVote.classed("gd3-vote-active", true);
+      downVote.style("color", "goldenrod");
+    } else if (this.voteDirectionFn() == "up") {
+      upVote.classed("gd3-vote-active", true);
+      upVote.style("color", "goldenrod");
+    }
   }
 
   votingArea.style('display', 'block');

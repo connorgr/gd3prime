@@ -2366,7 +2366,13 @@
       node = node.node();
       var tipObjects = selection.selectAll(".gd3-tipobj").on("click", function() {
         sticky = sticky ? false : true;
-        if (sticky) view.render(); else view.hide();
+        if (sticky) {
+          if (d3.event.type != "click") return;
+          d3.select(node).selectAll("*").each(function() {
+            var thisEl = d3.select(this), isSummaryElement = thisEl.attr("data-summaryElement");
+            if (isSummaryElement) thisEl.style("display", "block");
+          });
+        } else view.hide();
       }).on("mouseover", view.render).on("mouseout", view.hide);
     }
     view.render = function() {
@@ -2392,6 +2398,7 @@
       if (args[args.length - 1] instanceof SVGElement) target = args.pop();
       var content = html.apply(this, args), nodel = d3.select(node);
       var xout = '<span class="gd3-tooltip-xout" style="cursor: pointer; float: right; font-size:8px">X</span><br />';
+      nodel.html(xout);
       content.forEach(function(tipElem) {
         tipElem.render(nodel);
       });
@@ -2405,7 +2412,7 @@
       });
       function renderTest() {
         var thisEl = d3.select(this), display = thisEl.style("display");
-        render = display == "none" ? "none" : "block";
+        render = display == "none" ? "none" : display;
         var base = "gd3-tooltip-", isVote = thisEl.classed(base + "votecount") || thisEl.classed(base + "dvote") || thisEl.classed(base + "uvote");
         if (isVote) {
           return display;
@@ -2676,7 +2683,7 @@
   var gd3_tooltipVotePrototype = gd3_tooltipVote.prototype = new gd3_tooltipElement();
   function gd3_tooltipVote(downvoteFn, upvoteFn, voteCountFn, voteDirectionFn) {
     if (!this instanceof gd3_tooltipVote) {
-      return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCount, voteDirectionFn);
+      return new gd3_tooltipVote(downvoteFn, upvoteFn, voteCountFn, voteDirectionFn);
     }
     this.downvoteFn = downvoteFn;
     this.upvoteFn = upvoteFn;
@@ -2689,17 +2696,20 @@
     return this.voteCount + " votes";
   };
   gd3_tooltipVotePrototype.render = function(selection) {
+    console.log(this.voteCountFn, this.voteCountFn());
     var votingArea = selection.append("span").attr("class", "gd3-tooltip-vote"), downVote = votingArea.append("span").text("▼").attr("class", "gd3-tooltip-dvote"), upVote = votingArea.append("span").text("▲").attr("class", "gd3-tooltip-uvote"), voteCount = votingArea.append("span").attr("class", "gd3-tooltip-votecount").text(this.voteCountFn());
-    console.log("------");
-    console.log(this.voteDirectionFn());
-    console.log(this.voteDirectionFn() == "up");
-    console.log("------");
-    if (this.voteDirectionFn() == "down") {
-      downVote.classed("gd3-vote-active", true);
-      downVote.style("color", "goldenrod");
-    } else if (this.voteDirectionFn() == "up") {
-      upVote.classed("gd3-vote-active", true);
-      upVote.style("color", "goldenrod");
+    if (this.voteDirectionFn) {
+      console.log("------");
+      console.log(this.voteDirectionFn());
+      console.log(this.voteDirectionFn() == "up");
+      console.log("------");
+      if (this.voteDirectionFn() == "down") {
+        downVote.classed("gd3-vote-active", true);
+        downVote.style("color", "goldenrod");
+      } else if (this.voteDirectionFn() == "up") {
+        upVote.classed("gd3-vote-active", true);
+        upVote.style("color", "goldenrod");
+      }
     }
     votingArea.style("display", "block");
     votingArea.selectAll("span").style({
