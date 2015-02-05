@@ -10,6 +10,27 @@ function tooltipView(style) {
       point     = null,
       target    = null;
 
+
+  function positionTooltip() {
+      var args = Array.prototype.slice.call(arguments)
+
+      // Obtain location information
+      var poffset = offset.apply(this, args),
+          coords,
+          dir     = direction.apply(this, args),
+          i       = directions.length,
+          nodel = d3.select(node),
+          scrollTop  = document.documentElement.scrollTop || document.body.scrollTop,
+          scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+
+      while(i--) nodel.classed(directions[i], false);
+      coords = direction_callbacks.get(dir).apply(this);
+      nodel.classed(dir, true).style({
+        top: (coords.top +  poffset[0]) + scrollTop + 'px',
+        left: (coords.left + poffset[1]) + scrollLeft + 'px'
+      });
+    }
+
   function view(selection) {
     svg = selection; // assumes selection is an SVG
     point = selection.node().createSVGPoint();
@@ -34,19 +55,28 @@ function tooltipView(style) {
     });
     node = node.node();
 
+    // Create a listener for the body to close on keypress
+    var uniqueID = Date.now();
+    d3.select('body').on('keydown.gd3-tooltip-exit-'+uniqueID, function() {
+      if (d3.event.keyCode == 27) {
+        sticky = false;
+        view.hide();
+        console.log('hi');
+      }
+    });
+
     var tipObjects = selection.selectAll('.gd3-tipobj')
         .on('click', function() {
             sticky = sticky ? false : true;
             if(sticky) {
               // view.render();
               if(d3.event.type != 'click') return;
-
                 d3.select(node).selectAll('*').each(function() {
                   var thisEl = d3.select(this),
                       isSummaryElement = thisEl.attr('data-summaryElement');
                   if(isSummaryElement) thisEl.style('display', 'block');
                 });
-                //positionTooltip();
+                positionTooltip();
               }
             else view.hide();
         })
@@ -55,24 +85,6 @@ function tooltipView(style) {
   } // end view
 
   view.render = function() {
-    function positionTooltip() {
-      // Obtain location information
-      var poffset = offset.apply(this, args),
-          coords,
-          dir     = direction.apply(this, args),
-          i       = directions.length,
-          nodel = d3.select(node),
-          scrollTop  = document.documentElement.scrollTop || document.body.scrollTop,
-          scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
-
-      while(i--) nodel.classed(directions[i], false);
-      coords = direction_callbacks.get(dir).apply(this);
-      nodel.classed(dir, true).style({
-        top: (coords.top +  poffset[0]) + scrollTop + 'px',
-        left: (coords.left + poffset[1]) + scrollLeft + 'px'
-      });
-    }
-
     // if the node is sticky (i.e., has been clicked, or otherwise frozen)
     if (sticky) {
       // If the event isn't a click event, don't do anything

@@ -2343,6 +2343,16 @@
   }
   function tooltipView(style) {
     var clickCount = 0, clickEvents = {}, direction = d3_tip_direction, offset = d3_tip_offset, html = d3_tip_html, node = undefined, sticky = false, svg = null, point = null, target = null;
+    function positionTooltip() {
+      var args = Array.prototype.slice.call(arguments);
+      var poffset = offset.apply(this, args), coords, dir = direction.apply(this, args), i = directions.length, nodel = d3.select(node), scrollTop = document.documentElement.scrollTop || document.body.scrollTop, scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+      while (i--) nodel.classed(directions[i], false);
+      coords = direction_callbacks.get(dir).apply(this);
+      nodel.classed(dir, true).style({
+        top: coords.top + poffset[0] + scrollTop + "px",
+        left: coords.left + poffset[1] + scrollLeft + "px"
+      });
+    }
     function view(selection) {
       svg = selection;
       point = selection.node().createSVGPoint();
@@ -2364,6 +2374,14 @@
         padding: style.padding
       });
       node = node.node();
+      var uniqueID = Date.now();
+      d3.select("body").on("keydown.gd3-tooltip-exit-" + uniqueID, function() {
+        if (d3.event.keyCode == 27) {
+          sticky = false;
+          view.hide();
+          console.log("hi");
+        }
+      });
       var tipObjects = selection.selectAll(".gd3-tipobj").on("click", function() {
         sticky = sticky ? false : true;
         if (sticky) {
@@ -2372,19 +2390,11 @@
             var thisEl = d3.select(this), isSummaryElement = thisEl.attr("data-summaryElement");
             if (isSummaryElement) thisEl.style("display", "block");
           });
+          positionTooltip();
         } else view.hide();
       }).on("mouseover", view.render).on("mouseout", view.hide);
     }
     view.render = function() {
-      function positionTooltip() {
-        var poffset = offset.apply(this, args), coords, dir = direction.apply(this, args), i = directions.length, nodel = d3.select(node), scrollTop = document.documentElement.scrollTop || document.body.scrollTop, scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
-        while (i--) nodel.classed(directions[i], false);
-        coords = direction_callbacks.get(dir).apply(this);
-        nodel.classed(dir, true).style({
-          top: coords.top + poffset[0] + scrollTop + "px",
-          left: coords.left + poffset[1] + scrollLeft + "px"
-        });
-      }
       if (sticky) {
         if (d3.event.type != "click") return;
         d3.select(node).selectAll("*").each(function() {
