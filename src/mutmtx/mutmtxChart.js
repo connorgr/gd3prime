@@ -115,7 +115,8 @@ function mutmtxChart(style) {
 
 
       // Render sample annotations should they exist
-      if(data.annotations) {
+      if (data.annotations && data.annotations.sampleToAnnotations && data.annotations.categories) {
+        console.log(data.annotations)
         var names = Object.keys(data.annotations.sampleToAnnotations),
             categories = data.annotations.categories;
 
