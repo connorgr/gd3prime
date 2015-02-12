@@ -1344,8 +1344,8 @@
           });
           colorScaleRect.style("fill", "url(#" + gradientId + ")");
           var textY = style.colorScaleHeight + style.fontSize + 3;
-          legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.maxCellValue);
-          legendG.append("text").attr("text-anchor", "middle").attr("x", 0).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.minCellValue);
+          legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.minCellValue + " this is the min");
+          legendG.append("text").attr("text-anchor", "middle").attr("x", 0).attr("y", textY).style("font-size", style.annotationLabelFontSize).text(data.maxCellValue);
           legendG.append("text").attr("text-anchor", "middle").attr("x", style.colorScaleWidth / 2).attr("y", textY + style.annotationLabelFontSize + 2).style("font-size", style.annotationLabelFontSize).text(data.name);
           legendScale = d3.scale.linear().domain([ data.minCellValue, data.maxCellValue ]).range([ style.colorScaleWidth, 0 ]);
           legendRefLine = legendG.append("line").attr("y1", 0).attr("y2", style.colorScaleHeight).style("stroke", "black").style("stroke-width", 2);

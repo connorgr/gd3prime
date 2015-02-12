@@ -313,7 +313,7 @@ function heatmapChart(style) {
             .attr('x', style.colorScaleWidth)
             .attr('y', textY)
             .style('font-size', style.annotationLabelFontSize)
-            .text(data.maxCellValue);
+            .text(data.minCellValue + ' this is the min');
 
         // append the maximum value text
         legendG.append('text')
@@ -321,7 +321,7 @@ function heatmapChart(style) {
             .attr('x', 0)
             .attr('y', textY)
             .style('font-size', style.annotationLabelFontSize)
-            .text(data.minCellValue);
+            .text(data.maxCellValue);
 
         // append the name of the legend/heatmap
         legendG.append('text')
