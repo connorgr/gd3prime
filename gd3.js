@@ -1746,7 +1746,6 @@
           return Math.ceil(rowLabelsG.node().getBBox().height + 10);
         });
         if (data.annotations && data.annotations.sampleToAnnotations && data.annotations.categories) {
-          console.log(data.annotations);
           var names = Object.keys(data.annotations.sampleToAnnotations), categories = data.annotations.categories;
           var annRowLabelsG = svg.append("g").attr("class", "mutmtx-annRowLabels").attr("transform", "translate(0," + rowLabelsG.node().getBBox().height + ")");
           var annRowLabels = annRowLabelsG.selectAll("text").data(categories).enter().append("text").attr("text-anchor", "end").attr("x", style.labelWidth - 5).attr("y", function(d, i) {
