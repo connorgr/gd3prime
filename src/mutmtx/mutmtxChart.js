@@ -301,6 +301,7 @@ function mutmtxChart(style) {
                 .style('font-size', style.fontSize + 'px')
                 .text('Legend (mouse over)'),
             legend = container.append('div')
+                .attr('class', 'gd3-mutmtx-legend')
                 .style('background', '#fff')
                 .style('border', '1px solid #ccc')
                 .style('padding', '10px')

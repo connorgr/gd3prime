@@ -1847,7 +1847,7 @@
         });
         if (drawLegend) drawLegendFn(selection.append("div").style("width", style.width));
         if (drawHoverLegend) {
-          var container = selection.append("div"), legendHoverHeader = container.append("span").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.fontSize + "px").text("Legend (mouse over)"), legend = container.append("div").style("background", "#fff").style("border", "1px solid #ccc").style("padding", "10px").style("position", "absolute").style("display", "none").style("visibility", "hidden");
+          var container = selection.append("div"), legendHoverHeader = container.append("span").style("cursor", "pointer").style("font-family", style.fontFamily).style("font-size", style.fontSize + "px").text("Legend (mouse over)"), legend = container.append("div").attr("class", "gd3-mutmtx-legend").style("background", "#fff").style("border", "1px solid #ccc").style("padding", "10px").style("position", "absolute").style("display", "none").style("visibility", "hidden");
           legendHoverHeader.on("click", function() {
             stickyLegend = stickyLegend ? false : true;
             legend.selectAll("*").remove();
