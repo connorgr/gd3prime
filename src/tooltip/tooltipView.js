@@ -32,6 +32,7 @@ function tooltipView(style) {
       'box-sizing': 'border-box',
       padding: style.padding
     });
+    node.classed('gd3-tooltip', true);
     node = node.node();
 
     var tipObjects = selection.selectAll('.gd3-tipobj')
